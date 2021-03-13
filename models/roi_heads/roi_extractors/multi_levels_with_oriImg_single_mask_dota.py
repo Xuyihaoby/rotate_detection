@@ -82,15 +82,16 @@ class MultiRoIWithOriginalImageSingleMaskExtractorDOTA(BaseRoIExtractor):
         roi_feats = [feats[0].new_zeros(rois.size(0), self.out_channels, *out_size)
                      for _ in range(len(feats) + 1)]
 
-        # TODO: 查看结果
-        feats = feats + [seg_fea, img]
+        #TOD: 查看结果
+        # feats is tuple
+        feats = feats + (seg_fea, img)
         roi_feats.append(feats[0].new_zeros(rois.size(0), 3, *out_size))
 
         assert len(feats) == len(mask_lvls) == len(self.featmap_strides) + 2
         num_levels = len(feats)  # len 6
 
         # some times rois is an empty tensor
-        if roi_feats.shape[0] == 0:
+        if len(roi_feats) == 0:
             return roi_feats
 
         if roi_scale_factor is not None:

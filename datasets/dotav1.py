@@ -9,7 +9,7 @@ from mmcv.utils import print_log
 from .custom import CustomDataset
 from .builder import DATASETS
 
-from mmdet.core import reval_map, rdets2points
+from mmdet.core import reval_map, rdets2points, heval_map
 from ..models.utils import transXyxyxyxy2Xyxy
 
 
@@ -201,13 +201,22 @@ class DOTADatasetV1(CustomDataset):
         if metric == 'mAP':
             assert isinstance(iou_thr, float)
             print_log(f'\n{"-" * 15}iou_thr: {iou_thr}{"-" * 15}')
-            mean_ap, _ = reval_map(
-                results,
-                annotations,
-                scale_ranges=scale_ranges,
-                iou_thr=iou_thr,
-                dataset=self.CLASSES,
-                logger=logger)
+            if results[0][0].shape[1] == 5:
+                mean_ap, _ = heval_map(
+                    results,
+                    annotations,
+                    scale_ranges=scale_ranges,
+                    iou_thr=iou_thr,
+                    dataset=self.CLASSES,
+                    logger=logger)
+            else:
+                mean_ap, _ = reval_map(
+                    results,
+                    annotations,
+                    scale_ranges=scale_ranges,
+                    iou_thr=iou_thr,
+                    dataset=self.CLASSES,
+                    logger=logger)
             eval_results['mAP'] = mean_ap
         return eval_results
 

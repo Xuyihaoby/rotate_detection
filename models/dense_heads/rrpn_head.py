@@ -149,7 +149,7 @@ class RRPNHead(RPNTestMixin, AnchorHead):
                 scores.new_full((scores.size(0), ), idx, dtype=torch.long))
 
         scores = torch.cat(mlvl_scores)  # [[2000],...(num_lvls)] --> dim:1
-        anchors = torch.cat(mlvl_valid_anchors) # [[2000, 4], ..(num_lvls)] --> [num, 4]
+        anchors = torch.cat(mlvl_valid_anchors)  # [[2000, 4], ..(num_lvls)] --> [num, 4]
         rpn_bbox_pred = torch.cat(mlvl_bbox_preds)
         proposals = self.bbox_coder.decode(
             anchors, rpn_bbox_pred, max_shape=img_shape) # [num, 4]

@@ -39,5 +39,5 @@ __all__ = [
     'YOLACTSegmHead', 'YOLACTProtonet', 'YOLOV3Head', 'PAAHead',
     'SABLRetinaHead', 'CentripetalHead', 'VFNetHead', 'TransformerHead',
     'StageCascadeRPNHead', 'CascadeRPNHead',
-    'RRPNHead','RPNHeadSingleMaskDotDOTA'
+    'RRPNHead', 'RPNHeadSingleMaskDotDOTA'
 ]

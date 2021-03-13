@@ -108,7 +108,7 @@ class RStandardRoIHead(BaseRoIHead, BBoxTestMixinDOTA, MaskTestMixin):
             for i in range(num_imgs):
                 assign_result = self.bbox_assigner.assign(
                     proposal_list[i], hor_gt_bboxes[i], hor_gt_bboxes_ignore[i],
-                    gt_labels[i])  #####
+                    gt_labels[i])  #
                 sampling_result = self.bbox_sampler.sample(
                     assign_result,
                     proposal_list[i],
@@ -159,6 +159,7 @@ class RStandardRoIHead(BaseRoIHead, BBoxTestMixinDOTA, MaskTestMixin):
 
         bbox_targets = self.bbox_head.get_targets(sampling_results, gt_bboxes,
                                                   gt_labels, self.train_cfg)
+
 
         loss_bbox = self.bbox_head.loss(bbox_results['cls_score'], bbox_results['bbox_pred'],
                                         bbox_results['cls_score_h'], bbox_results['bbox_pred_h'],
@@ -249,7 +250,8 @@ class RStandardRoIHead(BaseRoIHead, BBoxTestMixinDOTA, MaskTestMixin):
                     proposal_list,
                     img_metas,
                     proposals=None,
-                    rescale=False):
+                    rescale=False,
+                    obb=False):
         """Test without augmentation."""
         assert self.with_bbox, 'Bbox head must be implemented.'
         # proposal_list [n,5]----[x1,y1,x2,y2,score]
@@ -266,11 +268,20 @@ class RStandardRoIHead(BaseRoIHead, BBoxTestMixinDOTA, MaskTestMixin):
             else:
                 return det_bboxes_h, det_labels_h, det_bboxes, det_labels
 
-        bbox_results = [
-            rbbox2result(det_bboxes[i], det_labels[i],
-                         self.bbox_head.num_classes)
-            for i in range(len(det_bboxes))
-        ]
+        if obb:
+            bbox_results = [
+                rbbox2result(det_bboxes[i], det_labels[i],
+                             self.bbox_head.num_classes)
+                for i in range(len(det_bboxes))
+            ]
+        else:
+            bbox_results = [
+                bbox2result(det_bboxes_h[i], det_labels_h[i],
+                             self.bbox_head.num_classes)
+                for i in range(len(det_bboxes))
+            ]
+
+
         # (list)[(list)[该list内一共有num_class个array，每个array对应的该类里的[bbox(4个), score]],.., (test_batchsize)]
         if not self.with_mask:
             return bbox_results

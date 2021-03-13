@@ -127,6 +127,7 @@ class HSPRoIHead(BaseRoIHead, BBoxTestMixinDOTA, MaskTestMixin):
             bbox_results = self._bbox_forward_train(x, sampling_results,
                                                     gt_bboxes, gt_labels,
                                                     img_metas, img, seg_fea, mask_lvls)
+
             losses.update(bbox_results['loss_bbox'])
 
         # mask head forward and loss
@@ -142,7 +143,7 @@ class HSPRoIHead(BaseRoIHead, BBoxTestMixinDOTA, MaskTestMixin):
         """Box head forward function used in both training and testing."""
         # TODO: a more flexible way to decide which feature maps to use
         bbox_feats = self.bbox_roi_extractor(
-            x[:self.bbox_roi_extractor.num_inputs], rois, norm_img=img, seg_fea=seg_fea, masks=mask_lvls)
+            x[:self.bbox_roi_extractor.num_inputs], rois, img=img, seg_fea=seg_fea, mask_lvls=mask_lvls)
         # [batchsize * rpn_out_channel, bbox_head_in_channels, 7, 7]
         if self.with_shared_head:
             bbox_feats = self.shared_head(bbox_feats)
@@ -251,16 +252,19 @@ class HSPRoIHead(BaseRoIHead, BBoxTestMixinDOTA, MaskTestMixin):
     def simple_test(self,
                     x,
                     proposal_list,
+                    seg_fea,
+                    mask_lvls,
                     img_metas,
                     proposals=None,
                     rescale=False):
         """Test without augmentation."""
         assert self.with_bbox, 'Bbox head must be implemented.'
         # proposal_list [n,5]----[x1,y1,x2,y2,score]
+
         det_bboxes_h, det_labels_h, det_bboxes, det_labels = self.simple_test_bboxes(
-            x, img_metas, proposal_list, self.test_cfg, rescale=rescale)
-        # det_bboxes is list len=test_batchsize [n, 5] ---[x1, y1, x2, y2, score]
-        # det_bboxes is list len=test_batchsize [n]   n is nms = dict(max_per_img)
+            x, img_metas, proposal_list, seg_fea, mask_lvls, self.test_cfg, rescale=rescale)
+        # det_bboxes_h is list len=test_batchsize [n, 5] ---[x1, y1, x2, y2, score]
+        # det_bboxes_h is list len=test_batchsize [n]   n is nms = dict(max_per_img)
 
         if torch.onnx.is_in_onnx_export():
             if self.with_mask:
@@ -309,3 +313,73 @@ class HSPRoIHead(BaseRoIHead, BBoxTestMixinDOTA, MaskTestMixin):
             return [(bbox_results, segm_results)]
         else:
             return [bbox_results]
+
+    def simple_test_bboxes(self,
+                           x,
+                           img_metas,
+                           proposals,
+                           seg_fea,
+                           mask_lvls,
+                           rcnn_test_cfg,
+                           rescale=False):
+        """Test only det bboxes without augmentation."""
+        rois = bbox2roi(proposals)
+        # rois [1000, 5] [x1, y1, x2, y2, scores] ---> [batchind, x1, y1, x2, y2]
+        bbox_results = self._bbox_forward(x, rois, seg_fea, mask_lvls)
+        img_shapes = tuple(meta['img_shape'] for meta in img_metas)
+        scale_factors = tuple(meta['scale_factor'] for meta in img_metas)
+        # split batch bbox prediction back to each image
+        cls_score = bbox_results['cls_score']  # size [num_proposals, num_class+1]
+        cls_score_h = bbox_results['cls_score_h']
+        bbox_pred = bbox_results['bbox_pred']  # size [num_proposals, 5]
+        bbox_pred_h = bbox_results['bbox_pred_h']
+        num_proposals_per_img = tuple(len(p) for p in proposals)
+        rois = rois.split(num_proposals_per_img, 0)  # tuple(per_img_bbox_pred)
+        cls_score = cls_score.split(num_proposals_per_img, 0)  # tuple(per_img_bbox_pred_cls)
+        cls_score_h = cls_score_h.split(num_proposals_per_img, 0)
+
+        # some detector with_reg is False, bbox_pred will be None
+        # rotate
+        if bbox_pred is not None:
+            # the bbox prediction of some detectors like SABL is not Tensor
+            if isinstance(bbox_pred, torch.Tensor):
+                bbox_pred = bbox_pred.split(num_proposals_per_img, 0)  # tuple(per_img_bbox_pred)
+            else:
+                bbox_pred = self.bbox_head.bbox_pred_split(
+                    bbox_pred, num_proposals_per_img)
+        else:
+            bbox_pred = (None,) * len(proposals)
+
+        # horizon
+        if bbox_pred_h is not None:
+            # the bbox prediction of some detectors like SABL is not Tensor
+            if isinstance(bbox_pred_h, torch.Tensor):
+                bbox_pred_h = bbox_pred_h.split(num_proposals_per_img, 0)  # tuple(per_img_bbox_pred)
+            else:
+                bbox_pred_h = self.bbox_head_h.bbox_pred_split(
+                    bbox_pred_h, num_proposals_per_img)
+        else:
+            bbox_pred_h = (None,) * len(proposals)
+
+        # apply bbox post-processing to each image individually
+        det_bboxes_h = []
+        det_labels_h = []
+        det_bboxes = []
+        det_labels = []
+        for i in range(len(proposals)):
+            det_bbox_h, det_label_h, det_bbox, det_label = self.bbox_head.get_bboxes(
+                rois[i],
+                cls_score_h[i],
+                bbox_pred_h[i],
+                cls_score[i],
+                bbox_pred[i],
+                img_shapes[i],
+                scale_factors[i],
+                rescale=rescale,
+                cfg=rcnn_test_cfg)
+            det_bboxes_h.append(det_bbox_h)
+            det_labels_h.append(det_label_h)
+            det_bboxes.append(det_bbox)
+            det_labels.append(det_label)
+        return det_bboxes_h, det_labels_h, det_bboxes, det_labels
+        # return det_bboxes, det_labels

@@ -12,6 +12,8 @@ from .rpn_test_mixin import RPNTestMixin
 from mmcv.cnn import (ConvModule, bias_init_with_prob)
 from mmdet.core import (multi_apply, images_to_levels)
 
+import numpy as np
+
 
 @HEADS.register_module()
 class RPNHeadSingleMaskDotDOTA(RPNTestMixin, AnchorHead):
@@ -25,8 +27,8 @@ class RPNHeadSingleMaskDotDOTA(RPNTestMixin, AnchorHead):
                  loss_mask=dict(type='FocalLoss'),
                  return_lvls_mask=False,
                  **kwargs):
-        super(RPNHeadSingleMaskDotDOTA, self).__init__(1, in_channels, **kwargs)
         self.dilations = dilations
+        super(RPNHeadSingleMaskDotDOTA, self).__init__(1, in_channels, **kwargs)
         self.return_lvls_mask = return_lvls_mask
         self.loss_mask = build_loss(loss_mask)
 
@@ -104,8 +106,7 @@ class RPNHeadSingleMaskDotDOTA(RPNTestMixin, AnchorHead):
         mask_x = feats[0] + F.interpolate(feats[1], scale_factor=2, mode='bilinear', align_corners=True) + \
                  F.interpolate(feats[2], scale_factor=4, mode='bilinear', align_corners=True) + \
                  F.interpolate(feats[3], scale_factor=8, mode='bilinear', align_corners=True) + \
-                 F.interpolate(feats[4], scale_factor=16, mode='bilinear',
-                               align_corners=True)  ## [B, C, H, W], P2-style, stride=4
+                 F.interpolate(feats[4], scale_factor=16, mode='bilinear', align_corners=True)  ## [B, C, H, W], P2-style, stride=4
         # 将5个输出通道的feature map进行整合成p2
 
         aspp_feas = []
@@ -157,8 +158,6 @@ class RPNHeadSingleMaskDotDOTA(RPNTestMixin, AnchorHead):
         # mask_target = mask_target[ind] ## [X]
         num_ = mask_target.numel()
         # TODO:进行调试
-        # import pdb
-        # pdb.set_trace()
         loss_mask = self.loss_mask(mask_pred.unsqueeze_(1),  # [X,1]
                                    mask_target,  # [X], (0,1)
                                    avg_factor=num_)
@@ -220,9 +219,12 @@ class RPNHeadSingleMaskDotDOTA(RPNTestMixin, AnchorHead):
         num_total_samples = (
             num_total_pos + num_total_neg if self.sampling else num_total_pos)
 
-        # TODO:观察mask的类型
-        mask_targets = gt_masks.float()
+
+        # mask_targets = gt_masks.float()
+        mask_targets = torch.stack([gt_masks[i].to_tensor(torch.float32, device) for i in range(len(gt_masks))], dim=0)
+
         # 原文这里使用的是get mask
+        # gt_masks是list
 
         # anchor number of multi levels
         num_level_anchors = [anchors.size(0) for anchors in anchor_list[0]]
@@ -392,3 +394,23 @@ class RPNHeadSingleMaskDotDOTA(RPNTestMixin, AnchorHead):
             proposal_list = self.get_bboxes(*outs, img_metas, cfg=proposal_cfg)
             # [[n, 5],...(num_images)]
             return losses, proposal_list, seg_fea, mask_lvls
+
+    def simple_test_rpn(self, x, img_metas):
+        """Test without augmentation.
+
+        Args:
+            x (tuple[Tensor]): Features from the upstream network, each is
+                a 4D-tensor.
+            img_metas (list[dict]): Meta info of each image.
+
+        Returns:
+            list[Tensor]: Proposals of each image.
+        """
+        rpn_cls_score, rpn_bbox_pred, _, seg_fea, mask_lvls = self(x)
+        rpn_outs = (rpn_cls_score, rpn_bbox_pred)
+        proposal_list = self.get_bboxes(*rpn_outs, img_metas)
+        return proposal_list, seg_fea, mask_lvls
+
+
+
+

@@ -141,9 +141,6 @@ class FeatureAttenNetAllLvlSingleMaskDOTA(BaseDetector):
             dict[str, Tensor]: a dictionary of loss components
         """
         x = self.extract_feat(img)
-        # TODO
-        import pdb
-        pdb.set_trace()
 
         losses = dict()
 
@@ -201,12 +198,14 @@ class FeatureAttenNetAllLvlSingleMaskDOTA(BaseDetector):
         x = self.extract_feat(img)
 
         if proposals is None:
-            proposal_list = self.rpn_head.simple_test_rpn(x, img_metas)
+            proposal_list, seg_fea, mask_lvls = self.rpn_head.simple_test_rpn(x, img_metas)
         else:
             proposal_list = proposals
 
+        # return self.roi_head.simple_test(
+        #     x, proposal_list, img_metas, rescale=rescale)
         return self.roi_head.simple_test(
-            x, proposal_list, img_metas, rescale=rescale)
+            x, proposal_list, seg_fea, mask_lvls, img_metas, rescale=rescale)
 
     def aug_test(self, imgs, img_metas, rescale=False):
         """Test with augmentations.

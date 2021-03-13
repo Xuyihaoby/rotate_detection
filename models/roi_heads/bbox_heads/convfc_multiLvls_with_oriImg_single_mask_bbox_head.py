@@ -87,7 +87,7 @@ class ConvFCMultiLvlsWithOriginalImageSingleMaskBBoxHead(BBoxHead):
                 self.reg_last_dim *= self.roi_feat_area
 
         # 注意这里添加了一个关于原图的fc
-        self.fc_ori_img = nn.Linear(3 * self.roi_feat_size * self.roi_feat_size, self.cls_last_dim)
+        self.fc_ori_img = nn.Linear(3 * self.roi_feat_size[0] * self.roi_feat_size[1], self.cls_last_dim)
 
         self.relu = nn.ReLU(inplace=True)
         # reconstruct fc_cls and fc_reg since input channels are changed
