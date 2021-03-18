@@ -1,16 +1,20 @@
 import torch
 from mmcv.ops.nms import batched_nms
-
+from mmdet.ops import batched_rnms
 from mmdet.core.bbox.iou_calculators import bbox_overlaps
+
+dota_v1_cats = ('plane', 'baseball-diamond', 'bridge', 'ground-track-field', 'small-vehicle',
+                'large-vehicle', 'ship', 'tennis-court', 'basketball-court', 'storage-tank',
+                'soccer-ball-field', 'roundabout', 'harbor', 'swimming-pool', 'helicopter')  # 15
 
 
 def multiclass_nms_r(multi_bboxes,
-                   multi_scores,
-                   score_thr,
-                   nms_cfg,
-                   max_num=-1,
-                   score_factors=None,
-                   return_inds=False):
+                     multi_scores,
+                     score_thr,
+                     nms_cfg,
+                     max_num=-1,
+                     score_factors=None,
+                     return_inds=False):
     """NMS for multi-class bboxes.
 
     Args:
@@ -46,6 +50,7 @@ def multiclass_nms_r(multi_bboxes,
         scores = scores * score_factors[:, None]
 
     labels = torch.arange(num_classes, dtype=torch.long)
+
     labels = labels.view(1, -1).expand_as(scores)
     # [15] ---> [1, 15] ---> [1000, 15]
     bboxes = bboxes.reshape(-1, 5)
@@ -66,12 +71,58 @@ def multiclass_nms_r(multi_bboxes,
         else:
             return bboxes, labels
 
-    # TODO: add size check before feed into batched_nms
-    dets, keep = batched_nms(bboxes, scores, labels, nms_cfg)
+    # updated by xyh
+    if isinstance(nms_cfg['iou_threshold'], float):
+        dets, keep = batched_rnms(bboxes, scores, labels, nms_cfg, class_agnostic=False)
 
-    if max_num > 0:
-        dets = dets[:max_num]
-        keep = keep[:max_num]
+        if max_num > 0:
+            dets = dets[:max_num]
+            keep = keep[:max_num]
+
+    elif isinstance(nms_cfg['iou_threshold'], dict):
+        # import pdb
+        # pdb.set_trace()
+        det = bboxes.new_ones(0, 6)
+        keeps = labels.new_ones(0).to(bboxes.device)
+        for i in range(len(dota_v1_cats)):
+            nms_cfg_ = nms_cfg.copy()
+            nms_cfg_['iou_threshold'] = nms_cfg['iou_threshold'][dota_v1_cats[i]]
+            assert isinstance(nms_cfg_['iou_threshold'], float)
+            if isinstance(max_num, int):
+                max_num_ = max_num
+            elif isinstance(max_num, dict):
+                max_num_ = max_num[dota_v1_cats[i]]
+            index = torch.nonzero(labels == i).squeeze(1).to(inds)
+            labels_ = labels[labels == i]
+            bboxes_= bboxes[labels == i]
+            scores_ = scores[labels == i]
+            if bboxes_.size(0) == 0:
+                continue
+            dets_, keep_ = batched_rnms(bboxes_, scores_, labels_, nms_cfg_, class_agnostic=False)
+            det = torch.cat([det, dets_], dim=0)
+
+            keeps = torch.cat([keeps, index[keep_]], dim=-1)
+            det = det[:64]
+
+            keeps = keeps[:64]
+
+        _ , indice = det[:, 5].sort(descending=True)
+        # import pdb
+        # pdb.set_trace()
+        dets = det[indice]
+        keep = keeps[indice]
+
+
+
+    # import pdb
+    # pdb.set_trace()
+    # TODO: add size check before feed into batched_nms
+
+    # if max_num > 0:
+    #     dets = dets[:max_num]
+    #     keep = keep[:max_num]
+    # import pdb
+    # pdb.set_trace()
 
     if return_inds:
         return dets, labels[keep], keep

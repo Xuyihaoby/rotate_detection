@@ -64,7 +64,7 @@ class MultiRoIWithOriginalImageSingleMaskExtractorDOTA(BaseRoIExtractor):
     @force_fp32(apply_to=('feats',), out_fp16=True)
     def forward(self, feats, rois, img, seg_fea, mask_lvls=None, roi_scale_factor=None):
         """Forward function."""
-        # feats: [P2, P3, P4, P5]
+        # feats: (P2, P3, P4, P5)
         # norm_img: normalized original image
         # seg_fea: [B,C,H,W]
         # masks: None or list(P2~P5, each is [B,1,H,W])

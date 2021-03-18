@@ -4,8 +4,11 @@
 # yapf: disable
 from .polygon_geo import polygon_iou
 
+from .nms import batched_rnms, rnms
+
 # yapf: enable
 
 __all__ = [
-    'polygon_iou'
+    'polygon_iou',
+    "batched_rnms", "rnms"
 ]

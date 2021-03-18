@@ -111,7 +111,7 @@ class HSPRoIHead(BaseRoIHead, BBoxTestMixinDOTA, MaskTestMixin):
             for i in range(num_imgs):
                 assign_result = self.bbox_assigner.assign(
                     proposal_list[i], hor_gt_bboxes[i], hor_gt_bboxes_ignore[i],
-                    gt_labels[i])  #####
+                    gt_labels[i])  #
                 sampling_result = self.bbox_sampler.sample(
                     assign_result,
                     proposal_list[i],
@@ -144,6 +144,7 @@ class HSPRoIHead(BaseRoIHead, BBoxTestMixinDOTA, MaskTestMixin):
         # TODO: a more flexible way to decide which feature maps to use
         bbox_feats = self.bbox_roi_extractor(
             x[:self.bbox_roi_extractor.num_inputs], rois, img=img, seg_fea=seg_fea, mask_lvls=mask_lvls)
+        # len(bbox_feats) = 6 [P2-P5, seg, img]
         # [batchsize * rpn_out_channel, bbox_head_in_channels, 7, 7]
         if self.with_shared_head:
             bbox_feats = self.shared_head(bbox_feats)
@@ -158,7 +159,7 @@ class HSPRoIHead(BaseRoIHead, BBoxTestMixinDOTA, MaskTestMixin):
                             img_metas, img, seg_fea, mask_lvls):
         """Run forward function and calculate loss for box head in training."""
         rois = bbox2roi([res.bboxes for res in sampling_results])
-
+        # sampling result list len=batchsize
         # rois是res sampling之后的结果etc.[512, 4] -->[n, 5], [batch_ind, x1, y1, x2, y2]
         bbox_results = self._bbox_forward(x, rois, img, seg_fea, mask_lvls)
 
@@ -256,7 +257,8 @@ class HSPRoIHead(BaseRoIHead, BBoxTestMixinDOTA, MaskTestMixin):
                     mask_lvls,
                     img_metas,
                     proposals=None,
-                    rescale=False):
+                    rescale=False,
+                    obb=False):
         """Test without augmentation."""
         assert self.with_bbox, 'Bbox head must be implemented.'
         # proposal_list [n,5]----[x1,y1,x2,y2,score]
@@ -274,11 +276,18 @@ class HSPRoIHead(BaseRoIHead, BBoxTestMixinDOTA, MaskTestMixin):
             else:
                 return det_bboxes_h, det_labels_h, det_bboxes, det_labels
 
-        bbox_results = [
-            rbbox2result(det_bboxes[i], det_labels[i],
-                         self.bbox_head.num_classes)
-            for i in range(len(det_bboxes))
-        ]
+        if obb:
+            bbox_results = [
+                rbbox2result(det_bboxes[i], det_labels[i],
+                             self.bbox_head.num_classes)
+                for i in range(len(det_bboxes))
+            ]
+        else:
+            bbox_results = [
+                bbox2result(det_bboxes_h[i], det_labels_h[i],
+                            self.bbox_head.num_classes)
+                for i in range(len(det_bboxes))
+            ]
         # (list)[(list)[该list内一共有num_class个array，每个array对应的该类里的[bbox(4个), score]],.., (test_batchsize)]
         if not self.with_mask:
             return bbox_results

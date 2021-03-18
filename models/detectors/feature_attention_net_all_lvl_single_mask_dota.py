@@ -19,9 +19,11 @@ class FeatureAttenNetAllLvlSingleMaskDOTA(BaseDetector):
                  roi_head=None,
                  train_cfg=None,
                  test_cfg=None,
-                 pretrained=None):
+                 pretrained=None,
+                 obb=False):
         super(FeatureAttenNetAllLvlSingleMaskDOTA, self).__init__()
         self.backbone = build_backbone(backbone)
+        self.obb = obb
 
         if neck is not None:
             self.neck = build_neck(neck)
@@ -205,7 +207,7 @@ class FeatureAttenNetAllLvlSingleMaskDOTA(BaseDetector):
         # return self.roi_head.simple_test(
         #     x, proposal_list, img_metas, rescale=rescale)
         return self.roi_head.simple_test(
-            x, proposal_list, seg_fea, mask_lvls, img_metas, rescale=rescale)
+            x, proposal_list, seg_fea, mask_lvls, img_metas, rescale=rescale, obb=self.obb)
 
     def aug_test(self, imgs, img_metas, rescale=False):
         """Test with augmentations.

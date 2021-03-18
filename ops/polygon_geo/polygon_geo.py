@@ -1,4 +1,5 @@
-from . import polygon_geo_cpu
+# from . import polygon_geo_cpu
+import polygon_geo_cpu
 
 
 def polygon_iou(poly1, poly2):

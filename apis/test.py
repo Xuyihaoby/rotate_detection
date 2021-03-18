@@ -20,7 +20,6 @@ def single_gpu_test(model,
                     show_score_thr=0.3):
     model.eval()
     results = []
-    results_h = []
     dataset = data_loader.dataset
     prog_bar = mmcv.ProgressBar(len(dataset))
     for i, data in enumerate(data_loader):
@@ -48,14 +47,12 @@ def single_gpu_test(model,
                     out_file = osp.join(out_dir, img_meta['ori_filename'])
                 else:
                     out_file = None
-
                 model.module.show_result(
                     img_show,
                     result[i],
                     show=show,
                     out_file=out_file,
                     score_thr=show_score_thr)
-
         # encode mask results
         if isinstance(result[0], tuple):
             result = [(bbox_results, encode_mask_results(mask_results))

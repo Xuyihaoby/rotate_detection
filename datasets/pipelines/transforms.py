@@ -508,6 +508,8 @@ class Pad(object):
         results['pad_size_divisor'] = self.size_divisor
 
     def _pad_masks(self, results):
+        # import pdb
+        # pdb.set_trace()
         """Pad masks according to ``results['pad_shape']``."""
         pad_shape = results['pad_shape'][:2]
         for key in results.get('mask_fields', []):

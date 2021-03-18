@@ -436,12 +436,13 @@ class RConvFCBBoxHead(BBoxHead):
         else:
             det_bboxes_h, det_labels_h = multiclass_nms(bboxes_h, scores_h,
                                                     cfg.score_thr, cfg.nms_h,
-                                                    cfg.max_per_img)
+                                                    cfg.max_per_img_h)
 
 
             det_bboxes, det_labels = multiclass_nms_r(bboxes, scores,
                                                     cfg.score_thr, cfg.nms_r,
                                                     cfg.max_per_img)
+
             # det_bboxes is [n, 6]
 
             return det_bboxes_h, det_labels_h, det_bboxes, det_labels

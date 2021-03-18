@@ -3,8 +3,9 @@ from multiprocessing import Pool
 import numpy as np
 import torch
 
-# from mmdet.ops import polygon_iou
+
 from mmcv.ops import box_iou_rotated
+from mmdet.ops import polygon_iou
 from .bbox_overlaps import bbox_overlaps
 from .mean_ap import average_precision, print_map_summary
 
@@ -51,15 +52,16 @@ def rdets2angle(rbboxes):
     y = rbboxes[:, 1]
     w = rbboxes[:, 2]
     h = rbboxes[:, 3]
-    a = rbboxes[:, 4] * 180. / np.pi
+    a = rbboxes[:, 4] * 180.0 / np.pi
     prob = rbboxes[:, 5]
     return np.stack([x, y, w, h, a, prob], axis=-1)
 
 
 def polygon_overlaps(polygons1, polygons2):
-    p1 = torch.tensor(polygons1[:, :5], dtype=torch.float32)  # in case the last element of a row is the probability
-    p2 = torch.tensor(polygons2[:, :5], dtype=torch.float32)  # in case the last element of a row is the probability
-    return box_iou_rotated(p1, p2).numpy()
+    p1 = torch.tensor(polygons1[:, :8], dtype=torch.float32)  # in case the last element of a row is the probability
+    p2 = torch.tensor(polygons2[:, :8], dtype=torch.float32)  # in case the last element of a row is the probability
+    # return box_iou_rotated(p1, p2).numpy()
+    return polygon_iou(p1, p2).numpy()
 
 
 def rtpfp_default(det_bboxes,
@@ -100,7 +102,6 @@ def rtpfp_default(det_bboxes,
     # a certain scale
     tp = np.zeros((num_scales, num_dets), dtype=np.float32)  # (1, m)
     fp = np.zeros((num_scales, num_dets), dtype=np.float32)  # (1, m)
-
     # if there is no gt bboxes in this image, then all det bboxes
     # within area range are false positives
     if gt_bboxes.shape[0] == 0:  # n==0
@@ -113,7 +114,6 @@ def rtpfp_default(det_bboxes,
                 fp[i, (det_areas >= min_area) & (det_areas < max_area)] = 1
                 # 个人认为这一段写的很不对劲
         return tp, fp
-
     ious = polygon_overlaps(det_bboxes, gt_bboxes)
     # for each det, the max iou with all gts
     ious_max = ious.max(axis=1)
@@ -188,8 +188,10 @@ def htpfp_default(det_bboxes,
                 fp[i, (det_areas >= min_area) & (det_areas < max_area)] = 1
                 # 个人认为这一段写的很不对劲
         return tp, fp
-
+    print(det_bboxes.shape)
+    print(gt_bboxes.shape)
     ious = bbox_overlaps(det_bboxes, gt_bboxes)
+    print("how are you")
     # for each det, the max iou with all gts
     ious_max = ious.max(axis=1)
     # for each det, which gt overlaps most with it
@@ -237,7 +239,9 @@ def rget_cls_results(det_results, annotations, class_id):
     Returns:
         tuple[list[np.ndarray]]: detected bboxes, gt bboxes, ignored gt bboxes
     """
-    cls_dets = [rdets2angle(img_res[class_id]) for img_res in det_results]
+    # import pdb
+    # pdb.set_trace()
+    cls_dets = [rdets2points(img_res[class_id]) for img_res in det_results]
     # （list）[[每一图片的单个目标的检测以及一个score], ...图片数]
     # cls_dets = [img_res[class_id] for img_res in det_results]
     # import pdb
@@ -247,15 +251,15 @@ def rget_cls_results(det_results, annotations, class_id):
     # annotations sum is num images
     for ann in annotations:
         gt_inds = ann['labels'] == class_id
-        # cls_gts.append(ann['polygons'][gt_inds, :])
-        cls_gts.append(ann['bboxes'][gt_inds, :])
+        cls_gts.append(ann['polygons'][gt_inds, :])
+        # cls_gts.append(ann['bboxes'][gt_inds, :])
         if ann.get('labels_ignore', None) is not None:
             ignore_inds = ann['labels_ignore'] == class_id
-            # cls_gts_ignore.append(ann['polygons_ignore'][ignore_inds, :])
-            cls_gts_ignore.append(ann['bboxes'][ignore_inds, :])
+            cls_gts_ignore.append(ann['polygons_ignore'][ignore_inds, :])
+            # cls_gts_ignore.append(ann['bboxes'][ignore_inds, :])
         else:
-            # cls_gts_ignore.append(torch.empty((0, 8), dtype=torch.float32))
-            cls_gts_ignore.append(torch.empty((0, 5), dtype=torch.float32))
+            cls_gts_ignore.append(torch.empty((0, 8), dtype=torch.float32))
+            # cls_gts_ignore.append(torch.empty((0, 5), dtype=torch.float32))
     return cls_dets, cls_gts, cls_gts_ignore
 
 
@@ -309,18 +313,40 @@ def reval_map(det_results,
                    if scale_ranges is not None else None)
 
     pool = Pool(nproc)
+    # pool = Pool(0)
     eval_results = []
     for i in range(num_classes):
+
         # get gt and det bboxes of this class
         cls_dets, cls_gts, cls_gts_ignore = rget_cls_results(
             det_results, annotations, i)
+        # if i == 6:
+        #     #     for index in range(len(cls_dets)):
+        #     m = np.vstack(cls_dets)
+        #     import pdb
+        #     pdb.set_trace()
+        #         nn = rdets2points(m)
+        #         nn = nn.reshape(-1)
+        #         xx = (nn<0).sum()
+        #     x += xx
+        #     print(x)
+
+        # import pdb
+        # pdb.set_trace()
+
         # （list）[[每一图片的单个目标的检测的坐标以及一个score], ...图片数]
+        # if i == 6:
+        #     import pdb
+        #     pdb.set_trace()
+        #     m = np.vstack(cls_dets)
+
         tpfp = pool.starmap(
             rtpfp_default,
             zip(cls_dets, cls_gts, cls_gts_ignore,
                 [iou_thr for _ in range(num_imgs)],
                 [area_ranges for _ in range(num_imgs)]))
         tp, fp = tuple(zip(*tpfp))
+
         # calculate gt number of each scale
         # ignored gts or gts beyond the specific scale are not counted
         num_gts = np.zeros(num_scales, dtype=int)
@@ -399,8 +425,6 @@ def hget_cls_results(det_results, annotations, class_id):
     cls_dets = [img_res[class_id] for img_res in det_results]
     # （list）[[每一图片的单个目标的检测八个角以及一个score], ...图片数]
     # cls_dets = [img_res[class_id] for img_res in det_results]
-    # import pdb
-    # pdb.set_trace()
     cls_gts = []
     cls_gts_ignore = []
     # annotations sum is num images

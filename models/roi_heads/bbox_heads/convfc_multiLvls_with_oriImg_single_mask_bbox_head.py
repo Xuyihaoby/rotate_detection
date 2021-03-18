@@ -184,7 +184,7 @@ class ConvFCMultiLvlsWithOriginalImageSingleMaskBBoxHead(BBoxHead):
                 # 平均池化
 
             # x = x.flatten(1)
-            # # TODO 存疑 [N, C, 1*1]
+            # TOD  [N, C*7*7]
             # # [batch_size * rpn_out_c, bbox_head_in_channel, 7, 7] -->
             # # [batch_size * rpn_out_c, bbox_head_in_channel*7*7]
             # for fc in self.shared_fcs:
@@ -211,6 +211,7 @@ class ConvFCMultiLvlsWithOriginalImageSingleMaskBBoxHead(BBoxHead):
             if self.with_avg_pool:
                 x_cls = self.avg_pool(x_cls)
             x_cls = x_cls.flatten(1)
+        # 基本上不可能大于2
         for fc in self.cls_fcs:
             x_cls = self.relu(fc(x_cls))
 

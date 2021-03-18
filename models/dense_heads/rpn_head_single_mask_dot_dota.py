@@ -114,7 +114,7 @@ class RPNHeadSingleMaskDotDOTA(RPNTestMixin, AnchorHead):
             aspp_feas.append(conv(mask_x))
 
         x = torch.cat(aspp_feas, dim=1)  # [B, C*4, H, W]
-        # TODO : 进行调试验证
+        #TOD : 进行调试验证
         x = self.aspp_out(x)  # [B, C, H, W]
         mask_pred = self.mask_pred_conv(x)  # [B, 1, H, W], P2-style, stride=4
         seg_fea = self.seg_fea_conv(x)  # [B, C, H, W], P2-style, stride=4
@@ -126,6 +126,7 @@ class RPNHeadSingleMaskDotDOTA(RPNTestMixin, AnchorHead):
         mask_lvls.append(F.max_pool2d(mask_lvls[-1], 1, stride=2))  # 64
 
         rpn_cls_score, rpn_bbox_pred = multi_apply(self.forward_single, feats, mask_lvls)
+        # 得到的结果是list
 
         if self.return_lvls_mask:
             return rpn_cls_score, rpn_bbox_pred, mask_pred, seg_fea, mask_lvls[:4]  ## P2~P5
@@ -133,20 +134,6 @@ class RPNHeadSingleMaskDotDOTA(RPNTestMixin, AnchorHead):
             return rpn_cls_score, rpn_bbox_pred, mask_pred, seg_fea, None
 
     def loss_mask_func(self, mask_pred, mask_target):
-        ## each is [B, 1, H, W]
-        # import pdb
-        # pdb.set_trace()
-
-        ## mask CE loss.
-        # label = mask_pred.new_zeros([mask_target.size(0)]).long() ## [B]
-        # num_rois = mask_pred.size()[0]
-        # inds = torch.arange(0, num_rois, dtype = torch.long, device = mask_pred.device)
-        # pred_slice = mask_pred[inds, label].unsqueeze(1)
-        # loss_mask =  F.binary_cross_entropy_with_logits(
-        # 					pred_slice, mask_target, reduction = 'none') * mask_weight
-        # loss_mask = loss_mask.mean() * 0.5
-
-        # ## mask focal loss.
         mask_pred = F.interpolate(mask_pred, scale_factor=4, mode='bilinear', align_corners=True)
         mask_pred = mask_pred.permute(0, 2, 3, 1).reshape(-1)  ## [B*H*W]
         mask_target = mask_target.permute(0, 2, 3, 1).reshape(-1).type(torch.long)  ## [B*H*W]
@@ -219,8 +206,8 @@ class RPNHeadSingleMaskDotDOTA(RPNTestMixin, AnchorHead):
         num_total_samples = (
             num_total_pos + num_total_neg if self.sampling else num_total_pos)
 
-
         # mask_targets = gt_masks.float()
+        # TODO 这里缺少mask weight，但我个人目前认为影响或许不是很大
         mask_targets = torch.stack([gt_masks[i].to_tensor(torch.float32, device) for i in range(len(gt_masks))], dim=0)
 
         # 原文这里使用的是get mask

@@ -18,12 +18,10 @@ class RResize(Resize):
         super(RResize, self).__init__(img_scale=img_scale,
                                       multiscale_mode=multiscale_mode,
                                       ratio_range=ratio_range,
-                                      keep_ratio=True,
+                                      keep_ratio=False,
                                       bbox_clip_border=bbox_clip_border)
 
     def _resize_bboxes(self, results):
-        # import pdb
-        # pdb.set_trace()
         for key in results.get('bbox_fields', []):
             if key == 'gt_bboxes' or key == 'gt_bboxes_ignore':
                 bboxes = results[key]
@@ -50,6 +48,9 @@ class RResize(Resize):
         for key in results.get('mask_fields', []):
             if results[key] is None:
                 continue
+            if results['img_shape'][:2] != (1024, 1024):
+                import pdb
+                pdb.set_trace()
             if self.keep_ratio:
                 results[key] = results[key].rescale(results['scale'])
             else:
