@@ -1,5 +1,5 @@
 import torch
-from mmcv.ops.nms import batched_nms
+# from mmcv.ops.nms import batched_nms
 from mmdet.ops import batched_rnms
 from mmdet.core.bbox.iou_calculators import bbox_overlaps
 
@@ -99,30 +99,26 @@ def multiclass_nms_r(multi_bboxes,
             if bboxes_.size(0) == 0:
                 continue
             dets_, keep_ = batched_rnms(bboxes_, scores_, labels_, nms_cfg_, class_agnostic=False)
+            _, sub_indice = dets_[:, 5].sort(descending=True)
+            dets_ = dets_[sub_indice]
+            keep_ = keep_[sub_indice]
+            # 每一张图片的每一类先进行置信度的排序
+
+            if max_num_ > dets_.size(0):
+                max_num_ = dets_.size(0)
+            dets_ = dets_[:max_num_]
+            keep_ = keep_[:max_num_]
             det = torch.cat([det, dets_], dim=0)
-
             keeps = torch.cat([keeps, index[keep_]], dim=-1)
-            det = det[:64]
+            # import pdb
+            # pdb.set_trace()
+            # max_num_ = torch.where(max_num_>det.size(0), det.size(0), max_num_)
 
-            keeps = keeps[:64]
 
         _ , indice = det[:, 5].sort(descending=True)
-        # import pdb
-        # pdb.set_trace()
         dets = det[indice]
         keep = keeps[indice]
-
-
-
-    # import pdb
-    # pdb.set_trace()
     # TODO: add size check before feed into batched_nms
-
-    # if max_num > 0:
-    #     dets = dets[:max_num]
-    #     keep = keep[:max_num]
-    # import pdb
-    # pdb.set_trace()
 
     if return_inds:
         return dets, labels[keep], keep

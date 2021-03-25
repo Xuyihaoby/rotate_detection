@@ -3,7 +3,6 @@ from multiprocessing import Pool
 import numpy as np
 import torch
 
-
 from mmcv.ops import box_iou_rotated
 from mmdet.ops import polygon_iou
 from .bbox_overlaps import bbox_overlaps
@@ -36,7 +35,17 @@ def rdets2points(rbboxes):
     p2x, p2y = x + wx - hx, y + wy - hy
     p3x, p3y = x + wx + hx, y + wy + hy
     p4x, p4y = x - wx + hx, y - wy + hy
+    # if p1x.size == 0:
+    #     return np.stack([p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y, prob], axis=-1)
+    # else:
+    #     # import pdb
+    #     # pdb.set_trace()
+    #     yet = np.stack([p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y, prob], axis=-1)
+    #     indice = np.unique((yet < 0).nonzero()[0])
+    #     compelete = np.delete(yet, indice, axis=0)
+    # return compelete
     return np.stack([p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y, prob], axis=-1)
+
 
 
 def rdets2angle(rbboxes):
@@ -244,8 +253,6 @@ def rget_cls_results(det_results, annotations, class_id):
     cls_dets = [rdets2points(img_res[class_id]) for img_res in det_results]
     # （list）[[每一图片的单个目标的检测以及一个score], ...图片数]
     # cls_dets = [img_res[class_id] for img_res in det_results]
-    # import pdb
-    # pdb.set_trace()
     cls_gts = []
     cls_gts_ignore = []
     # annotations sum is num images
@@ -320,20 +327,6 @@ def reval_map(det_results,
         # get gt and det bboxes of this class
         cls_dets, cls_gts, cls_gts_ignore = rget_cls_results(
             det_results, annotations, i)
-        # if i == 6:
-        #     #     for index in range(len(cls_dets)):
-        #     m = np.vstack(cls_dets)
-        #     import pdb
-        #     pdb.set_trace()
-        #         nn = rdets2points(m)
-        #         nn = nn.reshape(-1)
-        #         xx = (nn<0).sum()
-        #     x += xx
-        #     print(x)
-
-        # import pdb
-        # pdb.set_trace()
-
         # （list）[[每一图片的单个目标的检测的坐标以及一个score], ...图片数]
         # if i == 6:
         #     import pdb
@@ -491,7 +484,8 @@ def heval_map(det_results,
     area_ranges = ([(rg[0] ** 2, rg[1] ** 2) for rg in scale_ranges]
                    if scale_ranges is not None else None)
 
-    pool = Pool(nproc)
+    pool = Pool(16)
+    # pool = Pool(nproc)
     eval_results = []
     for i in range(num_classes):
         # get gt and det bboxes of this class
@@ -506,6 +500,7 @@ def heval_map(det_results,
             zip(cls_dets, cls_gts, cls_gts_ignore,
                 [iou_thr for _ in range(num_imgs)],
                 [area_ranges for _ in range(num_imgs)]))
+
         tp, fp = tuple(zip(*tpfp))
         # calculate gt number of each scale
         # ignored gts or gts beyond the specific scale are not counted

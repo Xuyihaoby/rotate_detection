@@ -237,7 +237,7 @@ class RPNHeadSingleMaskDotDOTA(RPNTestMixin, AnchorHead):
 
         loss_mask = self.loss_mask_func(mask_pred=mask_preds,  # [B, 1, H, W]
                                           mask_target=mask_targets)  # [B, 1, H, W])
-        return dict(loss_cls=losses_cls, loss_bbox=losses_bbox, loss_rpn_mask=loss_mask)
+        return dict(loss_rpn_cls=losses_cls, loss_rpn_bbox=losses_bbox, loss_rpn_mask=loss_mask)
 
     def _get_bboxes_single(self,
                            cls_scores,

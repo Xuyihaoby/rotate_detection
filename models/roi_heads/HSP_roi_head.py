@@ -252,19 +252,21 @@ class HSPRoIHead(BaseRoIHead, BBoxTestMixinDOTA, MaskTestMixin):
 
     def simple_test(self,
                     x,
+                    img,
                     proposal_list,
                     seg_fea,
                     mask_lvls,
                     img_metas,
                     proposals=None,
                     rescale=False,
-                    obb=False):
+                    obb=False,
+                    submission=False):
         """Test without augmentation."""
         assert self.with_bbox, 'Bbox head must be implemented.'
         # proposal_list [n,5]----[x1,y1,x2,y2,score]
 
         det_bboxes_h, det_labels_h, det_bboxes, det_labels = self.simple_test_bboxes(
-            x, img_metas, proposal_list, seg_fea, mask_lvls, self.test_cfg, rescale=rescale)
+            x, img, img_metas, proposal_list, seg_fea, mask_lvls, self.test_cfg, rescale=rescale)
         # det_bboxes_h is list len=test_batchsize [n, 5] ---[x1, y1, x2, y2, score]
         # det_bboxes_h is list len=test_batchsize [n]   n is nms = dict(max_per_img)
 
@@ -276,18 +278,32 @@ class HSPRoIHead(BaseRoIHead, BBoxTestMixinDOTA, MaskTestMixin):
             else:
                 return det_bboxes_h, det_labels_h, det_bboxes, det_labels
 
-        if obb:
-            bbox_results = [
-                rbbox2result(det_bboxes[i], det_labels[i],
-                             self.bbox_head.num_classes)
-                for i in range(len(det_bboxes))
-            ]
+        if submission == False:
+            if obb:
+                bbox_results = [
+                    rbbox2result(det_bboxes[i], det_labels[i],
+                                 self.bbox_head.num_classes)
+                    for i in range(len(det_bboxes))
+                ]
+            else:
+                bbox_results = [
+                    bbox2result(det_bboxes_h[i], det_labels_h[i],
+                                self.bbox_head.num_classes)
+                    for i in range(len(det_bboxes))
+                ]
         else:
-            bbox_results = [
+            bbox_results = {}
+            bbox_results['hbb'] = [
                 bbox2result(det_bboxes_h[i], det_labels_h[i],
                             self.bbox_head.num_classes)
                 for i in range(len(det_bboxes))
             ]
+            bbox_results['rbb'] = [
+                rbbox2result(det_bboxes[i], det_labels[i],
+                             self.bbox_head.num_classes)
+                for i in range(len(det_bboxes))
+            ]
+
         # (list)[(list)[该list内一共有num_class个array，每个array对应的该类里的[bbox(4个), score]],.., (test_batchsize)]
         if not self.with_mask:
             return bbox_results
@@ -325,6 +341,7 @@ class HSPRoIHead(BaseRoIHead, BBoxTestMixinDOTA, MaskTestMixin):
 
     def simple_test_bboxes(self,
                            x,
+                           img,
                            img_metas,
                            proposals,
                            seg_fea,
@@ -334,7 +351,7 @@ class HSPRoIHead(BaseRoIHead, BBoxTestMixinDOTA, MaskTestMixin):
         """Test only det bboxes without augmentation."""
         rois = bbox2roi(proposals)
         # rois [1000, 5] [x1, y1, x2, y2, scores] ---> [batchind, x1, y1, x2, y2]
-        bbox_results = self._bbox_forward(x, rois, seg_fea, mask_lvls)
+        bbox_results = self._bbox_forward(x, rois, img, seg_fea, mask_lvls)
         img_shapes = tuple(meta['img_shape'] for meta in img_metas)
         scale_factors = tuple(meta['scale_factor'] for meta in img_metas)
         # split batch bbox prediction back to each image

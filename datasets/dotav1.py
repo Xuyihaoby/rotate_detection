@@ -66,8 +66,6 @@ class DOTADatasetV1(CustomDataset):
                 gt_labels_ignore = []
                 gt_polygons_ignore = []
                 hor_gt_boxes_ignore = []
-                # import pdb
-                # pdb.set_trace()
                 with open(ann_file) as f:
                     s = f.readlines()
                     # gsd = s[1].split(':')[-1]
@@ -166,7 +164,7 @@ class DOTADatasetV1(CustomDataset):
 
     def _set_group_flag(self):
         self.flag = np.zeros(len(self), dtype=np.uint8)
-    #
+
     def evaluate(self,
                  results,
                  metric='mAP',
@@ -220,55 +218,85 @@ class DOTADatasetV1(CustomDataset):
             eval_results['mAP'] = mean_ap
         return eval_results
 
-    # def _det2str(self, results):
-    #     mcls_results = {cls: '' for cls in self.CLASSES}
-    #     for idx in range(len(self)):
-    #         img_id = self.img_ids[idx]
-    #         result = results[idx]
-    #         for label in range(len(result)):
-    #             bboxes = rdets2points(result[label])
-    #             cls_name = self.CLASSES[label]
-    #             for i in range(bboxes.shape[0]):
-    #                 resstr = '{:s} {:.12f} {:.1f} {:.1f} {:.1f} {:.1f} {:.1f} {:.1f} {:.1f} {:.1f}\n'
-    #                 ps = list(bboxes[i][:-1])
-    #                 score = float(bboxes[i][-1])
-    #                 resstr = resstr.format(img_id, score, *ps)
-    #                 mcls_results[cls_name] += resstr
-    #     return mcls_results
-    #
-    # def _results2submission(self, results, out_folder=None):
-    #     dota_results = self._det2str(results)
-    #     if out_folder is not None:
-    #         os.makedirs(out_folder, exist_ok=True)
-    #         for cls in dota_results:
-    #             fname = f'Task1_{cls}.txt'
-    #             fname = os.path.join(out_folder, fname)
-    #             with open(fname, 'w') as f:
-    #                 f.write(dota_results[cls])
-    #     return dota_results
-    #
-    # def format_results(self, results, submission_dir=None, **kwargs):
-    #     """Format the results to submission text (standard format for DOTA evaluation).
-    #
-    #     Args:
-    #         results (list): Testing results of the dataset.
-    #         submission_dir (str | None): The folder that contains submission files.
-    #             If not specified, a temp folder will be created. Default: None.
-    #
-    #     Returns:
-    #         tuple: (result_files, tmp_dir), result_files is a dict containing
-    #             the json filepaths, tmp_dir is the temporal directory created
-    #             for saving json files when submission_dir is not specified.
-    #     """
-    #     assert isinstance(results, list), 'results must be a list'
-    #     assert len(results) == len(self), (
-    #         'The length of results is not equal to the dataset len: {} != {}'.
-    #         format(len(results), len(self)))
-    #
-    #     if submission_dir is None:
-    #         submission_dir = tempfile.TemporaryDirectory()
-    #     else:
-    #         tmp_dir = None
-    #     result_files = self._results2submission(results, submission_dir)
-    #     return result_files, tmp_dir
+
+    def _det2str(self, results):
+        mcls_results = {cls: '' for cls in self.CLASSES}
+        for idx in range(len(self)):
+            img_id = self.img_ids[idx]
+            result = results[idx]
+            for label in range(len(result)):
+                if result[label].shape[1] == 6:
+                    bboxes = rdets2points(result[label])
+                    resstr = '{:s} {:.12f} {:.1f} {:.1f} {:.1f} {:.1f} {:.1f} {:.1f} {:.1f} {:.1f}\n'
+                elif result[label].shape[1] == 5:
+                    bboxes = result[label]
+                    resstr = '{:s} {:.12f} {:.1f} {:.1f} {:.1f} {:.1f}\n'
+                cls_name = self.CLASSES[label]
+                for i in range(bboxes.shape[0]):
+                    # resstr = '{:s} {:.12f} {:.1f} {:.1f} {:.1f} {:.1f} {:.1f} {:.1f} {:.1f} {:.1f}\n'
+                    ps = list(bboxes[i][:-1])
+                    score = float(bboxes[i][-1])
+                    resstr_ = resstr.format(img_id, score, *ps)
+                    mcls_results[cls_name] += resstr_
+        return mcls_results
+
+    def _results2submission_h(self, results, out_folder=None):
+        out_folder = out_folder + '_h'
+        dota_results = self._det2str(results)
+        if out_folder is not None:
+            os.makedirs(out_folder, exist_ok=True)
+            for cls in dota_results:
+                fname = f'Task2_{cls}.txt'
+                fname = os.path.join(out_folder, fname)
+                with open(fname, 'w') as f:
+                    f.write(dota_results[cls])
+        return dota_results
+
+    def _results2submission(self, results, out_folder=None):
+        dota_results = self._det2str(results)
+        out_folder = out_folder+'_r'
+        if out_folder is not None:
+            os.makedirs(out_folder, exist_ok=True)
+            for cls in dota_results:
+                fname = f'Task1_{cls}.txt'
+                fname = os.path.join(out_folder, fname)
+                with open(fname, 'w') as f:
+                    f.write(dota_results[cls])
+        return dota_results
+
+    def format_results(self, results, submission_dir=None, **kwargs):
+        """Format the results to submission text (standard format for DOTA evaluation).
+
+        Args:
+            results (list): Testing results of the dataset.
+            submission_dir (str | None): The folder that contains submission files.
+                If not specified, a temp folder will be created. Default: None.
+
+        Returns:
+            tuple: (result_files, tmp_dir), result_files is a dict containing
+                the json filepaths, tmp_dir is the temporal directory created
+                for saving json files when submission_dir is not specified.
+        """
+        # results (list)[(list)[[bbox],....(classnum)],...,numimg]
+        assert isinstance(results, list), 'results must be a list'
+        if isinstance(results[0], list):
+            assert len(results) == len(self), (
+                'The length of results is not equal to the dataset len: {} != {}'.
+                format(len(results), len(self)))
+        if isinstance(results[0], dict):
+            assert len(results) == len(self), (
+                'The length of results is not equal to the dataset len: {} != {}'.
+                    format(len(results), len(self)))
+            results_h = []
+            results_r = []
+            for i in range(len(results)):
+                results_h.extend(results[i]['hbb'])
+                results_r.extend(results[i]['rbb'])
+        if submission_dir is None:
+            submission_dir = tempfile.TemporaryDirectory()
+        else:
+            tmp_dir = None
+        result_files_r = self._results2submission(results_r, submission_dir)
+        result_files_h = self._results2submission_h(results_h, submission_dir)
+        return result_files_r, tmp_dir
 

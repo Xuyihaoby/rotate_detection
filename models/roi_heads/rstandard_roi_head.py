@@ -251,7 +251,8 @@ class RStandardRoIHead(BaseRoIHead, BBoxTestMixinDOTA, MaskTestMixin):
                     img_metas,
                     proposals=None,
                     rescale=False,
-                    obb=False):
+                    obb=False,
+                    submission=False):
         """Test without augmentation."""
         assert self.with_bbox, 'Bbox head must be implemented.'
         # proposal_list [n,5]----[x1,y1,x2,y2,score]
@@ -268,18 +269,32 @@ class RStandardRoIHead(BaseRoIHead, BBoxTestMixinDOTA, MaskTestMixin):
             else:
                 return det_bboxes_h, det_labels_h, det_bboxes, det_labels
 
-        if obb:
-            bbox_results = [
-                rbbox2result(det_bboxes[i], det_labels[i],
-                             self.bbox_head.num_classes)
-                for i in range(len(det_bboxes))
-            ]
+        if submission == False:
+            if obb:
+                bbox_results = [
+                    rbbox2result(det_bboxes[i], det_labels[i],
+                                 self.bbox_head.num_classes)
+                    for i in range(len(det_bboxes))
+                ]
+            else:
+                bbox_results = [
+                    bbox2result(det_bboxes_h[i], det_labels_h[i],
+                                 self.bbox_head.num_classes)
+                    for i in range(len(det_bboxes))
+                ]
         else:
-            bbox_results = [
-                bbox2result(det_bboxes_h[i], det_labels_h[i],
-                             self.bbox_head.num_classes)
-                for i in range(len(det_bboxes))
-            ]
+            bbox_results={}
+            bbox_results['hbb'] = [
+                    bbox2result(det_bboxes_h[i], det_labels_h[i],
+                                 self.bbox_head.num_classes)
+                    for i in range(len(det_bboxes))
+                ]
+            bbox_results['rbb'] = [
+                    rbbox2result(det_bboxes[i], det_labels[i],
+                                 self.bbox_head.num_classes)
+                    for i in range(len(det_bboxes))
+                ]
+        # 返回的是一个(list)[(list)[[bbox]...(num.class)],...,(batch)]
 
 
         # (list)[(list)[该list内一共有num_class个array，每个array对应的该类里的[bbox(4个), score]],.., (test_batchsize)]

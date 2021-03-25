@@ -26,7 +26,12 @@ def single_gpu_test(model,
         with torch.no_grad():
             result = model(return_loss=False, rescale=True, **data)
 
-        batch_size = len(result)
+        # xyh has do some modify
+        if isinstance(result, dict) == False:
+            batch_size = len(result)
+        else:
+            batch_size = int(len(result)/2)
+
         if show or out_dir:
             if batch_size == 1 and isinstance(data['img'][0], torch.Tensor):
                 img_tensor = data['img'][0]
@@ -54,10 +59,14 @@ def single_gpu_test(model,
                     out_file=out_file,
                     score_thr=show_score_thr)
         # encode mask results
-        if isinstance(result[0], tuple):
-            result = [(bbox_results, encode_mask_results(mask_results))
-                      for bbox_results, mask_results in result]
-        results.extend(result)
+        # xyh has do some modify
+        if isinstance(result, dict) == False:
+            if isinstance(result[0], tuple):
+                result = [(bbox_results, encode_mask_results(mask_results))
+                          for bbox_results, mask_results in result]
+            results.extend(result)
+        else:
+            results.extend([result])
 
         for _ in range(batch_size):
             prog_bar.update()

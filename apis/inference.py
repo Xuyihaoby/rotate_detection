@@ -193,7 +193,8 @@ def show_result_pyplot(model,
         score_thr=score_thr,
         show=True,
         wait_time=wait_time,
-        fig_size=fig_size,
+        # fig_size=fig_size,
         win_name=title,
-        bbox_color=(72, 101, 241),
-        text_color=(72, 101, 241))
+        bbox_color=(0, 0, 0),
+        text_color=(0, 0, 0),
+        out_file='./tst1.png')

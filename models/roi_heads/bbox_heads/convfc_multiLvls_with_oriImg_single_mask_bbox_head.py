@@ -460,7 +460,7 @@ class ConvFCMultiLvlsWithOriginalImageSingleMaskBBoxHead(BBoxHead):
         else:
             det_bboxes_h, det_labels_h = multiclass_nms(bboxes_h, scores_h,
                                                     cfg.score_thr, cfg.nms_h,
-                                                    cfg.max_per_img)
+                                                    cfg.max_per_img_h)
 
 
             det_bboxes, det_labels = multiclass_nms_r(bboxes, scores,
