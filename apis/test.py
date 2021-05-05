@@ -103,13 +103,25 @@ def multi_gpu_test(model, data_loader, tmpdir=None, gpu_collect=False):
         with torch.no_grad():
             result = model(return_loss=False, rescale=True, **data)
             # encode mask results
+        #     if isinstance(result[0], tuple):
+        #         result = [(bbox_results, encode_mask_results(mask_results))
+        #                   for bbox_results, mask_results in result]
+        # results.extend(result)
+        if isinstance(result, dict) == False:
             if isinstance(result[0], tuple):
                 result = [(bbox_results, encode_mask_results(mask_results))
                           for bbox_results, mask_results in result]
-        results.extend(result)
+            results.extend(result)
+        else:
+            results.extend([result])
 
         if rank == 0:
-            batch_size = len(result)
+            # xyh has do some modify
+            if isinstance(result, dict) == False:
+                batch_size = len(result)
+            else:
+                batch_size = int(len(result) / 2)
+            # batch_size = len(result)
             for _ in range(batch_size * world_size):
                 prog_bar.update()
 

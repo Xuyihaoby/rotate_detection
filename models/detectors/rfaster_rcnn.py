@@ -7,7 +7,7 @@ import numpy as np
 from ..builder import DETECTORS, build_backbone, build_head, build_neck
 from .base import BaseDetector
 
-from mmdet.core.visualization import imshow_det_rbboxes
+from mmdet.core.visualization import imshow_det_rbboxes, imshow_det_bboxes
 
 
 @DETECTORS.register_module()
@@ -290,20 +290,41 @@ class RFasterRCNN(BaseDetector):
         if out_file is not None:
             show = False
         # draw bounding boxes
-        imshow_det_rbboxes(
-            img,
-            bboxes,
-            labels,
-            class_names=self.CLASSES,
-            score_thr=score_thr,
-            bbox_color=bbox_color,
-            text_color=text_color,
-            thickness=thickness,
-            font_scale=font_scale,
-            win_name=win_name,
-            show=show,
-            wait_time=wait_time,
-            out_file=out_file)
+
+        if bboxes.shape[1] == 6:
+            imshow_det_rbboxes(
+                img,
+                bboxes,
+                labels,
+                class_names=self.CLASSES,
+                score_thr=score_thr,
+                bbox_color=bbox_color,
+                text_color=text_color,
+                thickness=thickness,
+                font_scale=font_scale,
+                win_name=win_name,
+                show=show,
+                wait_time=wait_time,
+                out_file=out_file)
+        elif bboxes.shape[1] == 5:
+            imshow_det_bboxes(
+                img,
+                bboxes,
+                labels,
+                # segms,
+                class_names=self.CLASSES,
+                score_thr=score_thr,
+                bbox_color="white",
+                text_color="black",
+                #mask_color=mask_color,
+                thickness=thickness,
+                font_scale=font_scale,
+                #font_size=font_size,
+                win_name=win_name,
+                #fig_size=fig_size,
+                show=show,
+                wait_time=wait_time,
+                out_file=out_file)
 
         if not (show or out_file):
             warnings.warn('show==False and out_file is not specified, only '

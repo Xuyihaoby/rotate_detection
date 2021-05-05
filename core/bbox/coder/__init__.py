@@ -7,9 +7,10 @@ from .tblr_bbox_coder import TBLRBBoxCoder
 from .yolo_bbox_coder import YOLOBBoxCoder
 
 from .delta_xywhtheta_bbox_coder import DeltaXYWHBThetaBoxCoder
+from .deltar_xywhtheta_bbox_coder import DeltaRXYWHThetaBBoxCoder
 
 __all__ = [
     'BaseBBoxCoder', 'PseudoBBoxCoder', 'DeltaXYWHBBoxCoder',
     'LegacyDeltaXYWHBBoxCoder', 'TBLRBBoxCoder', 'YOLOBBoxCoder',
-    'BucketingBBoxCoder', 'DeltaXYWHBThetaBoxCoder'
+    'BucketingBBoxCoder', 'DeltaXYWHBThetaBoxCoder', 'DeltaRXYWHThetaBBoxCoder'
 ]

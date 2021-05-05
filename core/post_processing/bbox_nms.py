@@ -3,6 +3,10 @@ from mmcv.ops.nms import batched_nms
 
 from mmdet.core.bbox.iou_calculators import bbox_overlaps
 
+dota_v1_cats = ('plane', 'baseball-diamond', 'bridge', 'ground-track-field', 'small-vehicle',
+                'large-vehicle', 'ship', 'tennis-court', 'basketball-court', 'storage-tank',
+                'soccer-ball-field', 'roundabout', 'harbor', 'swimming-pool', 'helicopter')  # 15
+
 
 def multiclass_nms(multi_bboxes,
                    multi_scores,
@@ -65,13 +69,51 @@ def multiclass_nms(multi_bboxes,
             return bboxes, labels, inds
         else:
             return bboxes, labels
-
+    # updated by xyh
     # TODO: add size check before feed into batched_nms
-    dets, keep = batched_nms(bboxes, scores, labels, nms_cfg)
+    if isinstance(nms_cfg['iou_threshold'], float):
+        dets, keep = batched_nms(bboxes, scores, labels, nms_cfg)
 
-    if max_num > 0:
-        dets = dets[:max_num]
-        keep = keep[:max_num]
+        if max_num > 0:
+            dets = dets[:max_num]
+            keep = keep[:max_num]
+    elif isinstance(nms_cfg['iou_threshold'], dict):
+        det = bboxes.new_ones(0, 5)
+        keeps = labels.new_ones(0).to(bboxes.device)
+        for i in range(len(dota_v1_cats)):
+            nms_cfg_ = nms_cfg.copy()
+            nms_cfg_['iou_threshold'] = nms_cfg['iou_threshold'][dota_v1_cats[i]]
+            assert isinstance(nms_cfg_['iou_threshold'], float)
+            if isinstance(max_num, int):
+                max_num_ = max_num
+            elif isinstance(max_num, dict):
+                max_num_ = max_num[dota_v1_cats[i]]
+            index = torch.nonzero(labels == i).squeeze(1).to(inds)
+            labels_ = labels[labels == i]
+            bboxes_= bboxes[labels == i]
+            scores_ = scores[labels == i]
+            if bboxes_.size(0) == 0:
+                continue
+            dets_, keep_ = batched_nms(bboxes_, scores_, labels_, nms_cfg_, class_agnostic=False)
+            _, sub_indice = dets_[:, 4].sort(descending=True)
+            dets_ = dets_[sub_indice]
+            keep_ = keep_[sub_indice]
+            # 每一张图片的每一类先进行置信度的排序
+
+            if max_num_ > dets_.size(0):
+                max_num_ = dets_.size(0)
+            dets_ = dets_[:max_num_]
+            keep_ = keep_[:max_num_]
+            det = torch.cat([det, dets_], dim=0)
+            keeps = torch.cat([keeps, index[keep_]], dim=-1)
+            # import pdb
+            # pdb.set_trace()
+            # max_num_ = torch.where(max_num_>det.size(0), det.size(0), max_num_)
+
+
+        _ , indice = det[:, 4].sort(descending=True)
+        dets = det[indice]
+        keep = keeps[indice]
 
     if return_inds:
         return dets, labels[keep], keep

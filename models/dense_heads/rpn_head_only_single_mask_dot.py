@@ -16,7 +16,7 @@ import numpy as np
 
 
 @HEADS.register_module()
-class RPNHeadSingleMaskDotDOTA(RPNTestMixin, AnchorHead):
+class RPNHeadOnlySingleMaskDot(RPNTestMixin, AnchorHead):
     """RPN head.
 
     Args:
@@ -28,7 +28,7 @@ class RPNHeadSingleMaskDotDOTA(RPNTestMixin, AnchorHead):
                  return_lvls_mask=False,
                  **kwargs):
         self.dilations = dilations
-        super(RPNHeadSingleMaskDotDOTA, self).__init__(1, in_channels, **kwargs)
+        super(RPNHeadOnlySingleMaskDot, self).__init__(1, in_channels, **kwargs)
         self.return_lvls_mask = return_lvls_mask
         self.loss_mask = build_loss(loss_mask)
 
@@ -63,8 +63,7 @@ class RPNHeadSingleMaskDotDOTA(RPNTestMixin, AnchorHead):
             kernel_size=1,
             bias=True)
 
-        self.mask_pred_conv = nn.Conv2d(self.feat_channels, 1, kernel_size=1)  ## [fg]
-        self.seg_fea_conv = nn.Conv2d(self.feat_channels, self.feat_channels, kernel_size=1)
+        self.mask_pred_conv = nn.Conv2d(self.feat_channels, 1, kernel_size=1)  ##
 
     def init_weights(self):
         """Initialize weights of the head."""
@@ -73,7 +72,7 @@ class RPNHeadSingleMaskDotDOTA(RPNTestMixin, AnchorHead):
         normal_init(self.rpn_reg, std=0.01)
 
         bias_cls = bias_init_with_prob(0.01)  # 并不能完全理解为什么要通过给定的可能值去设定偏差
-        normal_init(self.seg_fea_conv, std=0.01)
+        # normal_init(self.seg_fea_conv, std=0.01)
         normal_init(self.mask_pred_conv, std=0.01, bias=bias_cls)
 
     def forward_single(self, x, mask_):
@@ -117,12 +116,7 @@ class RPNHeadSingleMaskDotDOTA(RPNTestMixin, AnchorHead):
         #TOD : 进行调试验证
         x = self.aspp_out(x)  # [B, C, H, W]
         mask_pred = self.mask_pred_conv(x)  # [B, 1, H, W], P2-style, stride=4
-        seg_fea = self.seg_fea_conv(x)  # [B, C, H, W], P2-style, stride=4
-        # plt.imshow(mask_pred[0][0].detach().cpu().sigmoid(), cmap='gray')
-        # plt.xticks([]), plt.yticks([])  # 去除坐标轴
-        # plt.savefig("r.png",bbox_inches="tight")
-        # import pdb
-        # pdb.set_trace()
+        # seg_fea = self.seg_fea_conv(x)  # [B, C, H, W], P2-style, stride=4
         mask_lvls = [mask_pred]  ## 4
         mask_lvls.append(F.max_pool2d(mask_lvls[-1], 1, stride=2))  # 8
         mask_lvls.append(F.max_pool2d(mask_lvls[-1], 1, stride=2))  # 16
@@ -133,9 +127,9 @@ class RPNHeadSingleMaskDotDOTA(RPNTestMixin, AnchorHead):
         # 得到的结果是list
 
         if self.return_lvls_mask:
-            return rpn_cls_score, rpn_bbox_pred, mask_pred, seg_fea, mask_lvls[:4]  ## P2~P5
+            return rpn_cls_score, rpn_bbox_pred, mask_pred, mask_lvls[:4]  ## P2~P5
         else:
-            return rpn_cls_score, rpn_bbox_pred, mask_pred, seg_fea, None
+            return rpn_cls_score, rpn_bbox_pred, mask_pred, None
 
     def loss_mask_func(self, mask_pred, mask_target):
         mask_pred = F.interpolate(mask_pred, scale_factor=4, mode='bilinear', align_corners=True)
@@ -216,7 +210,6 @@ class RPNHeadSingleMaskDotDOTA(RPNTestMixin, AnchorHead):
         # self.sampling主要根据sampling loss_cls的方式来决定
         num_total_samples = (
             num_total_pos + num_total_neg if self.sampling else num_total_pos)
-
 
         # mask_targets = gt_masks.float()
         # TODO 这里缺少mask weight，但我个人目前认为影响或许不是很大
@@ -376,21 +369,20 @@ class RPNHeadSingleMaskDotDOTA(RPNTestMixin, AnchorHead):
                 losses: (dict[str, Tensor]): A dictionary of loss components.
                 proposal_list (list[Tensor]): Proposals of each image.
         """
-        rpn_cls_score, rpn_bbox_pred, rpn_mask_pred, seg_fea, mask_lvls = self(x)  # 自己调用自己
+        rpn_cls_score, rpn_bbox_pred, rpn_mask_pred, mask_lvls = self(x)  # 自己调用自己
         # outs --> tuple([[batchsize, C, H, W],..(num_lvls)],..(outputs_num_branch))
         if gt_labels is None:
             loss_inputs = (rpn_cls_score, rpn_bbox_pred, rpn_mask_pred) + (gt_bboxes, gt_masks, img_metas)
         else:
             loss_inputs = (rpn_cls_score, rpn_bbox_pred, rpn_mask_pred) + (gt_bboxes, gt_masks, img_metas, gt_labels)
         losses = self.loss(*loss_inputs, gt_bboxes_ignore=gt_bboxes_ignore)
-
         outs = (rpn_cls_score, rpn_bbox_pred)
         if proposal_cfg is None:
-            return losses, seg_fea, mask_lvls
+            return losses, mask_lvls
         else:
             proposal_list = self.get_bboxes(*outs, img_metas, cfg=proposal_cfg)
             # [[n, 5],...(num_images)]
-            return losses, proposal_list, seg_fea, mask_lvls
+            return losses, proposal_list, mask_lvls
 
     def simple_test_rpn(self, x, img_metas):
         """Test without augmentation.
@@ -403,10 +395,10 @@ class RPNHeadSingleMaskDotDOTA(RPNTestMixin, AnchorHead):
         Returns:
             list[Tensor]: Proposals of each image.
         """
-        rpn_cls_score, rpn_bbox_pred, _, seg_fea, mask_lvls = self(x)
+        rpn_cls_score, rpn_bbox_pred, _, _ = self(x)
         rpn_outs = (rpn_cls_score, rpn_bbox_pred)
         proposal_list = self.get_bboxes(*rpn_outs, img_metas)
-        return proposal_list, seg_fea, mask_lvls
+        return proposal_list
 
 
 

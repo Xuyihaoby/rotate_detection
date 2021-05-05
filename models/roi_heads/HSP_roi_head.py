@@ -268,7 +268,7 @@ class HSPRoIHead(BaseRoIHead, BBoxTestMixinDOTA, MaskTestMixin):
         det_bboxes_h, det_labels_h, det_bboxes, det_labels = self.simple_test_bboxes(
             x, img, img_metas, proposal_list, seg_fea, mask_lvls, self.test_cfg, rescale=rescale)
         # det_bboxes_h is list len=test_batchsize [n, 5] ---[x1, y1, x2, y2, score]
-        # det_bboxes_h is list len=test_batchsize [n]   n is nms = dict(max_per_img)
+        # det_labels_h is list len=test_batchsize [n]   n is nms = dict(max_per_img)
 
         if torch.onnx.is_in_onnx_export():
             if self.with_mask:

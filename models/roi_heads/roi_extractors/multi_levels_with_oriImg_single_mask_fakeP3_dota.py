@@ -10,7 +10,7 @@ from mmcv import ops
 
 
 @ROI_EXTRACTORS.register_module()
-class MultiRoIWithOriginalImageSingleMaskExtractorDOTA(BaseRoIExtractor):
+class MultiRoIWithOriginalImageSingleMaskFakeP3ExtractorDOTA(BaseRoIExtractor):
     """Extract RoI features from all level feature maps levels.
 
     This is the implementation of `A novel Region of Interest Extraction Layer
@@ -30,7 +30,7 @@ class MultiRoIWithOriginalImageSingleMaskExtractorDOTA(BaseRoIExtractor):
                  out_channels,
                  featmap_strides,
                  finest_scale=56):
-        super(MultiRoIWithOriginalImageSingleMaskExtractorDOTA, self).__init__(roi_layer, out_channels,
+        super(MultiRoIWithOriginalImageSingleMaskFakeP3ExtractorDOTA, self).__init__(roi_layer, out_channels,
                                                                                featmap_strides)
         # TODO: check
         self.finest_scale = finest_scale
@@ -59,7 +59,8 @@ class MultiRoIWithOriginalImageSingleMaskExtractorDOTA(BaseRoIExtractor):
         roi_layers = nn.ModuleList(
             [layer_cls(spatial_scale=1 / s, **cfg) for s in featmap_strides])
         # 不仅是将feature map上的进行roialign 还要在原图和mask上进行同样的操作
-        roi_layers.append(layer_cls(spatial_scale=1 / 4, **cfg))  ## for single mask like P2-style
+        # 只需要加上这一句，难道就有很好的效果了吗
+        roi_layers.append(layer_cls(spatial_scale=1 / 8, **cfg))  ## for single mask like P2-style
         roi_layers.append(layer_cls(spatial_scale=1, **cfg))  ## for original image
         return roi_layers
 
@@ -79,7 +80,6 @@ class MultiRoIWithOriginalImageSingleMaskExtractorDOTA(BaseRoIExtractor):
         else:
             mask_lvls = [None] * 6
 
-
         out_size = self.roi_layers[0].output_size
         roi_feats = [feats[0].new_zeros(rois.size(0), self.out_channels, *out_size)
                      for _ in range(len(feats) + 1)]
@@ -88,8 +88,6 @@ class MultiRoIWithOriginalImageSingleMaskExtractorDOTA(BaseRoIExtractor):
         # feats is tuple
         feats = feats + (seg_fea, img)
         roi_feats.append(feats[0].new_zeros(rois.size(0), 3, *out_size))
-
-
 
         assert len(feats) == len(mask_lvls) == len(self.featmap_strides) + 2
         num_levels = len(feats)  # len 6

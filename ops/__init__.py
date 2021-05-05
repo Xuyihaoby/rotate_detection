@@ -3,6 +3,7 @@
 
 # yapf: disable
 from .polygon_geo import polygon_iou
+from .rbbox_geo import rbbox_iou_iof
 
 from .nms import batched_rnms, rnms
 
@@ -10,5 +11,6 @@ from .nms import batched_rnms, rnms
 
 __all__ = [
     'polygon_iou',
-    "batched_rnms", "rnms"
+    "batched_rnms", "rnms",
+    "rbbox_iou_iof"
 ]

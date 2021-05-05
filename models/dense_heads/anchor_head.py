@@ -259,7 +259,7 @@ class AnchorHead(BaseDenseHead, BBoxTestMixin):
             label_weights[neg_inds] = 1.0
 
         # map up to original set of anchors
-        # 由于产生的一些不合格的anchor在该方法的开头已经被去掉，为了保证anchor的总数所以要在对应的结果后加上
+        # 由于产生的一些不合格的anchor在该方法的开头已经被去掉，为了保证anchor的总数所以要在对应的结果后加上0
         if unmap_outputs:
             num_total_anchors = flat_anchors.size(0)
             labels = unmap(

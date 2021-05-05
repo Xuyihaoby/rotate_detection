@@ -1,21 +1,21 @@
 import torch
 import torch.nn as nn
+import warnings
 import mmcv
 import numpy as np
-import warnings
-
 # from mmdet.core import bbox2result, bbox2roi, build_assigner, build_sampler
 from ..builder import DETECTORS, build_backbone, build_head, build_neck
 from .base import BaseDetector
 
-from mmdet.core.visualization import imshow_det_rbboxes
-
+from mmdet.core.visualization import imshow_det_rbboxes, imshow_det_bboxes
 
 
 @DETECTORS.register_module()
-class FeatureAttenNetAllLvlSingleMaskDOTA(BaseDetector):
-    """
-        segmentation
+class FasterRRPNRCNN(BaseDetector):
+    """Base class for two-stage detectors.
+
+    Two-stage detectors typically consisting of a region proposal network and a
+    task-specific regression head.
     """
 
     def __init__(self,
@@ -28,8 +28,9 @@ class FeatureAttenNetAllLvlSingleMaskDOTA(BaseDetector):
                  pretrained=None,
                  obb=False,
                  submission=False):
-        super(FeatureAttenNetAllLvlSingleMaskDOTA, self).__init__()
+        super(FasterRRPNRCNN, self).__init__()
         self.backbone = build_backbone(backbone)
+
         self.obb = obb
         self.submission = submission
 
@@ -72,7 +73,7 @@ class FeatureAttenNetAllLvlSingleMaskDOTA(BaseDetector):
             pretrained (str, optional): Path to pre-trained weights.
                 Defaults to None.
         """
-        super(FeatureAttenNetAllLvlSingleMaskDOTA, self).init_weights(pretrained)
+        super(FasterRRPNRCNN, self).init_weights(pretrained)
         self.backbone.init_weights(pretrained=pretrained)
         if self.with_neck:
             if isinstance(self.neck, nn.Sequential):
@@ -113,10 +114,8 @@ class FeatureAttenNetAllLvlSingleMaskDOTA(BaseDetector):
     def forward_train(self,
                       img,
                       img_metas,
-                      hor_gt_bboxes,
+                      gt_bboxes,
                       gt_labels,
-                      hor_gt_bboxes_ignore=None,
-                      gt_bboxes=None,
                       gt_bboxes_ignore=None,
                       gt_masks=None,
                       proposals=None,
@@ -158,24 +157,23 @@ class FeatureAttenNetAllLvlSingleMaskDOTA(BaseDetector):
         if self.with_rpn:
             proposal_cfg = self.train_cfg.get('rpn_proposal',
                                               self.test_cfg.rpn)
-            # note：做了修改
-            rpn_losses, proposal_list, seg_fea, mask_lvls = self.rpn_head.forward_train(
+            rpn_losses, proposal_list = self.rpn_head.forward_train(
                 x,
                 img_metas,
-                hor_gt_bboxes,
+                gt_bboxes,
                 gt_labels=None,
-                gt_masks=gt_masks,
-                gt_bboxes_ignore=hor_gt_bboxes_ignore,
+                gt_bboxes_ignore=gt_bboxes_ignore,
                 proposal_cfg=proposal_cfg)
             losses.update(rpn_losses)
 
         else:
             proposal_list = proposals
 
-        # note: 做了修改
+        import pdb
+        pdb.set_trace()
+
         roi_losses = self.roi_head.forward_train(x, img_metas, proposal_list,
-                                                 hor_gt_bboxes, gt_bboxes, gt_labels,
-                                                 img, seg_fea, mask_lvls,
+                                                 gt_bboxes, gt_labels,
                                                  gt_bboxes_ignore, gt_masks,
                                                  **kwargs)
         losses.update(roi_losses)
@@ -208,14 +206,12 @@ class FeatureAttenNetAllLvlSingleMaskDOTA(BaseDetector):
         x = self.extract_feat(img)
 
         if proposals is None:
-            proposal_list, seg_fea, mask_lvls = self.rpn_head.simple_test_rpn(x, img_metas)
+            proposal_list = self.rpn_head.simple_test_rpn(x, img_metas)
         else:
             proposal_list = proposals
 
-        # return self.roi_head.simple_test(
-        #     x, proposal_list, img_metas, rescale=rescale)
         return self.roi_head.simple_test(
-            x, img, proposal_list, seg_fea, mask_lvls, img_metas, rescale=rescale, obb=self.obb, submission=self.submission)
+            x, proposal_list, img_metas, rescale=rescale, obb=self.obb, submission=self.submission)
 
     def aug_test(self, imgs, img_metas, rescale=False):
         """Test with augmentations.
@@ -234,7 +230,7 @@ class FeatureAttenNetAllLvlSingleMaskDOTA(BaseDetector):
                     score_thr=0.3,
                     bbox_color='green',
                     text_color='green',
-                    thickness=2,
+                    thickness=1,
                     font_scale=0.5,
                     win_name='',
                     show=False,
@@ -295,20 +291,41 @@ class FeatureAttenNetAllLvlSingleMaskDOTA(BaseDetector):
         if out_file is not None:
             show = False
         # draw bounding boxes
-        imshow_det_rbboxes(
-            img,
-            bboxes,
-            labels,
-            class_names=self.CLASSES,
-            score_thr=score_thr,
-            bbox_color=bbox_color,
-            text_color=text_color,
-            thickness=thickness,
-            font_scale=font_scale,
-            win_name=win_name,
-            show=show,
-            wait_time=wait_time,
-            out_file=out_file)
+
+        if bboxes.shape[1] == 6:
+            imshow_det_rbboxes(
+                img,
+                bboxes,
+                labels,
+                class_names=self.CLASSES,
+                score_thr=score_thr,
+                bbox_color=bbox_color,
+                text_color=text_color,
+                thickness=thickness,
+                font_scale=font_scale,
+                win_name=win_name,
+                show=show,
+                wait_time=wait_time,
+                out_file=out_file)
+        elif bboxes.shape[1] == 5:
+            imshow_det_bboxes(
+                img,
+                bboxes,
+                labels,
+                # segms,
+                class_names=self.CLASSES,
+                score_thr=score_thr,
+                bbox_color="white",
+                text_color="black",
+                #mask_color=mask_color,
+                thickness=thickness,
+                font_scale=font_scale,
+                #font_size=font_size,
+                win_name=win_name,
+                #fig_size=fig_size,
+                show=show,
+                wait_time=wait_time,
+                out_file=out_file)
 
         if not (show or out_file):
             warnings.warn('show==False and out_file is not specified, only '

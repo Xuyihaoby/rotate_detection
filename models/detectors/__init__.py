@@ -28,7 +28,9 @@ from .yolo import YOLOV3
 
 from .rfaster_rcnn import RFasterRCNN
 from .feature_attention_net_all_lvl_single_mask_dota import FeatureAttenNetAllLvlSingleMaskDOTA
-from .faster_rcnn_dota import FasterRCNNNOR
+from .faster_rrpn_rcnn import FasterRRPNRCNN
+from .rfaster_rcnn_srpn_dota import RFasterRCNNSRPN
+
 
 __all__ = [
     'ATSS', 'BaseDetector', 'SingleStageDetector', 'TwoStageDetector', 'RPN',
@@ -36,5 +38,5 @@ __all__ = [
     'RetinaNet', 'FCOS', 'GridRCNN', 'MaskScoringRCNN', 'RepPointsDetector',
     'FOVEA', 'FSAF', 'NASFCOS', 'PointRend', 'GFL', 'CornerNet', 'PAA',
     'YOLOV3', 'YOLACT', 'VFNet', 'DETR', 'TridentFasterRCNN', 'RFasterRCNN',
-    'FasterRCNNNOR', 'FeatureAttenNetAllLvlSingleMaskDOTA'
+    'FasterRRPNRCNN', 'FeatureAttenNetAllLvlSingleMaskDOTA', 'RFasterRCNNSRPN'
 ]

@@ -8,6 +8,7 @@ from mmdet.ops import polygon_iou
 from .bbox_overlaps import bbox_overlaps
 from .mean_ap import average_precision, print_map_summary
 
+from mmdet.ops.rotate.rbbox_overlaps import rbbx_overlaps
 
 def rdets2points(rbboxes):
     """Convert detection results to a list of numpy arrays.
@@ -70,7 +71,11 @@ def polygon_overlaps(polygons1, polygons2):
     p1 = torch.tensor(polygons1[:, :8], dtype=torch.float32)  # in case the last element of a row is the probability
     p2 = torch.tensor(polygons2[:, :8], dtype=torch.float32)  # in case the last element of a row is the probability
     # return box_iou_rotated(p1, p2).numpy()
-    return polygon_iou(p1, p2).numpy()
+    # return polygon_iou(p1, p2).numpy()
+    print(type(p1))
+    p1_n = p1.numpy()
+    p2_n = p2.numpy()
+    return rbbx_overlaps(p1_n, p2_n).numpy()
 
 
 def rtpfp_default(det_bboxes,
@@ -200,7 +205,7 @@ def htpfp_default(det_bboxes,
     print(det_bboxes.shape)
     print(gt_bboxes.shape)
     ious = bbox_overlaps(det_bboxes, gt_bboxes)
-    print("how are you")
+    # print("how are you")
     # for each det, the max iou with all gts
     ious_max = ious.max(axis=1)
     # for each det, which gt overlaps most with it

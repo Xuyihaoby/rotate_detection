@@ -62,12 +62,12 @@ def imshow_det_rbboxes(img,
         bboxes = bboxes[inds, :]
         labels = labels[inds]
 
-    # bbox_color = color_val(bbox_color)
-    # text_color = color_val(text_color)
+    bbox_color_in = color_val(bbox_color)
+    text_color_in = color_val(text_color)
 
     for bbox, label in zip(bboxes, labels):
-        bbox_color_in = (int(bbox_color[0] + label * 15),) * 3
-        text_color_in = (int(text_color[0] + label * 15),) * 3
+        # bbox_color_in = (int(bbox_color[0] + label * 15),) * 3
+        # text_color_in = (int(text_color[0] + label * 15),) * 3
         # import pdb
         # pdb.set_trace()
         xc, yc, w, h, ag, p = bbox.tolist()

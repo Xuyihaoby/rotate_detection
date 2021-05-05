@@ -29,6 +29,8 @@ from .yolo_head import YOLOV3Head
 
 from .rrpn_head import RRPNHead
 from .rpn_head_single_mask_dot_dota import RPNHeadSingleMaskDotDOTA
+from .r2pn_head import R2PNHead
+from .rpn_head_only_single_mask_dot import RPNHeadOnlySingleMaskDot
 
 __all__ = [
     'AnchorFreeHead', 'AnchorHead', 'GuidedAnchorHead', 'FeatureAdaption',
@@ -39,5 +41,5 @@ __all__ = [
     'YOLACTSegmHead', 'YOLACTProtonet', 'YOLOV3Head', 'PAAHead',
     'SABLRetinaHead', 'CentripetalHead', 'VFNetHead', 'TransformerHead',
     'StageCascadeRPNHead', 'CascadeRPNHead',
-    'RRPNHead', 'RPNHeadSingleMaskDotDOTA'
+    'RRPNHead', 'RPNHeadSingleMaskDotDOTA', 'R2PNHead', 'RPNHeadOnlySingleMaskDot'
 ]
