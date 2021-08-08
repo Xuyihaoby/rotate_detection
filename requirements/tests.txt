@@ -9,5 +9,3 @@ pytest
 ubelt
 xdoctest>=0.10.0
 yapf
-opencv-python==4.2.0.32
-tqdm

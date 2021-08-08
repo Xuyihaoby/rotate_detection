@@ -14,7 +14,7 @@ pip3 install torch==1.7.0+cu110 torchvision==0.8.1+cu110 torchaudio==0.7.0 -f ht
 手动安装mmdetection/mmcv
 
 ```
-pip install mmcv-full==1.2.5
+pip install mmcv-full==1.2.5 -f https://download.openmmlab.com/mmcv/dist/cu110/torch1.7.0/index.html
 ```
 
 ```
