@@ -1,30 +1,6 @@
 ## Introduction
 
-MMDetection is an open source object detection toolbox based on PyTorch. It is
-a part of the OpenMMLab project developed by [Multimedia Laboratory, CUHK](http://mmlab.ie.cuhk.edu.hk/).
-
-The master branch works with **PyTorch 1.3 to 1.6**.
-The old v1.x branch works with PyTorch 1.1 to 1.4, but v2.0 is strongly recommended for faster speed, higher performance, better design and more friendly usage.
-
-### Major features
-
-- **Modular Design**
-
-  We decompose the detection framework into different components and one can easily construct a customized object detection framework by combining different modules.
-
-- **Support of multiple frameworks out of box**
-
-  The toolbox directly supports popular and contemporary detection frameworks, *e.g.* Faster RCNN, Mask RCNN, RetinaNet, etc.
-
-- **High efficiency**
-
-  All basic bbox and mask operations run on GPUs. The training speed is faster than or comparable to other codebases, including [Detectron2](https://github.com/facebookresearch/detectron2), [maskrcnn-benchmark](https://github.com/facebookresearch/maskrcnn-benchmark) and [SimpleDet](https://github.com/TuSimple/simpledet).
-
-- **State of the art**
-
-  The toolbox stems from the codebase developed by the *MMDet* team, who won [COCO Detection Challenge](http://cocodataset.org/#detection-leaderboard) in 2018, and we keep pushing it forward.
-
-Apart from MMDetection, we also released a library [mmcv](https://github.com/open-mmlab/mmcv) for computer vision research, which is heavily depended on by this toolbox.
+MMDetection is an open source object detection toolbox based on PyTorch.
 
 ## License
 
@@ -33,8 +9,6 @@ This project is released under the [Apache 2.0 license](LICENSE).
 ## Changelog
 
 v2.8.0 was released in 04/01/2021.
-Please refer to [changelog.md](docs/changelog.md) for details and release history.
-A comparison between v1.x and v2.0 codebases can be found in [compatibility.md](docs/compatibility.md).
 
 ## Benchmark and model zoo
 
@@ -50,54 +24,10 @@ Supported backbones:
 - [x] Res2Net
 - [x] ResNeSt
 
-Supported methods:
+Supported methods（rotate）:
 
-- [x] [RPN](configs/rpn)
-- [x] [Fast R-CNN](configs/fast_rcnn)
 - [x] [Faster R-CNN](configs/faster_rcnn)
-- [x] [Mask R-CNN](configs/mask_rcnn)
-- [x] [Cascade R-CNN](configs/cascade_rcnn)
-- [x] [Cascade Mask R-CNN](configs/cascade_rcnn)
-- [x] [SSD](configs/ssd)
-- [x] [RetinaNet](configs/retinanet)
-- [x] [GHM](configs/ghm)
-- [x] [Mask Scoring R-CNN](configs/ms_rcnn)
-- [x] [Double-Head R-CNN](configs/double_heads)
-- [x] [Hybrid Task Cascade](configs/htc)
-- [x] [Libra R-CNN](configs/libra_rcnn)
-- [x] [Guided Anchoring](configs/guided_anchoring)
-- [x] [FCOS](configs/fcos)
-- [x] [RepPoints](configs/reppoints)
-- [x] [Foveabox](configs/foveabox)
-- [x] [FreeAnchor](configs/free_anchor)
-- [x] [NAS-FPN](configs/nas_fpn)
-- [x] [ATSS](configs/atss)
-- [x] [FSAF](configs/fsaf)
-- [x] [PAFPN](configs/pafpn)
-- [x] [Dynamic R-CNN](configs/dynamic_rcnn)
-- [x] [PointRend](configs/point_rend)
-- [x] [CARAFE](configs/carafe/README.md)
-- [x] [DCNv2](configs/dcn/README.md)
-- [x] [Group Normalization](configs/gn/README.md)
-- [x] [Weight Standardization](configs/gn+ws/README.md)
-- [x] [OHEM](configs/faster_rcnn/faster_rcnn_r50_fpn_ohem_1x_coco.py)
-- [x] [Soft-NMS](configs/faster_rcnn/faster_rcnn_r50_fpn_soft_nms_1x_coco.py)
-- [x] [Generalized Attention](configs/empirical_attention/README.md)
-- [x] [GCNet](configs/gcnet/README.md)
-- [x] [Mixed Precision (FP16) Training](configs/fp16/README.md)
-- [x] [InstaBoost](configs/instaboost/README.md)
-- [x] [GRoIE](configs/groie/README.md)
-- [x] [DetectoRS](configs/detectors/README.md)
-- [x] [Generalized Focal Loss](configs/gfl/README.md)
-- [x] [CornerNet](configs/cornernet/README.md)
-- [x] [Side-Aware Boundary Localization](configs/sabl/README.md)
-- [x] [YOLOv3](configs/yolo/README.md)
-- [x] [PAA](configs/paa/README.md)
-- [x] [YOLACT](configs/yolact/README.md)
-- [x] [CentripetalNet](configs/centripetalnet/README.md)
-- [x] [VFNet](configs/vfnet/README.md)
-- [x] [DETR](configs/detr/README.md)
-- [x] [CascadeRPN](configs/cascade_rpn/README.md)
+- [x] HSP
 
 Some other methods are also supported in [projects using MMDetection](./docs/projects.md).
 
@@ -123,9 +53,18 @@ pip install mmcv-full==1.2.5 -f https://download.openmmlab.com/mmcv/dist/cu110/t
 ```
 
 ```
-cd mmdetection
+cd rotate_detection
 pip install -r requirements/build.txt
 pip install -v -e . # or "python setup.py develop"
+```
+
+Install DOTA_devkit
+
+```
+cd DOTA_devkit
+sudo apt-get install swig
+swig -c++ -python polyiou.i
+python setup.py build_ext --inplace
 ```
 
 

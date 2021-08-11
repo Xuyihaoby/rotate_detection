@@ -1,5 +1,6 @@
 # These must be installed before building mmdetection
 cython
 numpy
-python-contrib-opencv==4.2.0.32
+opencv-contrib-python==4.2.0.32
 tqdm
+shapely
