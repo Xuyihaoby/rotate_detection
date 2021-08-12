@@ -18,7 +18,7 @@ pip install mmcv-full==1.2.5 -f https://download.openmmlab.com/mmcv/dist/cu110/t
 ```
 
 ```
-cd mmdetection
+cd rotate_detection
 pip install -r requirements/build.txt
 pip install -v -e . # or "python setup.py develop"
 ```

@@ -271,7 +271,7 @@ class DOTADatasetV2(CustomDataset):
                     f.write(dota_results[cls])
         return dota_results
 
-    def format_results(self, results, submission_dir=None, **kwargs):
+    def format_results(self, results, submission_dir=None, type='all', **kwargs):
         """Format the results to submission text (standard format for DOTA evaluation).
 
         Args:
@@ -303,10 +303,18 @@ class DOTADatasetV2(CustomDataset):
             submission_dir = tempfile.TemporaryDirectory()
         else:
             tmp_dir = None
-        print('begin rotate bbox format')
-        result_files_r = self._results2submission(results_r, submission_dir)
-        print('rotate bbox complete and horizon bbox begin')
-        result_files_h = self._results2submission_h(results_h, submission_dir)
-        print('all done')
-        return result_files_r, tmp_dir
+        if type == 'all':
+            print('begin rotate bbox format')
+            result_files_r = self._results2submission(results_r, submission_dir)
+            print('rotate bbox complete and horizon bbox begin')
+            result_files_h = self._results2submission_h(results_h, submission_dir)
+            print('all done')
+        if type == 'OBB':
+            print('only rotate')
+            result_files_r = self._results2submission(results_r, submission_dir)
+            print('done')
+        if type == 'HBB':
+            print('rotate bbox complete and horizon bbox begin')
+            result_files_h = self._results2submission_h(results_h, submission_dir)
+            print('done')
 
