@@ -15,7 +15,10 @@ import os
 # import cPickle
 import numpy as np
 import matplotlib.pyplot as plt
-import polyiou
+try:
+    import polyiou
+except:
+    from DOTA_devkit import polyiou
 from mmcv.utils import print_log
 from terminaltables import AsciiTable
 from mmcv.utils import print_log
@@ -128,8 +131,11 @@ def voc_eval(detpath,
     #   os.mkdir(cachedir)
     # cachefile = os.path.join(cachedir, 'annots.pkl')
     # read list of images
-    with open(imagesetfile, 'r') as f:
-        lines = f.readlines()
+    if isinstance(imagesetfile, str):
+        with open(imagesetfile, 'r') as f:
+            lines = f.readlines()
+    else:
+        lines = imagesetfile
     imagenames = [x.strip() for x in lines]
     # 得到了测试用图片的名字
     # print('imagenames: ', imagenames)
@@ -156,7 +162,6 @@ def voc_eval(detpath,
     # extract gt objects for this class
     class_recs = {}
     npos = 0
-
     # 在这个for循环内，将给每一张图片的bbox带上标注位
     for imagename in imagenames:
         R = [obj for obj in recs[imagename] if obj['name'] == classname]
@@ -331,18 +336,18 @@ def main():
         classaps.append(ap)
         # pdb.set_trace()
         # update by xyh
-        row_data = [
-            classname, npos, num_dets,
-            f'{rec[-1]:.3f}', f'{ap:.3f}'
-        ]
-        table_data.append(row_data)
+        # row_data = [
+        #     classname, npos, num_dets,
+        #     f'{rec[-1]:.3f}', f'{ap:.3f}'
+        # ]
+        # table_data.append(row_data)
 
         # umcomment to show p-r curve of each category
-        plt.xlabel('recall')
-        plt.ylabel('precision')
-        plt.title('p-r curve')
-        plt.plot(rec, prec, label=classname)
-        plt.legend()
+        # plt.xlabel('recall')
+        # plt.ylabel('precision')
+        # plt.title('p-r curve')
+        # plt.plot(rec, prec, label=classname)
+        # plt.legend()
     # plt.show()
     # plt.savefig('raaaaa.png')
 

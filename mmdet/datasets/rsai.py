@@ -266,18 +266,12 @@ class RSAI(CustomDataset):
                     f.write(dota_results[cls])
         return dota_results
 
-    def format_results(self, results, submission_dir=None, **kwargs):
+    def format_results(self, results, submission_dir=None, type='all', **kwargs):
         """Format the results to submission text (standard format for DOTA evaluation).
-
         Args:
-            results (list): Testing results of the dataset.
+            results (list/dict): Testing results of the dataset.
             submission_dir (str | None): The folder that contains submission files.
                 If not specified, a temp folder will be created. Default: None.
-
-        Returns:
-            tuple: (result_files, tmp_dir), result_files is a dict containing
-                the json filepaths, tmp_dir is the temporal directory created
-                for saving json files when submission_dir is not specified.
         """
         # results (list)[(list)[[bbox],....(classnum)],...,numimg]
         assert isinstance(results, list), 'results must be a list'
@@ -285,6 +279,10 @@ class RSAI(CustomDataset):
             assert len(results) == len(self), (
                 'The length of results is not equal to the dataset len: {} != {}'.
                 format(len(results), len(self)))
+            if results[0][0].shape[-1] == 5:
+                results_h = results
+            if results[0][0].shape[-1] == 6:
+                results_r = results
         if isinstance(results[0], dict):
             assert len(results) == len(self), (
                 'The length of results is not equal to the dataset len: {} != {}'.
@@ -298,10 +296,18 @@ class RSAI(CustomDataset):
             submission_dir = tempfile.TemporaryDirectory()
         else:
             tmp_dir = None
-        print('begin rotate bbox format')
-        result_files_r = self._results2submission(results_r, submission_dir)
-        print('rotate bbox complete and horizon bbox begin')
-        result_files_h = self._results2submission_h(results_h, submission_dir)
-        print('all done')
-        return result_files_r, tmp_dir
+        if type == 'all':
+            print('begin rotate bbox format')
+            result_files_r = self._results2submission(results_r, submission_dir)
+            print('rotate bbox complete and horizon bbox begin')
+            result_files_h = self._results2submission_h(results_h, submission_dir)
+            print('all done')
+        if type == 'OBB':
+            print('only rotate')
+            result_files_r = self._results2submission(results_r, submission_dir)
+            print('done')
+        if type == 'HBB':
+            print('rotate bbox complete and horizon bbox begin')
+            result_files_h = self._results2submission_h(results_h, submission_dir)
+            print('done')
 

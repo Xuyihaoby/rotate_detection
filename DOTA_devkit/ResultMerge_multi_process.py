@@ -239,6 +239,7 @@ def mergebypoly_multiprocess(srcpath, dstpath, nms_type='py_cpu_nms_poly_fast', 
                            dstpath,
                            obb_hybrid_NMS_partial, h_thresh)
 if __name__ == '__main__':
-    mergebypoly_multiprocess(r'/data/xuyihao/mmdetection/submisssion_test_r', r'/data/xuyihao/mmdetection/submisssion_r101_r_nms')
-    mergebyrec(r'/data/xuyihao/mmdetection/submisssion_test_h',
-               r'/data/xuyihao/mmdetection/submisssion_r101_h_nms')
+    mergebypoly_multiprocess('/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/rsai/faster_rcnn_r50_rr/submission_test_r',\
+                             '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/rsai/faster_rcnn_r50_rr/submission_test_r_nms')
+    # mergebyrec(r'/data/xuyihao/mmdetection/submisssion_test_h',
+    #            r'/data/xuyihao/mmdetection/submisssion_r101_h_nms')

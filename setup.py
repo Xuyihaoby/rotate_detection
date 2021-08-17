@@ -23,7 +23,6 @@ def get_version():
 
 
 def make_cuda_ext(name, module, sources, sources_cuda=[]):
-
     define_macros = []
     extra_compile_args = {'cxx': []}
 
@@ -122,30 +121,7 @@ def parse_requirements(fname='requirements.txt', with_version=True):
     return packages
 
 
-
 if __name__ == '__main__':
-    # setup(ext_modules=[
-    #         make_cuda_ext(
-    #             name='rnms_ext',
-    #             module='mmdet.ops.nms',
-    #             sources=['src/rnms_ext.cpp', 'src/rcpu/rnms_cpu.cpp'],
-    #             sources_cuda=[
-    #                 'src/rcuda/rnms_cuda.cpp', 'src/rcuda/rnms_kernel.cu'
-    #             ]),
-    #         make_cuda_ext(
-    #             name='rbbox_geo_cuda',
-    #             module='mmdet.ops.rbbox_geo',
-    #             sources=[],
-    #             sources_cuda=[
-    #                 'src/rbbox_geo_cuda.cpp', 'src/rbbox_geo_kernel.cu'
-    #             ]),
-    #         make_cuda_ext(
-    #             name='polygon_geo_cpu',
-    #             module='mmdet.ops.polygon_geo',
-    #             sources=['src/polygon_geo_cpu.cpp'])
-    #     ],
-    #     cmdclass={'build_ext': BuildExtension},
-    #     zip_safe=False)
     setup(
         name='mmdet',
         version=get_version(),

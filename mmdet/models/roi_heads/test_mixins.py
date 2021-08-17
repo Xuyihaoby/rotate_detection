@@ -270,7 +270,7 @@ class MaskTestMixin(object):
         return segm_result
 
 
-class BBoxTestMixinDOTA(object):
+class RBBoxTestMixin(object):
 
     def simple_test_bboxes(self,
                            x,

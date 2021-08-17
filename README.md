@@ -6,10 +6,6 @@ MMDetection is an open source object detection toolbox based on PyTorch.
 
 This project is released under the [Apache 2.0 license](LICENSE).
 
-## Changelog
-
-v2.8.0 was released in 04/01/2021.
-
 ## Benchmark and model zoo
 
 Results and models are available in the [model zoo](docs/model_zoo.md).
@@ -66,8 +62,17 @@ sudo apt-get install swig
 swig -c++ -python polyiou.i
 python setup.py build_ext --inplace
 ```
-
-
+## Parse result
+```
+python tools/parse_results.py {configs} {pkl} {nms}
+                              --[type]
+                              --[eval]
+```
+* configs:the model config you design
+* pkl:model inference result
+* nms:whether to merge result [Y/N]
+* type:if you want to merge, merge rotate or horizon [HBB/OBB/ALL]
+* eval: whether to eval result
 
 ## Contributing
 

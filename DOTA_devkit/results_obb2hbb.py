@@ -41,6 +41,6 @@ def OBB2HBB(srcpath, dstpath):
 if __name__ == '__main__':
     # args = parse_args()
     # obb_results_path = '/data/xuyihao/mmdetection/mycode/11epoch_HSP_R50_fakep3_7ratio_lr005_r'
-    obb_results_path = './lala'
-    hbb_results_path = '/data/xuyihao/mmdetection/mycode/submisssion_HSP_test'
+    obb_results_path = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/DOTA2_0/faster_rcnn_r50_1x/submission_test_r_nms'
+    hbb_results_path = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/DOTA2_0/faster_rcnn_r50_1x/submission_test_h'
     OBB2HBB(obb_results_path, hbb_results_path)

@@ -95,8 +95,8 @@ class splitbase():
         self.__dict__.update(state)
 
 if __name__ == '__main__':
-    split = splitbase(r'/data/xuyihao/mmdetection/dataset/DOTA-v2.0/test/images',
-                      r'/data/xuyihao/mmdetection/dataset/DOTA-v2.0/testallsplit/images',
+    split = splitbase(r'/data1/public_dataset/DOTA/DOTA1_0/origin/test/images',
+                      r'/data1/public_dataset/DOTA/DOTA1_0/split/testms/images',
                       num_process=32)
     split.splitdata(0.5)
     split.splitdata(1.5)

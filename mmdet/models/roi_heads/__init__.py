@@ -19,6 +19,9 @@ from .trident_roi_head import TridentRoIHead
 from .rstandard_roi_head import RStandardRoIHead
 from .HSP_roi_head import HSPRoIHead
 from .rstandard_roi_head_wo_hor import RStandardRoIHeadWOHor
+from .rcascade_roi_head import RCascadeRoIHead
+
+
 __all__ = [
     'BaseRoIHead', 'CascadeRoIHead', 'DoubleHeadRoIHead', 'MaskScoringRoIHead',
     'HybridTaskCascadeRoIHead', 'GridRoIHead', 'ResLayer', 'BBoxHead',
@@ -27,5 +30,5 @@ __all__ = [
     'HTCMaskHead', 'FusedSemanticHead', 'GridHead', 'MaskIoUHead',
     'SingleRoIExtractor', 'PISARoIHead', 'PointRendRoIHead', 'MaskPointHead',
     'CoarseMaskHead', 'DynamicRoIHead', 'TridentRoIHead', 'RStandardRoIHead',
-    'HSPRoIHead'
+    'HSPRoIHead', 'RCascadeRoIHead'
 ]

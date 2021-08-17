@@ -299,153 +299,8 @@ if __name__ == '__main__':
     # elapsed = (time.clock() - start)
     # print("Time used:", elapsed)
 
-    # split = splitbase(r'/data/dota2/train',
-    #                    r'/data/dota2/train1024',
-    #                   gap=200,
-    #                   subsize=1024,
-    #                   num_process=32
-    #                   )
-    # split_train = splitbase(r'/data0/data_dj/dota2/train',
-    #                   r'/data0/data_dj/dota2/trainval1024_ms',
-    #                     gap=200,
-    #                     subsize=1024,
-    #                     num_process=30)
-    # split_train.splitdata(1.5)
-    # split_train.splitdata(0.5)
-    #
-    # split_val = splitbase(r'/data0/data_dj/dota2/val',
-    #                       r'/data0/data_dj/dota2/trainval1024_ms',
-    #                       gap=200,
-    #                       subsize=1024,
-    #                       num_process=30)
-    # split_val.splitdata(1.5)
-    # split_val.splitdata(0.5)
-
-    # split = splitbase(r'/home/dingjian/project/dota2/test-c1',
-    #                   r'/home/dingjian/project/dota2/test-c1-1024',
-    #                   gap=512,
-    #                   subsize=1024,
-    #                   num_process=16)
-    # split.splitdata(1)
-
-    # split_train = splitbase(r'/data/mmlab-dota1.5/train',
-    #                   r'/data/mmlab-dota1.5/split-1024/trainval1024_ms',
-    #                     gap=200,
-    #                     subsize=1024,
-    #                     num_process=40)
-    # split_train.splitdata(1.5)
-    # split_train.splitdata(0.5)
-    #
-    # split_val = splitbase(r'/data/mmlab-dota1.5/val',
-    #                       r'/data/mmlab-dota1.5/split-1024/trainval1024_ms',
-    #                       gap=200,
-    #                       subsize=1024,
-    #                       num_process=40)
-    # split_val.splitdata(1.5)
-    # split_val.splitdata(0.5)
-    #
-    # split_train_single = splitbase('/data/mmlab-dota1.5/train',
-    #                                '/data/mmlab-dota1.5/split-1024/trainval1024',
-    #                                gap=200,
-    #                                subsize=1024,
-    #                                num_process=40)
-    # split_train_single.splitdata(1)
-    #
-    # split_val_single = splitbase('/data/mmlab-dota1.5/val',
-    #                              '/data/mmlab-dota1.5/split-1024/trainval1024',
-    #                              gap=200,
-    #                              subsize=1024,
-    #                              num_process=40)
-    # split_val_single.splitdata(1)
-
-    # dota-1.5 1024 split new
-    # split_train_single = splitbase('/data/mmlab-dota1.5/train',
-    #                                '/data/mmlab-dota1.5/split-1024_v2/trainval1024',
-    #                                gap=512,
-    #                                subsize=1024,
-    #                                num_process=40)
-    # split_train_single.splitdata(1)
-    #
-    # split_train_ms = splitbase('/data/mmlab-dota1.5/train',
-    #                                '/data/mmlab-dota1.5/split-1024_v2/trainval1024_ms',
-    #                                gap=512,
-    #                                subsize=1024,
-    #                                num_process=40)
-    # split_train_ms.splitdata(0.5)
-    # split_train_ms.splitdata(1.5)
-    #
-    # # val
-    # split_val_single = splitbase('/data/mmlab-dota1.5/val',
-    #                                '/data/mmlab-dota1.5/split-1024_v2/trainval1024',
-    #                                gap=512,
-    #                                subsize=1024,
-    #                                num_process=40)
-    # split_val_single.splitdata(1)
-    #
-    # split_val_ms = splitbase('/data/mmlab-dota1.5/val',
-    #                            '/data/mmlab-dota1.5/split-1024_v2/trainval1024_ms',
-    #                            gap=512,
-    #                            subsize=1024,
-    #                            num_process=40)
-    # split_val_ms.splitdata(0.5)
-    # split_val_ms.splitdata(1.5)
-    #
-    # # test
-    # split_test_single = splitbase('/data/mmlab-dota1.5/test',
-    #                                '/data/mmlab-dota1.5/split-1024_v2/test1024',
-    #                                gap=512,
-    #                                subsize=1024,
-    #                                num_process=40)
-    # split_test_single.splitdata(1)
-    #
-    # split_test_ms = splitbase('/data/mmlab-dota1.5/test',
-    #                            '/data/mmlab-dota1.5/split-1024_v2/test1024_ms',
-    #                            gap=512,
-    #                            subsize=1024,
-    #                            num_process=40)
-    # split_test_ms.splitdata(0.5)
-    # split_test_ms.splitdata(1.5)
-
-    # split_train_single = splitbase(r'/data/data_dj/dota2/train',
-    #                                r'/data/data_dj/dota2/split-1024-v2/trainval1024',
-    #                                gap=512,
-    #                                subsize=1024,
-    #                                num_process=40)
-    # split_train_single.splitdata(1)
-    #
-    # split_train_ms = splitbase(r'/data/data_dj/dota2/train',
-    #                            r'/data/data_dj/dota2/split-1024-v2/trainval1024_ms',
-    #                            gap=512,
-    #                            subsize=1024,
-    #                            num_process=40)
-    # split_train_ms.splitdata(0.5)
-    # split_train_ms.splitdata(1.5)
-    #
-    #
-    # split_val_single = splitbase(r'/data/data_dj/dota2/val',
-    #                                r'/data/data_dj/dota2/split-1024-v2/trainval1024',
-    #                                gap=512,
-    #                                subsize=1024,
-    #                                num_process=40)
-    # split_val_single.splitdata(1)
-    #
-    # split_val_ms = splitbase(r'/data/data_dj/dota2/val',
-    #                            r'/data/data_dj/dota2/split-1024-v2/trainval1024_ms',
-    #                            gap=512,
-    #                            subsize=1024,
-    #                            num_process=40)
-    # split_val_ms.splitdata(0.5)
-    # split_val_ms.splitdata(1.5)
-
-    # split_test_single = splitbase(r'/home/dingjian/project/dota2/test-dev',
-    #                               r'/home/dingjian/workfs/dota2_v2/split-1024-v2/test-dev1024',
-    #                               gap=512,
-    #                               subsize=1024,
-    #                               num_process=16)
-    # split_test_single.splitdata(1)
-
-    split_train_ms = splitbase(r'/data/xuyihao/mmdetection/dataset/competetion/data',
-                              r'/data/xuyihao/mmdetection/dataset/competetion/trainallsplit',
+    split_train_ms = splitbase(r'/data1/public_dataset/rsai/origin/train',
+                              r'/data1/public_dataset/rsai/split/all',
                               gap=512,
                               subsize=1024,
                               num_process=40)
@@ -453,28 +308,12 @@ if __name__ == '__main__':
     split_train_ms.splitdata(0.5)
     split_train_ms.splitdata(1.5)
 
-    # split_val_ms = splitbase(r'/data/xuyihao/mmdetection/dataset/DOTA-v2.0/val',
-    #                           r'/data/xuyihao/mmdetection/dataset/DOTA-v2.0/trainallsplit',
-    #                           gap=512,
-    #                           subsize=1024,
-    #                           num_process=40)
-    # split_val_ms.splitdata(1)
-    # split_val_ms.splitdata(0.5)
-    # split_val_ms.splitdata(1.5)
+    split_val_ms = splitbase(r'/data1/public_dataset/rsai/origin/val',
+                              r'/data1/public_dataset/rsai/split/all',
+                              gap=512,
+                              subsize=1024,
+                              num_process=40)
+    split_val_ms.splitdata(1)
+    split_val_ms.splitdata(0.5)
+    split_val_ms.splitdata(1.5)
 
-    # split_test_ms = splitbase('/data/xuyihao/mmdetection/dataset/DOTA-v2.0/test',
-    #                            '/data/xuyihao/mmdetection/dataset/DOTA-v2.0/testallsplit',
-    #                            gap=512,
-    #                            subsize=1024,
-    #                            num_process=40)
-    # split_test_ms.splitdata(0.5)
-    # split_test_ms.splitdata(1)
-    # split_test_ms.splitdata(1.5)
-    # split_val_ms = splitbase(r'/data/xuyihao/mmdetection/dataset/DOTA/val',
-    #                          r'/data/xuyihao/mmdetection/dataset/DOTA/train_single_rotate',
-    #                          gap=512,
-    #                          subsize=1024,
-    #                          num_process=40)
-    # split_val_ms.splitdata(1)
-    # split_val_ms.splitdata(0.5)
-    # split_val_ms.splitdata(1.5)

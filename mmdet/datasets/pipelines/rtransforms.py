@@ -96,7 +96,8 @@ class RRandomFlip(object):
         self.direction = direction
 
         if isinstance(flip_ratio, list):
-            assert len(self.flip_ratio) == len(self.direction)
+            assert len(self.flip_ratio) == len(self.direction), \
+                'ratio len must equal diretion len'
 
     def bbox_flip(self, bboxes, img_shape, direction):
         """Flip bboxes horizontally or vertically.

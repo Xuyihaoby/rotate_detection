@@ -1,7 +1,7 @@
 model = dict(
     type='RFasterRCNN',
     obb=True,
-    submission=True,
+    submission=False,
     pretrained='torchvision://resnet50',
     backbone=dict(
         type='ResNet',
@@ -133,22 +133,21 @@ lr_config = dict(
 total_epochs = 12
 
 dataset_type = 'RSAI'
-data_root = '/data1/public_dataset/rsai/split/'
-trainsplit_ann_folder = 'labelTxt'
-trainsplit_img_folder = 'images'
-valsplit_ann_folder = 'labelTxt'
-valsplit_img_folder = 'images'
-val_ann_folder = 'labelTxt'
-val_img_folder = 'images'
-test_img_folder = 'images'
-example_ann_folder = 'labelTxt'
-example_img_folder = 'images'
+data_root = '/data1/public_dataset/rsai/'
+trainsplit_ann_folder = 'split/train/labelTxt'
+trainsplit_img_folder = 'split/train/images'
+valsplit_ann_folder = 'split/val/labelTxt'
+valsplit_img_folder = 'split/val/images'
+val_ann_folder = 'origin/val/labelTxt' # change the path to validate
+val_img_folder = 'origin/val/images'
+test_img_folder = 'origin/val/images' # # change the path to validate
 
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='RLoadAnnotations', with_bbox=True, with_mask=True),
+    dict(type='Randomrotate', border_value=0, rotate_mode='value', rotate_ratio=0.5, rotate_values=[30, 60, 90, 120, 150]),
     dict(type='RResize', img_scale=(1024, 1024)),
     dict(type='RRandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
@@ -182,8 +181,8 @@ data = dict(
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
-        ann_file=data_root + valsplit_ann_folder,
-        img_prefix=data_root + valsplit_img_folder,
+        ann_file=data_root + val_ann_folder,
+        img_prefix=data_root + val_img_folder,
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
@@ -207,4 +206,4 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/data/xuyihao/mmdetection/configs/rsai/work_dir/faster_rcnn_r50_fpn_1x'
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/rsai/faster_rcnn_r50_rr'

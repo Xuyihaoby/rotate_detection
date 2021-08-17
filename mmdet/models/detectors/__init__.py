@@ -28,8 +28,9 @@ from .yolo import YOLOV3
 
 from .rfaster_rcnn import RFasterRCNN
 from .feature_attention_net_all_lvl_single_mask_dota import FeatureAttenNetAllLvlSingleMaskDOTA
-from .faster_rrpn_rcnn import FasterRRPNRCNN
-from .rfaster_rcnn_srpn_dota import RFasterRCNNSRPN
+from .faster_rrpn_rcnn import FasterRRPNRCNN  # 中途搁置，用于进行任意方向锚框
+from .rfaster_rcnn_srpn_dota import RFasterRCNNSRPN  # HSP的ablation study
+from .rcascade_rcnn import RCascadeRCNN
 
 
 __all__ = [
@@ -37,6 +38,8 @@ __all__ = [
     'FastRCNN', 'FasterRCNN', 'MaskRCNN', 'CascadeRCNN', 'HybridTaskCascade',
     'RetinaNet', 'FCOS', 'GridRCNN', 'MaskScoringRCNN', 'RepPointsDetector',
     'FOVEA', 'FSAF', 'NASFCOS', 'PointRend', 'GFL', 'CornerNet', 'PAA',
-    'YOLOV3', 'YOLACT', 'VFNet', 'DETR', 'TridentFasterRCNN', 'RFasterRCNN',
+    'YOLOV3', 'YOLACT', 'VFNet', 'DETR', 'TridentFasterRCNN',
+
+    'RFasterRCNN', 'RCascadeRCNN',
     'FasterRRPNRCNN', 'FeatureAttenNetAllLvlSingleMaskDOTA', 'RFasterRCNNSRPN'
 ]
