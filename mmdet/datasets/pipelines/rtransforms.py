@@ -2,9 +2,10 @@ from ..builder import PIPELINES
 from .transforms import Resize, RandomFlip, RandomCrop
 import numpy as np
 import mmcv
-from  mmdet.core.visualization import imshow_det_bboxes
+from mmdet.core.visualization import imshow_det_bboxes
 from mmdet.core.visualization import imshow_det_rbboxes
 import time
+
 
 @PIPELINES.register_module()
 class RResize(Resize):
@@ -71,6 +72,7 @@ class RRandomFlip(object):
     Args:
         flip_ratio (float, optional): The flipping probability.
     """
+
     def __init__(self, flip_ratio=None, direction='horizontal'):
         if isinstance(flip_ratio, list):
             assert mmcv.is_list_of(flip_ratio, float)
@@ -170,7 +172,6 @@ class RRandomFlip(object):
                 aug_dict[direction_item] = True if np.random.rand() < self.flip_ratio[index] else False
                 index += 1
 
-
             #  确定随机翻转的方向
             cur_dir = []
 
@@ -212,7 +213,10 @@ class RRandomFlip(object):
                         results[key], direction=direction)
         # imshow_det_bboxes(results['img'], results['hor_gt_bboxes'], results['gt_labels'], show=False,
         #                   out_file='./images'+results['filename'])
-        # if results['rotate']:
-        #     imshow_det_rbboxes(results['img'], results['gt_bboxes'], results['gt_labels'], show=False, out_file='./images/' + str(time.time())+'.png')
-        #     imshow_det_bboxes(results['img'], results['hor_gt_bboxes'], results['gt_labels'], show=False, out_file='./images/' + str(time.time())+results['img_info']['filename'])
+        if results['rotate']:
+            # imgname = results['img_info']['filename']
+            imshow_det_rbboxes(results['img'], results['gt_bboxes'], results['gt_labels'], show=False, \
+                               out_file='/home/lzy/xyh/Netmodel/s2anet/imgaes/' + str(int(time.time() % 1000)) + '.png')
+            # imshow_det_bboxes(results['img'], results['hor_gt_bboxes'], results['gt_labels'], show=False, \
+            #                   out_file='/home/lzy/xyh/Netmodel/s2anet/imgaesh/' + imgname)
         return results

@@ -52,6 +52,9 @@ def imshow_det_rbboxes(img,
     assert bboxes.ndim == 2
     assert labels.ndim == 1
     assert bboxes.shape[0] == labels.shape[0]
+    # if bboxes.shape[0] != labels.shape[0]:
+    #     import pdb
+    #     pdb.set_trace()
     assert bboxes.shape[1] == 5 or bboxes.shape[1] == 6
     img = imread(img).copy()
 

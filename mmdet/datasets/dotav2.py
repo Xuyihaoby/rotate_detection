@@ -106,12 +106,12 @@ class DOTADatasetV2(CustomDataset):
                         difficulty = int(bbox_info[9])
                         label = cls_map[cls_name]
 
-                        if difficulty >= self.difficulty_thresh:
+                        if difficulty > self.difficulty_thresh:
                             gt_bboxes_ignore.append([x, y, w, h, a])
                             gt_labels_ignore.append(label)
                             gt_polygons_ignore.append(bbox)
                             hor_gt_boxes_ignore.append([x1, y1, x2, y2])
-                        else:
+                        elif difficulty <= 1:
                             gt_bboxes.append([x, y, w, h, a])
                             gt_labels.append(label)
                             gt_polygons.append(bbox)

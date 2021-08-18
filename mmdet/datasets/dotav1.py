@@ -108,7 +108,7 @@ class DOTADatasetV1(CustomDataset):
                             gt_labels_ignore.append(label)
                             gt_polygons_ignore.append(bbox)
                             hor_gt_boxes_ignore.append([x1, y1, x2, y2])
-                        else:
+                        elif difficulty <= 1:
                             gt_bboxes.append([x, y, w, h, a])
                             gt_labels.append(label)
                             gt_polygons.append(bbox)

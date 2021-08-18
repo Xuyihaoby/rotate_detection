@@ -134,20 +134,24 @@ total_epochs = 12
 
 dataset_type = 'RSAI'
 data_root = '/data1/public_dataset/rsai/'
-trainsplit_ann_folder = 'split/train/labelTxt'
-trainsplit_img_folder = 'split/train/images'
+trainsplit_ann_folder = 'example/labelTxt'
+# trainsplit_ann_folder = 'split/train/labelTxt'
+trainsplit_img_folder = 'example/images'
+# trainsplit_img_folder = 'split/train/images'
 valsplit_ann_folder = 'split/val/labelTxt'
 valsplit_img_folder = 'split/val/images'
-val_ann_folder = 'origin/val/labelTxt' # change the path to validate
+val_ann_folder = 'origin/val/labelTxt'  # change the path to validate
 val_img_folder = 'origin/val/images'
-test_img_folder = 'origin/val/images' # # change the path to validate
+test_img_folder = 'origin/val/images'  # # change the path to validate
 
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='RLoadAnnotations', with_bbox=True, with_mask=True),
-    dict(type='Randomrotate', border_value=0, rotate_mode='value', rotate_ratio=0.5, rotate_values=[30, 60, 90, 120, 150]),
+    dict(type='RLoadAnnotations', with_bbox=True, with_mask=False),
+    dict(type='Randomrotate', border_value=0, rotate_mode='value', rotate_ratio=0.5,
+         rotate_values=[30, 60, 90, 120, 150],
+         auto_bound=False),
     dict(type='RResize', img_scale=(1024, 1024)),
     dict(type='RRandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
@@ -172,8 +176,8 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=4,
-    workers_per_gpu=2,
+    samples_per_gpu=1,
+    workers_per_gpu=0,
     train=dict(
         type=dataset_type,
         ann_file=data_root + trainsplit_ann_folder,

@@ -22,6 +22,7 @@ class RSAI(CustomDataset):
     CLASSES = ('A', 'B', 'C', 'D',
                'E', 'F', 'G', 'H',
                'I', 'J', 'K')
+
     # 有待商榷
 
     def __init__(self, *args, **kwargs):
@@ -30,10 +31,6 @@ class RSAI(CustomDataset):
         super(RSAI, self).__init__(*args, **kwargs)
 
     def load_annotations(self, ann_folder):
-        """
-            Params:
-                ann_folder: folder that contains DOTA v1 annotations txt files
-        """
         cls_map = {c: i for i, c in enumerate(
             self.CLASSES)}  # in mmdet v2.0 label is 0-based
         ann_files = glob.glob(ann_folder + '/*.txt')
@@ -101,12 +98,12 @@ class RSAI(CustomDataset):
                         difficulty = int(bbox_info[9])
                         label = cls_map[cls_name]
 
-                        if difficulty >= self.difficulty_thresh:
+                        if difficulty > self.difficulty_thresh:
                             gt_bboxes_ignore.append([x, y, w, h, a])
                             gt_labels_ignore.append(label)
                             gt_polygons_ignore.append(bbox)
                             hor_gt_boxes_ignore.append([x1, y1, x2, y2])
-                        else:
+                        elif difficulty <= 1:
                             gt_bboxes.append([x, y, w, h, a])
                             gt_labels.append(label)
                             gt_polygons.append(bbox)
@@ -120,7 +117,7 @@ class RSAI(CustomDataset):
                     data_info['ann']['polygons'] = np.array(
                         gt_polygons, dtype=np.float32)
                     data_info['ann']['hbboxes'] = np.array(
-                        hor_gt_boxes,dtype=np.float32
+                        hor_gt_boxes, dtype=np.float32
                     )
                 else:
                     data_info['ann']['bboxes'] = np.zeros(
@@ -220,7 +217,6 @@ class RSAI(CustomDataset):
             eval_results['mAP'] = mean_ap
         return eval_results
 
-
     def _det2str(self, results):
         mcls_results = {cls: '' for cls in self.CLASSES}
         for idx in trange(len(self)):
@@ -256,7 +252,7 @@ class RSAI(CustomDataset):
 
     def _results2submission(self, results, out_folder=None):
         dota_results = self._det2str(results)
-        out_folder = out_folder+'_r'
+        out_folder = out_folder + '_r'
         if out_folder is not None:
             os.makedirs(out_folder, exist_ok=True)
             for cls in dota_results:
@@ -278,7 +274,7 @@ class RSAI(CustomDataset):
         if isinstance(results[0], list):
             assert len(results) == len(self), (
                 'The length of results is not equal to the dataset len: {} != {}'.
-                format(len(results), len(self)))
+                    format(len(results), len(self)))
             if results[0][0].shape[-1] == 5:
                 results_h = results
             if results[0][0].shape[-1] == 6:
@@ -310,4 +306,3 @@ class RSAI(CustomDataset):
             print('rotate bbox complete and horizon bbox begin')
             result_files_h = self._results2submission_h(results_h, submission_dir)
             print('done')
-

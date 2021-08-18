@@ -36,7 +36,8 @@ def rotate_poly_single(h, w, new_h, new_w, rotate_matrix_T, poly):
     poly[1::2] = poly[1::2] - (h - 0) * 0.5
     coords = poly.reshape(4, 2)
     new_coords = np.matmul(coords, rotate_matrix_T) + np.array([(new_w - 0) * 0.5, (new_h - 0) * 0.5])
-    rotated_polys = new_coords.reshape(-1, ).clip(min=0, max=new_h).tolist()
+    rotated_polys = new_coords.reshape(-1, ).tolist()
+    # rotated_polys = new_coords.reshape(-1, ).clip(min=0, max=new_h).tolist()
 
     return rotated_polys
 
@@ -109,6 +110,29 @@ class Randomrotate(object):
         mask = maskUtils.decode(rle)
         return mask
 
+    def _checkCVformat(self, a, w, h):
+        while not 0 > a >= -90:
+            if a >= 0:
+                a -= 90
+                w, h = h, w
+            else:
+                a += 90
+                w, h = h, w
+        a = a / 180 * np.pi
+        assert 0 > a >= -np.pi / 2
+        return a, w, h
+
+    def _autobound(self, matrix, h, w):
+        cos = np.abs(matrix[0, 0])
+        sin = np.abs(matrix[0, 1])
+        new_w = h * sin + w * cos
+        new_h = h * cos + w * sin
+        matrix[0, 2] += (new_w - w) * 0.5
+        matrix[1, 2] += (new_h - h) * 0.5
+        w = int(np.round(new_w))
+        h = int(np.round(new_h))
+        return matrix, h, w
+
     def __call__(self, results):
         if np.random.rand() > self.rotate_ratio:
             results['rotate'] = False
@@ -116,9 +140,7 @@ class Randomrotate(object):
             results['rotate'] = True
             discrete_range = [90, 180, -90, -180]
             for label in results['gt_labels']:
-                # print('label: ', label)
                 cls = self.CLASSES[label]
-                # print('cls: ', cls)
                 if (cls == 'storage-tank') or (cls == 'roundabout') or (cls == 'airport'):
                     random.shuffle(discrete_range)
                     angle = discrete_range[0]
@@ -127,69 +149,46 @@ class Randomrotate(object):
             random.shuffle(self.rotate_values)
             angle = self.rotate_values[0]
         if results['rotate']:
-            h, w, _ = results['img'].shape
+            h, w, c = results['img'].shape
             old_h, old_w = h, w
             center = ((w - 0) * 0.5, (h - 0) * 0.5)
             matrix = cv.getRotationMatrix2D(center, -angle, self.scale)
             matrix_T = copy.deepcopy(matrix[:2, :2]).T
+
             # 自适应图片边框大小
             if self.auto_bound:
-                cos = np.abs(matrix[0, 0])
-                sin = np.abs(matrix[0, 1])
-                new_w = h * sin + w * cos
-                new_h = h * cos + w * sin
-                matrix[0, 2] += (new_w - w) * 0.5
-                matrix[1, 2] += (new_h - h) * 0.5
-                w = int(np.round(new_w))
-                h = int(np.round(new_h))
-            results['img'] = cv.warpAffine(results['img'], matrix, (w, h), borderValue=self.border_value)
+                matrix, h, w = self._autobound(matrix, h, w)
+                results['img_shape'] = (h, w, c)
+            results['img'] = cv.warpAffine(results['img'], matrix, (w, h), borderValue=self.border_value, \
+                                           flags=cv.INTER_LINEAR)
+            ##
+            fourpoint = results['ann_info']['polygons'].copy()
 
-            # check the correctness
-            # mask_np = results['gt_masks'].to_ndarray().transpose(1, 2, 0)
-            # mask_rotate_np = cv.warpAffine(mask_np, matrix, (w, h), borderValue=self.border_value)
-
-            fourpoint = results['ann_info']['polygons']
             rotfourpoint = np.array(rotate_poly(old_h, old_w, h, w, matrix_T, fourpoint)).astype(np.int32)
-            # results['old_hor_gt_bboxes'] = results['hor_gt_bboxes']
+
             results['hor_gt_bboxes'] = poly2bbox(rotfourpoint).astype(np.float32)
-            # if (results['hor_gt_bboxes'] < 0).any():
-            #     import pdb
-            #     pdb.set_trace()
             gt_bboxes = []
             val_inds = []
+
             for ind, polygon in enumerate(rotfourpoint):
                 bboxps = np.array(polygon).reshape((4, 2)).astype(np.float32)
                 rbbox = cv.minAreaRect(bboxps)
-                x, y, w, h, a = rbbox[0][0], rbbox[0][1], rbbox[1][0], rbbox[1][1], rbbox[2]
-                if w <= 0 or h <= 0 or x < 0 or y < 0:
+                xbox, ybox, wbox, hbox, abox = rbbox[0][0], rbbox[0][1], rbbox[1][0], rbbox[1][1], rbbox[2]
+                # filter some unusual bboxes
+                if wbox <= 0 or hbox <= 0 or xbox < 0 or ybox < 0 or xbox > results['img'].shape[1] or ybox > results['img'].shape[0]:
                     continue
-                while not 0 > a >= -90:
-                    if a >= 0:
-                        a -= 90
-                        w, h = h, w
-                    else:
-                        a += 90
-                        w, h = h, w
-                a = a / 180 * np.pi
-                assert 0 > a >= -np.pi / 2
-                gt_bboxes.append([x, y, w, h, a])
+
+                abox, wbox, hbox = self._checkCVformat(abox, wbox, hbox)
+
+                gt_bboxes.append([xbox, ybox, wbox, hbox, abox])
                 val_inds.append(ind)
-            # gt_bboxes = np.array(gt_bboxes, dtype=np.float32)
+
             results['gt_bboxes'] = np.array(gt_bboxes, dtype=np.float32)
             results['hor_gt_bboxes'] = results['hor_gt_bboxes'][val_inds]
             results['gt_labels'] = results['gt_labels'][val_inds]
             if self.with_masks:
                 rotfourpoint = rotfourpoint[val_inds]
                 results['gt_masks'] = BitmapMasks([self._poly2mask(rotfourpoint, h, w)], h, w)
-            # check the rightness
-            # plt.imshow(results['gt_masks'].to_ndarray().squeeze(), interpolation='nearest')
-            # plt.savefig('mask1.png')
-            # plt.imshow(results['img'], interpolation='nearest')
-            # plt.savefig('img1.png')
-            # plt.imshow(results['gt_masks'].to_ndarray().squeeze(), interpolation='nearest')
-            # plt.savefig('mask2.png')
-            # import pdb
-            # pdb.set_trace()
             assert results['gt_bboxes'].shape[0] == results['hor_gt_bboxes'].shape[0] == results['gt_labels'].shape[0]
             # assert results['gt_labels'].shape[0] > 0
             if results['gt_labels'].shape[0] == 0:

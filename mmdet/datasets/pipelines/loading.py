@@ -46,7 +46,6 @@ class LoadImageFromFile(object):
         Returns:
             dict: The dict contains loaded image and meta information.
         """
-
         if self.file_client is None:
             self.file_client = mmcv.FileClient(**self.file_client_args)
 
@@ -359,7 +358,6 @@ class LoadAnnotations(object):
             dict: The dict contains loaded bounding box, label, mask and
                 semantic segmentation annotations.
         """
-
         if self.with_bbox:
             results = self._load_bboxes(results)
             if results is None:
