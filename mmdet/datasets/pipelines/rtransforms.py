@@ -213,10 +213,10 @@ class RRandomFlip(object):
                         results[key], direction=direction)
         # imshow_det_bboxes(results['img'], results['hor_gt_bboxes'], results['gt_labels'], show=False,
         #                   out_file='./images'+results['filename'])
-        if results['rotate']:
-            # imgname = results['img_info']['filename']
-            imshow_det_rbboxes(results['img'], results['gt_bboxes'], results['gt_labels'], show=False, \
-                               out_file='/home/lzy/xyh/Netmodel/s2anet/imgaes/' + str(int(time.time() % 1000)) + '.png')
+        # if results['rotate']:
+        #     # imgname = results['img_info']['filename']
+        #     imshow_det_rbboxes(results['img'], results['gt_bboxes'], results['gt_labels'], show=False, \
+        #                        out_file='/home/lzy/xyh/Netmodel/s2anet/imgaes/' + str(int(time.time() % 1000)) + '.png')
             # imshow_det_bboxes(results['img'], results['hor_gt_bboxes'], results['gt_labels'], show=False, \
             #                   out_file='/home/lzy/xyh/Netmodel/s2anet/imgaesh/' + imgname)
         return results

@@ -114,7 +114,7 @@ model = dict(
                 min_pos_iou=0.3,
                 match_low_quality=True,
                 ignore_iof_thr=-1,
-                gpu_assign_thr=200),
+                gpu_assign_thr=180),
             sampler=dict(
                 type='RandomSampler',
                 num=256,
@@ -280,6 +280,6 @@ log_config = dict(
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 load_from = None
-resume_from = None
+resume_from = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/DOTA1_0/cascade_rcnn_r50/epoch_8.pth'
 workflow = [('train', 1)]
 work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/DOTA1_0/cascade_rcnn_r50'
