@@ -47,7 +47,7 @@ model = dict(
                 in_channels=256,
                 fc_out_channels=1024,
                 roi_feat_size=7,
-                num_classes=15,
+                num_classes=11,
                 bbox_coder=dict(
                     type='DeltaXYWHBBoxCoder',
                     target_means=[0., 0., 0., 0.],
@@ -68,7 +68,7 @@ model = dict(
                 in_channels=256,
                 fc_out_channels=1024,
                 roi_feat_size=7,
-                num_classes=15,
+                num_classes=11,
                 bbox_coder=dict(
                     type='DeltaXYWHBBoxCoder',
                     target_means=[0., 0., 0., 0.],
@@ -89,7 +89,7 @@ model = dict(
                 in_channels=256,
                 fc_out_channels=1024,
                 roi_feat_size=7,
-                num_classes=15,
+                num_classes=11,
                 bbox_coder=dict(
                     type='DeltaXYWHBBoxCoder',
                     target_means=[0., 0., 0., 0.],
@@ -199,7 +199,7 @@ model = dict(
 )
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.005, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
@@ -210,17 +210,15 @@ lr_config = dict(
     step=[8, 11])
 total_epochs = 12
 
-dataset_type = 'DOTADatasetV1'
-data_root = '/data1/public_dataset/DOTA/DOTA1_0/split/'
-trainsplit_ann_folder = 'trainall/labelTxt'
-trainsplit_img_folder = 'trainall/images'
-valsplit_ann_folder = 'trainall/labelTxt'
-valsplit_img_folder = 'trainall/images'
-val_ann_folder = 'trainall/labelTxt'
-val_img_folder = 'trainall/images'
-test_img_folder = 'testms/images'
-example_ann_folder = 'trainall/labelTxt'
-example_img_folder = 'trainall/images'
+dataset_type = 'RSAI'
+data_root = '/data1/public_dataset/rsai/'
+trainsplit_ann_folder = 'split/train/labelTxt'
+trainsplit_img_folder = 'split/train/images'
+valsplit_ann_folder = 'split/val/labelTxt'
+valsplit_img_folder = 'split/val/images'
+val_ann_folder = 'origin/val/labelTxt'  # change the path to validate
+val_img_folder = 'origin/val/images'
+test_img_folder = 'origin/val/images'  # # change the path to validate
 
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
@@ -251,7 +249,7 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=4,
+    samples_per_gpu=2,
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
@@ -285,12 +283,5 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/DOTA1_0/cascade_rcnn_r50'
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/rsai/cascade_rcnn_r50'
 
-# mAP: 0.7811145013176454
-# ap of each class: plane:0.8902527767555896, baseball-diamond:0.8419673620595896,
-# bridge:0.5395377195192179, ground-track-field:0.7845574375959721, small-vehicle:0.7986981759758065,
-# large-vehicle:0.8378700527792928, ship:0.8763805850067357, tennis-court:0.9085485729781031,
-# basketball-court:0.873678312189324, storage-tank:0.8689441876935649, soccer-ball-field:0.6729760079008015,
-# roundabout:0.6698483934281823, harbor:0.775646470791526, swimming-pool:0.711237842803607,
-# helicopter:0.6665736222873668
