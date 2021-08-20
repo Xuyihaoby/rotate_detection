@@ -37,13 +37,14 @@ def multiclass_nms_r(multi_bboxes,
     """
     num_classes = multi_scores.size(1) - 1
     # exclude background category
-    if multi_bboxes.shape[1] > 4:
+    if multi_bboxes.shape[1] > 5:
         bboxes = multi_bboxes.view(multi_scores.size(0), -1, 5)
         # [1000, 15, 5]
     else:
         bboxes = multi_bboxes[:, None].expand(
             multi_scores.size(0), num_classes, 5)
-        # [1000, 60] ---> [1000, 1, 60]
+        #
+        # [1000, 5] ---> [1000, numclasses, 5]
 
     scores = multi_scores[:, :-1]  # [1000, 15]
     if score_factors is not None:

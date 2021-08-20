@@ -443,54 +443,6 @@ class RCascadeRoIHead(BaseRoIHead, RBBoxTestMixin, MaskTestMixin):
 
         # ms_bbox_result_r['ensemble'] = bbox_results
         # ms_bbox_result_h['ensemble'] = bbox_results_h
-
-        # 暂时不考虑mask实例分割
-        if self.with_mask:
-            if all(det_bbox.shape[0] == 0 for det_bbox in det_bboxes):
-                mask_classes = self.mask_head[-1].num_classes
-                segm_results = [[[] for _ in range(mask_classes)]
-                                for _ in range(num_imgs)]
-            else:
-                if rescale and not isinstance(scale_factors[0], float):
-                    scale_factors = [
-                        torch.from_numpy(scale_factor).to(det_bboxes[0].device)
-                        for scale_factor in scale_factors
-                    ]
-                _bboxes = [
-                    det_bboxes[i][:, :4] *
-                    scale_factors[i] if rescale else det_bboxes[i][:, :4]
-                    for i in range(len(det_bboxes))
-                ]
-                mask_rois = bbox2roi(_bboxes)
-                num_mask_rois_per_img = tuple(
-                    _bbox.size(0) for _bbox in _bboxes)
-                aug_masks = []
-                for i in range(self.num_stages):
-                    mask_results = self._mask_forward(i, x, mask_rois)
-                    mask_pred = mask_results['mask_pred']
-                    # split batch mask prediction back to each image
-                    mask_pred = mask_pred.split(num_mask_rois_per_img, 0)
-                    aug_masks.append(
-                        [m.sigmoid().cpu().numpy() for m in mask_pred])
-
-                # apply mask post-processing to each image individually
-                segm_results = []
-                for i in range(num_imgs):
-                    if det_bboxes[i].shape[0] == 0:
-                        segm_results.append(
-                            [[]
-                             for _ in range(self.mask_head[-1].num_classes)])
-                    else:
-                        aug_mask = [mask[i] for mask in aug_masks]
-                        merged_masks = merge_aug_masks(
-                            aug_mask, [[img_metas[i]]] * self.num_stages,
-                            rcnn_test_cfg)
-                        segm_result = self.mask_head[-1].get_seg_masks(
-                            merged_masks, _bboxes[i], det_labels[i],
-                            rcnn_test_cfg, ori_shapes[i], scale_factors[i],
-                            rescale)
-                        segm_results.append(segm_result)
-            ms_segm_result['ensemble'] = segm_results
         # 暂时不考虑实例分割
         if self.with_mask:
             # results = list(

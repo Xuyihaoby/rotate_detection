@@ -191,8 +191,11 @@ model = dict(
             min_bbox_size=0),
         rcnn=dict(
             score_thr=0.05,
-            nms=dict(type='nms', iou_threshold=0.5),
-            max_per_img=100))
+            nms_h=dict(type='nms', iou_threshold=0.1),
+            max_per_img_h=500,
+            nms_r=dict(type='rnms', iou_threshold=0.1),
+            # nms_r=dict(type='nms_rotate', iou_threshold=merge_nms_iou_thr_dict),
+            max_per_img=500))
 )
 
 # optimizer

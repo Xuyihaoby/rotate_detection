@@ -32,8 +32,8 @@ Some other methods are also supported in [projects using MMDetection](./docs/pro
 create virtual environment
 
 ```
-conda create -n openmmlab python=3.8 -y
-conda activate openmmlab
+conda create -n open-mmlab python=3.8 -y
+conda activate open-mmlab
 ```
 
 install pytorch

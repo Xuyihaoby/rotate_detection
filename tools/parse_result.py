@@ -16,18 +16,16 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('config', help='test config file path')
     parser.add_argument('pkl', help='det results .pkl')
-    parser.add_argument('nms', default='Y', help='det results .pkl')
-    parser.add_argument('--type', default='OBB', help='boxmode')
-    parser.add_argument('--eval', default='Y', help='whether to local evaluate')
+    parser.add_argument('nms', type=str, default='Y', help='det results .pkl')
+    parser.add_argument('--type',type=str, default='OBB', help='boxmode')
+    parser.add_argument('--eval', type=str, default='Y', help='whether to local evaluate')
     args = parser.parse_args()
-
     cfg = Config.fromfile(args.config)
     dataset = build_dataset(cfg.data.test)
     outputpath = cfg.work_dir
     outputs = mmcv.load(args.pkl)
     detpath = osp.join(outputpath, 'submission_test_r' + '/Task1_{:s}.txt')
-
-    dataset.format_results(outputs, outputpath+ '/submission_test', type=args.type)
+    dataset.format_results(outputs, outputpath + '/submission_test', type=args.type)
     if args.nms == 'Y':
         print('start_nms')
         os.makedirs(osp.join(outputpath, 'submisssion_test_r_nms'), exist_ok=True)
