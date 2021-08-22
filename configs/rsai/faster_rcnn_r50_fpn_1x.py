@@ -133,16 +133,16 @@ lr_config = dict(
 total_epochs = 12
 
 dataset_type = 'RSAI'
-data_root = '/data1/public_dataset/rsai/split/'
-trainsplit_ann_folder = 'labelTxt'
-trainsplit_img_folder = 'images'
-valsplit_ann_folder = 'labelTxt'
-valsplit_img_folder = 'images'
-val_ann_folder = 'labelTxt'
-val_img_folder = 'images'
-test_img_folder = 'images'
-example_ann_folder = 'labelTxt'
-example_img_folder = 'images'
+data_root = '/data1/public_dataset/rsai/'
+trainsplit_ann_folder = 'example/labelTxt'
+# trainsplit_ann_folder = 'split/train/labelTxt'
+trainsplit_img_folder = 'example/images'
+# trainsplit_img_folder = 'split/train/images'
+valsplit_ann_folder = 'split/val/labelTxt'
+valsplit_img_folder = 'split/val/images'
+val_ann_folder = 'origin/val/labelTxt'  # change the path to validate
+val_img_folder = 'origin/val/images'
+test_img_folder = 'split/val/images'  # # change the path to validate
 
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
@@ -207,4 +207,4 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/data/xuyihao/mmdetection/configs/rsai/work_dir/faster_rcnn_r50_fpn_1x'
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/rsai/faster_rcnn_r50'

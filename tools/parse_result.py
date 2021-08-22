@@ -28,8 +28,8 @@ if __name__ == '__main__':
     dataset.format_results(outputs, outputpath + '/submission_test', type=args.type)
     if args.nms == 'Y':
         print('start_nms')
-        os.makedirs(osp.join(outputpath, 'submisssion_test_r_nms'), exist_ok=True)
-        mergebypoly_multiprocess(osp.join(outputpath, 'submission_test_r'), osp.join(outputpath, 'submisssion_test_r_nms'))
+        os.makedirs(osp.join(outputpath, 'submission_test_r_nms'), exist_ok=True)
+        mergebypoly_multiprocess(osp.join(outputpath, 'submission_test_r'), osp.join(outputpath, 'submission_test_r_nms'))
         print('finish_nms')
         detpath = osp.join(outputpath, 'submission_test_r_nms' + '/Task1_{:s}.txt')
 
