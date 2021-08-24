@@ -170,7 +170,14 @@ if __name__ == '__main__':
             make_cuda_ext(
                 name='polygon_geo_cpu',
                 module='mmdet.ops.polygon_geo',
-                sources=['src/polygon_geo_cpu.cpp'])
+                sources=['src/polygon_geo_cpu.cpp']),
+            make_cuda_ext(
+                name='orn_cuda',
+                module='mmdet.ops.orn',
+                sources=['src/vision.cpp',
+                         'src/cpu/ActiveRotatingFilter_cpu.cpp', 'src/cpu/RotationInvariantEncoding_cpu.cpp',
+                         'src/cuda/ActiveRotatingFilter_cuda.cu', 'src/cuda/RotationInvariantEncoding_cuda.cu',
+                         ])
         ],
         cmdclass={'build_ext': BuildExtension},
         zip_safe=False)
