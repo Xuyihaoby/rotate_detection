@@ -9,14 +9,14 @@ diff_r_max_num = {'roundabout': 100, 'tennis-court': 100, 'swimming-pool': 200, 
                   'large-vehicle': 500, 'helicopter': 100, 'harbor': 200, 'ground-track-field': 100,
                   'bridge': 100, 'basketball-court': 100, 'baseball-diamond': 100, 'container-crane': 100}
 merge_nms_iou_thr_dict_h = {'roundabout': 0.35, 'tennis-court': 0.35, 'swimming-pool': 0.4, 'storage-tank': 0.3,
-        'soccer-ball-field': 0.3, 'small-vehicle': 0.4, 'ship': 0.35, 'plane': 0.35,
-        'large-vehicle': 0.4, 'helicopter': 0.4, 'harbor': 0.3, 'ground-track-field': 0.4,
-        'bridge': 0.3, 'basketball-court': 0.4, 'baseball-diamond': 0.3, 'container-crane': 0.3}
+                            'soccer-ball-field': 0.3, 'small-vehicle': 0.4, 'ship': 0.35, 'plane': 0.35,
+                            'large-vehicle': 0.4, 'helicopter': 0.4, 'harbor': 0.3, 'ground-track-field': 0.4,
+                            'bridge': 0.3, 'basketball-court': 0.4, 'baseball-diamond': 0.3, 'container-crane': 0.3}
 
 diff_h_max_num = {'roundabout': 100, 'tennis-court': 100, 'swimming-pool': 200, 'storage-tank': 200,
-        'soccer-ball-field': 100, 'small-vehicle': 500, 'ship': 500, 'plane': 300,
-        'large-vehicle': 500, 'helicopter': 100, 'harbor': 200, 'ground-track-field': 100,
-        'bridge': 100, 'basketball-court': 100, 'baseball-diamond': 100, 'container-crane': 100}
+                  'soccer-ball-field': 100, 'small-vehicle': 500, 'ship': 500, 'plane': 300,
+                  'large-vehicle': 500, 'helicopter': 100, 'harbor': 200, 'ground-track-field': 100,
+                  'bridge': 100, 'basketball-court': 100, 'baseball-diamond': 100, 'container-crane': 100}
 
 model = dict(
     type='FeatureAttenNetAllLvlSingleMaskDOTA',
@@ -142,8 +142,6 @@ model = dict(
         # e.g., nms=dict(type='soft_nms', iou_threshold=0.5, min_score=0.05)
     ))
 
-
-
 # optimizer
 optimizer = dict(type='SGD', lr=0.0025, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
@@ -155,7 +153,6 @@ lr_config = dict(
     warmup_ratio=0.001,
     step=[8, 11])
 total_epochs = 12
-
 
 dataset_type = 'DOTADatasetV1'
 data_root = '/data/xuyihao/mmdetection/dataset/DOTA/'
@@ -180,7 +177,7 @@ train_pipeline = [
     dict(type='Pad', size_divisor=32),
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_bboxes_ignore', 'hor_gt_bboxes', 'hor_gt_bboxes_ignore',
-                               'gt_bboxes_ignore', 'gt_labels', 'gt_masks']),
+                               'gt_labels', 'gt_masks']),
 ]
 test_pipeline = [
     dict(type='LoadImageFromFile'),
@@ -217,7 +214,6 @@ data = dict(
         pipeline=test_pipeline,
         test_mode=True))
 evaluation = dict(interval=24, metric='bbox')
-
 
 checkpoint_config = dict(interval=2)
 # yapf:disable

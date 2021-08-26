@@ -1,28 +1,3 @@
-merge_nms_iou_thr_dict = {
-    'roundabout': 0.1, 'tennis-court': 0.3, 'swimming-pool': 0.1, 'storage-tank': 0.1,
-    'soccer-ball-field': 0.3, 'small-vehicle': 0.05, 'ship': 0.05, 'plane': 0.3,
-    'large-vehicle': 0.05, 'helicopter': 0.2, 'harbor': 0.0001, 'ground-track-field': 0.3,
-    'bridge': 0.0001, 'basketball-court': 0.3, 'baseball-diamond': 0.3, 'container-crane': 0.3,
-    'airport': 0.3, 'helipad': 0.3
-}
-merge_nms_iou_thr_dict_h = {'roundabout': 0.35, 'tennis-court': 0.35, 'swimming-pool': 0.4, 'storage-tank': 0.3,
-                            'soccer-ball-field': 0.3, 'small-vehicle': 0.4, 'ship': 0.35, 'plane': 0.35,
-                            'large-vehicle': 0.4, 'helicopter': 0.4, 'harbor': 0.3, 'ground-track-field': 0.4,
-                            'bridge': 0.3, 'basketball-court': 0.4, 'baseball-diamond': 0.3, 'container-crane': 0.3,
-                            'airport': 0.3, 'helipad': 0.3}
-
-diff_r_max_num = {'roundabout': 100, 'tennis-court': 100, 'swimming-pool': 200, 'storage-tank': 200,
-                  'soccer-ball-field': 100, 'small-vehicle': 500, 'ship': 500, 'plane': 300,
-                  'large-vehicle': 500, 'helicopter': 100, 'harbor': 200, 'ground-track-field': 100,
-                  'bridge': 100, 'basketball-court': 100, 'baseball-diamond': 100, 'container-crane': 100,
-                  'airport': 100, 'helipad': 100}
-
-diff_h_max_num = {'roundabout': 100, 'tennis-court': 100, 'swimming-pool': 200, 'storage-tank': 200,
-                  'soccer-ball-field': 100, 'small-vehicle': 500, 'ship': 500, 'plane': 300,
-                  'large-vehicle': 500, 'helicopter': 100, 'harbor': 200, 'ground-track-field': 100,
-                  'bridge': 100, 'basketball-court': 100, 'baseball-diamond': 100, 'container-crane': 100,
-                  'airport': 100, 'helipad': 100}
-
 model = dict(
     type='RFasterRCNN',
     obb=True,
@@ -93,7 +68,7 @@ model = dict(
                 min_pos_iou=0.3,
                 match_low_quality=True,
                 ignore_iof_thr=-1,
-                gpu_assign_thr=200),
+                gpu_assign_thr=180),
             sampler=dict(
                 type='RandomSampler',
                 num=256,
@@ -146,7 +121,7 @@ model = dict(
     ))
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.0025, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
@@ -157,23 +132,26 @@ lr_config = dict(
     step=[8, 11])
 total_epochs = 12
 
-dataset_type = 'DOTADatasetV2'
-data_root = '/data/xuyihao/mmdetection/dataset/DOTA-v2.0/'
-trainsplit_ann_folder = 'trainallsplit/labelTxt'
-trainsplit_img_folder = 'trainallsplit/images'
-valsplit_ann_folder = 'trainallsplit/labelTxt'
-valsplit_img_folder = 'trainallsplit/images'
-val_ann_folder = 'val/labelTxt'
-val_img_folder = 'val/images'
-test_img_folder = 'testallsplit/images'
-example_ann_folder = 'examplesplit/labelTxt'
-example_img_folder = 'examplesplit/images'
+dataset_type = 'DOTADatasetV1'
+data_root = '/data1/public_dataset/DOTA/DOTA1_0/split/'
+trainsplit_ann_folder = 'trainall/labelTxt'
+trainsplit_img_folder = 'trainall/images'
+valsplit_ann_folder = 'trainall/labelTxt'
+valsplit_img_folder = 'trainall/images'
+val_ann_folder = 'trainall/labelTxt'
+val_img_folder = 'trainall/images'
+test_img_folder = 'testms/images'
+example_ann_folder = 'trainall/labelTxt'
+example_img_folder = 'trainall/images'
 
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='RLoadAnnotations', with_bbox=True, with_mask=True),
+    dict(type='Randomrotate', border_value=0, rotate_mode='value', rotate_ratio=0.5,
+         rotate_values=[30, 60, 90, 120, 150],
+         auto_bound=False),
     dict(type='RResize', img_scale=(1024, 1024)),
     dict(type='RRandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
@@ -218,7 +196,7 @@ data = dict(
         test_mode=True))
 evaluation = dict(interval=24, metric='bbox')
 
-checkpoint_config = dict(interval=4)
+checkpoint_config = dict(interval=2)
 
 log_config = dict(
     interval=10,
@@ -230,6 +208,6 @@ log_config = dict(
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 load_from = None
-resume_from = None
+resume_from = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/DOTA1_0/faster_rcnn_r50_fpn_1x/epoch_4.pth'
 workflow = [('train', 1)]
-work_dir = '/data/xuyihao/mmdetection/configs/DOTA2_0/work_dir/faster_rcnn_r50_fpn_1x_dotav2'
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/DOTA1_0/faster_rcnn_r50_fpn_1x'

@@ -13,5 +13,6 @@ __all__ = [
     'polygon_iou',
     "batched_rnms", "rnms",
     "rbbox_iou_iof",
-    'RotationInvariantPooling', 'rotation_invariant_encoding'
+    'RotationInvariantPooling', 'rotation_invariant_encoding',
+    'ORConv2d'
 ]

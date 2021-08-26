@@ -229,7 +229,7 @@ train_pipeline = [
     dict(type='Pad', size_divisor=32),
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_bboxes_ignore', 'hor_gt_bboxes', 'hor_gt_bboxes_ignore',
-                               'gt_bboxes_ignore', 'gt_labels']),
+                               'gt_labels']),
 ]
 test_pipeline = [
     dict(type='LoadImageFromFile'),
