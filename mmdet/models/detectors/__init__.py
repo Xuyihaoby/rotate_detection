@@ -31,6 +31,7 @@ from .feature_attention_net_all_lvl_single_mask_dota import FeatureAttenNetAllLv
 from .faster_rrpn_rcnn import FasterRRPNRCNN  # 中途搁置，用于进行任意方向锚框
 from .rfaster_rcnn_srpn_dota import RFasterRCNNSRPN  # HSP的ablation study
 from .rcascade_rcnn import RCascadeRCNN
+from .rretinanet import RRetinaNet
 
 
 __all__ = [
@@ -41,5 +42,6 @@ __all__ = [
     'YOLOV3', 'YOLACT', 'VFNet', 'DETR', 'TridentFasterRCNN',
 
     'RFasterRCNN', 'RCascadeRCNN',
-    'FasterRRPNRCNN', 'FeatureAttenNetAllLvlSingleMaskDOTA', 'RFasterRCNNSRPN'
+    'FasterRRPNRCNN', 'FeatureAttenNetAllLvlSingleMaskDOTA', 'RFasterRCNNSRPN',
+    'RRetinaNet'
 ]

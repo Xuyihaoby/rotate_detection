@@ -1,5 +1,5 @@
 model = dict(
-    type='RetinaNet',
+    type='RRetinaNet',
     pretrained='torchvision://resnet50',
     backbone=dict(
         type='ResNet',
@@ -18,21 +18,22 @@ model = dict(
         add_extra_convs='on_input',
         num_outs=5),
     bbox_head=dict(
-        type='RetinaHead',
-        num_classes=80,
+        type='RRetinaHead',
+        num_classes=15,
         in_channels=256,
         stacked_convs=4,
         feat_channels=256,
         anchor_generator=dict(
-            type='AnchorGenerator',
+            type='RAnchorGenerator',
             octave_base_scale=4,
             scales_per_octave=3,
             ratios=[0.5, 1.0, 2.0],
-            strides=[8, 16, 32, 64, 128]),
+            strides=[8, 16, 32, 64, 128],
+            angles=[0.]),
         bbox_coder=dict(
-            type='DeltaXYWHBBoxCoder',
-            target_means=[.0, .0, .0, .0],
-            target_stds=[1.0, 1.0, 1.0, 1.0]),
+            type='DeltaRXYWHThetaBBoxCoder',
+            target_means=[.0, .0, .0, .0, .0],
+            target_stds=[1.0, 1.0, 1.0, 1.0, 1.0]),
         loss_cls=dict(
             type='FocalLoss',
             use_sigmoid=True,
@@ -47,7 +48,8 @@ model = dict(
             pos_iou_thr=0.5,
             neg_iou_thr=0.4,
             min_pos_iou=0,
-            ignore_iof_thr=-1),
+            ignore_iof_thr=-1,
+            iou_calculator=dict(type='RBboxOverlaps2D')),
         allowed_border=-1,
         pos_weight=-1,
         debug=False),
@@ -55,7 +57,7 @@ model = dict(
         nms_pre=1000,
         min_bbox_size=0,
         score_thr=0.05,
-        nms=dict(type='nms', iou_threshold=0.5),
+        nms=dict(type='rnms', iou_threshold=0.5),
         max_per_img=100))
 
 # optimizer
@@ -86,7 +88,7 @@ img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='RLoadAnnotations', with_bbox=True, with_mask=True),
+    dict(type='RLoadAnnotations', with_bbox=True, with_mask=False),
     dict(type='RResize', img_scale=(1024, 1024)),
     dict(type='RRandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
@@ -110,8 +112,8 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=4,
-    workers_per_gpu=2,
+    samples_per_gpu=1,
+    workers_per_gpu=0,
     train=dict(
         type=dataset_type,
         ann_file=data_root + trainsplit_ann_folder,
@@ -144,4 +146,4 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/DOTA1_0/faster_rcnn_r50_fpn_1x'
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/rretinanet/retinanet_r50_fpn_1x'

@@ -9,6 +9,7 @@ from .base_bbox_coder import BaseBBoxCoder
 class DeltaRXYWHThetaBBoxCoder(BaseBBoxCoder):
     """Delta XYWHA BBox coder
 
+    format (x ,y w, h, a) and (x ,y w, h, a) encode
     this coder is used for rotated objects detection (for example on task1 of DOTA dataset).
     this coder encodes bbox (xc, yc, w, h, a) into delta (dx, dy, dw, dh, da) and
     decodes delta (dx, dy, dw, dh, da) back to original bbox (xc, yc, w, h, a).

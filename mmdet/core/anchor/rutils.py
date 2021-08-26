@@ -1,10 +1,22 @@
 import torch
 
-
+# adpated from https://github.com/magnificent1208/r3det-on-mmdetection/tree/main/mmdet/core
 def ranchor_inside_flags(flat_ranchors,
                          valid_flags,
                          img_shape,
                          allowed_border=0):
+    '''
+
+    only if the center of anchor in the picture just can be define valid
+    Args:
+        flat_ranchors:
+        valid_flags:
+        img_shape:
+        allowed_border:
+
+    Returns:
+
+    '''
     img_h, img_w = img_shape[:2]
     # cx, cy, w, h, a = (flat_ranchors[:, i] for i in range(5))
     # sina, cosa = torch.sin(a), torch.cos(a)
