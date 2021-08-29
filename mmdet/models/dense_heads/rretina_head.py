@@ -88,7 +88,7 @@ class RRetinaHead(AnchorHead):
                 cls_score (Tensor): Cls scores for a single scale level
                     the channels number is num_anchors * num_classes.
                 bbox_pred (Tensor): Box energies / deltas for a single scale
-                    level, the channels number is num_anchors * 4.
+                    level, the channels number is num_anchors * 5.
         """
         cls_feat = x
         reg_feat = x
@@ -115,7 +115,7 @@ class RRetinaHead(AnchorHead):
         bbox_targets = bbox_targets.reshape(-1, 5)  # [batchsize, num_bboxes, 5]
         bbox_weights = bbox_weights.reshape(-1, 5)  # [batchsize, num_bboxes, 5]
         bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(-1, 5)
-        # [batch_size, 4*num_base_anchors, H, W] --> [batch_size, H, W, 5*num_base_anchors] --> [N, 4]
+        # [batch_size, 5*num_base_anchors, H, W] --> [batch_size, H, W, 5*num_base_anchors] --> [N, 5]
         # TODO: reshape, self.reg_decoded_bbox
         # 每一层有多少anchors，同样会预测多少bbox
         if self.reg_decoded_bbox:
@@ -140,7 +140,7 @@ class RRetinaHead(AnchorHead):
              img_metas,
              gt_bboxes_ignore=None):
         # cls：channel = num_classes * anchors; list[] five tensors(depend on lvls) each is [bactchsize, channel, H, W]
-        # box_pred: channel = anchors * 4;five tensors(depend on lvls) each is [bactchsize, channel, H, W]
+        # box_pred: channel = anchors * 5;five tensors(depend on lvls) each is [bactchsize, channel, H, W]
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
         assert len(featmap_sizes) == self.anchor_generator.num_levels
         device = cls_scores[0].device
@@ -148,7 +148,7 @@ class RRetinaHead(AnchorHead):
             featmap_sizes, img_metas, device=device)
         # note the valid is according to the featmap size and center to decide whether valid
         # both len list is batch_size;
-        # and anchor_list doesn't have sth. with images each [Num_anchors, 4]
+        # and anchor_list doesn't have sth. with images each [Num_anchors, 5]
         # etc:anchor_list[0]=[[Num_anchors, 5],[],..numlvls]
         # valid_flag_list[0][0].shape=Num_anchors
         label_channels = self.cls_out_channels if self.use_sigmoid_cls else 1
@@ -177,8 +177,8 @@ class RRetinaHead(AnchorHead):
             concat_anchor_list.append(torch.cat(anchor_list[i]))
         all_anchor_list = images_to_levels(concat_anchor_list,
                                            num_level_anchors)
-        # concat_anchor_list [[num_anchors,4],[num_anchors,4],...(batch_size)]
-        # all_anchor_list [[batchsize, all_anchors_in_a_lvl, 4],[]...(numlvls)]
+        # concat_anchor_list [[num_anchors,5],[num_anchors,5],...(batch_size)]
+        # all_anchor_list [[batchsize, all_anchors_in_a_lvl, 5],[]...(numlvls)]
         losses_cls, losses_bbox = multi_apply(
             self.loss_single,
             cls_scores,
@@ -376,7 +376,7 @@ class RRetinaHead(AnchorHead):
             mlvl_scores.append(scores)
         mlvl_bboxes = torch.cat(mlvl_bboxes)
         if rescale:
-            mlvl_bboxes[:, :4] /= mlvl_bboxes.new_tensor(scale_factor)
+            mlvl_bboxes[:, :5] /= mlvl_bboxes.new_tensor(scale_factor)
         mlvl_scores = torch.cat(mlvl_scores)
         if self.use_sigmoid_cls:
             padding = mlvl_scores.new_zeros(mlvl_scores.shape[0], 1)
