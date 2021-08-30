@@ -297,7 +297,8 @@ class DOTADatasetV2(CustomDataset):
             results_h = []
             results_r = []
             for i in range(len(results)):
-                results_h.extend(results[i]['hbb'])
+                if 'hbb' in results[i].keys():
+                    results_h.extend(results[i]['hbb'])
                 results_r.extend(results[i]['rbb'])
         if submission_dir is None:
             submission_dir = tempfile.TemporaryDirectory()

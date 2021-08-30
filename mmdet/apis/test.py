@@ -29,6 +29,8 @@ def single_gpu_test(model,
         # xyh has do some modify
         if isinstance(result, dict) == False:
             batch_size = len(result)
+        elif len(result.key()) == 1:
+            batch_size = len(result)
         else:
             batch_size = int(len(result)/2)
 
