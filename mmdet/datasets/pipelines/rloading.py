@@ -31,13 +31,15 @@ class RLoadAnnotations(LoadAnnotations):
                  with_label=True,
                  with_mask=False,
                  with_seg=False,
-                 poly2mask=True
+                 poly2mask=True,
+                 hsp=False
                  ):
         super(RLoadAnnotations, self).__init__(with_bbox=with_bbox,
                                                with_label=with_label,
                                                with_mask=with_mask,
                                                with_seg=with_seg,
                                                poly2mask=poly2mask)
+        self.hsp = hsp
 
     def _load_bboxes(self, results):
 
@@ -78,9 +80,10 @@ class RLoadAnnotations(LoadAnnotations):
         gt_masks = results['ann_info']['polygons']
 
         if self.poly2mask:
-            # gt_masks = BitmapMasks(
-            #     [self._poly2mask(mask, h, w) for mask in gt_masks], h, w)
-            gt_masks = BitmapMasks([self._poly2mask(gt_masks, h, w)], h, w)
+            if self.hsp:
+                gt_masks = BitmapMasks([self._poly2mask(gt_masks, h, w)], h, w)
+            gt_masks = BitmapMasks(
+                [self._poly2mask(mask, h, w) for mask in gt_masks], h, w)
         else:
             gt_masks = PolygonMasks(
                 [self.process_polygons(polygons) for polygons in gt_masks], h,
@@ -107,6 +110,8 @@ class RLoadAnnotations(LoadAnnotations):
             rles = maskUtils.frPyObjects(mask_ann, img_h, img_w)
             rle = maskUtils.merge(rles)
         elif isinstance(mask_ann, np.ndarray):
+            if mask_ann.ndim == 1:
+                mask_ann = mask_ann[None, :]
             # polys = list(map(list, list(mask_ann)))
             # array[[],[],..] -- list(mask_ann) --> list[arr, arr, ...] -- list(map(list, list(mask_ann))) -->
             # list[[],..[]]

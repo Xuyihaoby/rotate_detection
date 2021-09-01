@@ -32,6 +32,7 @@ from .faster_rrpn_rcnn import FasterRRPNRCNN  # 中途搁置，用于进行任�
 from .rfaster_rcnn_srpn_dota import RFasterRCNNSRPN  # HSP的ablation study
 from .rcascade_rcnn import RCascadeRCNN
 from .rretinanet import RRetinaNet
+from .rhtc import RHybridTaskCascade
 
 
 __all__ = [
@@ -43,5 +44,6 @@ __all__ = [
 
     'RFasterRCNN', 'RCascadeRCNN',
     'FasterRRPNRCNN', 'FeatureAttenNetAllLvlSingleMaskDOTA', 'RFasterRCNNSRPN',
-    'RRetinaNet'
+    'RRetinaNet',
+    'RHybridTaskCascade'
 ]

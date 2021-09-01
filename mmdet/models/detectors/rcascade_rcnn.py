@@ -171,6 +171,7 @@ class RCascadeRCNN(BaseDetector):
 
         roi_losses = self.roi_head.forward_train(x, img_metas, proposal_list,
                                                  hor_gt_bboxes, gt_bboxes, gt_labels,
+                                                 hor_gt_bboxes_ignore,
                                                  gt_bboxes_ignore, gt_masks,
                                                  **kwargs)
         losses.update(roi_losses)

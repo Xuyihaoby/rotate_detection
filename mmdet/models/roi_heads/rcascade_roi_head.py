@@ -309,7 +309,7 @@ class RCascadeRoIHead(BaseRoIHead, RBBoxTestMixin, MaskTestMixin):
         # ms_bbox_result_h = {}
         # ms_bbox_result_r = {}
         # ensenmble_results = {}
-        ms_segm_result = {}
+        # ms_segm_result = {}
         # 只有计算置信度的时候是需要三个阶段的预测头一起进行的
         ms_scores_h = []
         ms_scores_r = []
