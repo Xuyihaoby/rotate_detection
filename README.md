@@ -25,6 +25,8 @@ Supported methods（rotate）:
 - [x] [Faster R-CNN](configs/faster_rcnn)
 - [x] HSP
 - [x] RCascade RCNN
+- [x] RRetinanet
+- [ ] RHTC
 
 Some other methods are also supported in [projects using MMDetection](./docs/projects.md).
 
