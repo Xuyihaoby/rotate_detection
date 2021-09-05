@@ -1,4 +1,4 @@
-num=15
+num = 15
 model = dict(
     type='RFasterRCNN',
     obb=True,
@@ -19,7 +19,7 @@ model = dict(
         out_channels=256,
         num_outs=5),
     rpn_head=dict(
-        type='RRPNHead',
+        type='RRPNHeadATSS',
         in_channels=256,
         feat_channels=256,
         anchor_generator=dict(
@@ -62,14 +62,7 @@ model = dict(
     # model training and testing settings
     train_cfg=dict(
         rpn=dict(
-            assigner=dict(
-                type='MaxIoUAssigner',
-                pos_iou_thr=0.7,
-                neg_iou_thr=0.3,
-                min_pos_iou=0.3,
-                match_low_quality=True,
-                ignore_iof_thr=-1,
-                gpu_assign_thr=180),
+            assigner=dict(type='RATSSAssigner', topk=9, gpu_assign_thr=5),
             sampler=dict(
                 type='RandomSampler',
                 num=256,
@@ -122,7 +115,7 @@ model = dict(
     ))
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.005, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
@@ -133,26 +126,23 @@ lr_config = dict(
     step=[8, 11])
 total_epochs = 12
 
-dataset_type = 'DOTADatasetV1'
-data_root = '/data1/public_dataset/DOTA/DOTA1_0/split/'
-trainsplit_ann_folder = 'trainall/labelTxt'
-trainsplit_img_folder = 'trainall/images'
-valsplit_ann_folder = 'trainall/labelTxt'
-valsplit_img_folder = 'trainall/images'
-val_ann_folder = 'trainall/labelTxt'
-val_img_folder = 'trainall/images'
-test_img_folder = 'testms/images'
-example_ann_folder = 'trainall/labelTxt'
-example_img_folder = 'trainall/images'
+dataset_type = 'RSAI'
+data_root = '/data1/public_dataset/rsai/'
+trainsplit_ann_folder = 'example/labelTxt'
+# trainsplit_ann_folder = 'split/train/labelTxt'
+trainsplit_img_folder = 'example/images'
+# trainsplit_img_folder = 'split/train/images'
+valsplit_ann_folder = 'split/val/labelTxt'
+valsplit_img_folder = 'split/val/images'
+val_ann_folder = 'origin/val/labelTxt'  # change the path to validate
+val_img_folder = 'origin/val/images'
+test_img_folder = 'split/val/images'  # # change the path to validate
 
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='RLoadAnnotations', with_bbox=True),
-    dict(type='Randomrotate', border_value=0, rotate_mode='value', rotate_ratio=0.5,
-         rotate_values=[30, 60, 90, 120, 150],
-         auto_bound=False),
     dict(type='RResize', img_scale=(1024, 1024)),
     dict(type='RRandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
@@ -177,8 +167,8 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=4,
-    workers_per_gpu=2,
+    samples_per_gpu=1,
+    workers_per_gpu=0,
     train=dict(
         type=dataset_type,
         ann_file=data_root + trainsplit_ann_folder,
@@ -197,7 +187,7 @@ data = dict(
         test_mode=True))
 evaluation = dict(interval=24, metric='bbox')
 
-checkpoint_config = dict(interval=2)
+checkpoint_config = dict(interval=4)
 
 log_config = dict(
     interval=10,
@@ -211,4 +201,4 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/DOTA1_0/faster_rcnn_r50_fpn_rotate_1x'
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/ratss/faster_rcnn_r50'
