@@ -10,9 +10,9 @@ from .loading import (LoadAnnotations, LoadImageFromFile, LoadImageFromWebcam,
 from .test_time_aug import MultiScaleFlipAug
 from .transforms import (Albu, CutOut, Expand, MinIoURandomCrop, Normalize,
                          Pad, PhotoMetricDistortion, RandomCenterCropPad,
-                         RandomCrop, RandomFlip, Resize, SegRescale, MixUp)
+                         RandomCrop, RandomFlip, Resize, SegRescale, MixUp, Mosaic)
 
-from .rtransforms import (RResize, RRandomFlip, RMixUp)
+from .rtransforms import (RResize, RRandomFlip, RMixUp, RMosaic)
 from .rloading import RLoadAnnotations
 from .randomrotate import Randomrotate
 
@@ -25,6 +25,7 @@ __all__ = [
     'MinIoURandomCrop', 'Expand', 'PhotoMetricDistortion', 'Albu',
     'InstaBoost', 'RandomCenterCropPad', 'AutoAugment', 'CutOut', 'Shear',
     'Rotate', 'ColorTransform', 'EqualizeTransform', 'BrightnessTransform',
-    'ContrastTransform', 'Translate', 'MixUp',
-    'RResize', 'RRandomFlip', 'RLoadAnnotations', 'Randomrotate', 'RMixUp'
+    'ContrastTransform', 'Translate', 'MixUp', 'Mosaic',
+    'RResize', 'RRandomFlip', 'RLoadAnnotations', 'Randomrotate', 'RMixUp',
+    'RMosaic'
 ]

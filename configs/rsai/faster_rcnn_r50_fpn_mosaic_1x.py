@@ -45,7 +45,7 @@ model = dict(
             in_channels=256,
             fc_out_channels=1024,
             roi_feat_size=7,
-            num_classes=15,
+            num_classes=11,
             bbox_coder=dict(
                 type='DeltaXYWHBBoxCoder',
                 target_means=[0., 0., 0., 0.],
@@ -68,7 +68,7 @@ model = dict(
                 min_pos_iou=0.3,
                 match_low_quality=True,
                 ignore_iof_thr=-1,
-                gpu_assign_thr=180),
+                gpu_assign_thr=200),
             sampler=dict(
                 type='RandomSampler',
                 num=256,
@@ -132,28 +132,25 @@ lr_config = dict(
     step=[8, 11])
 total_epochs = 12
 
-dataset_type = 'DOTADatasetV1'
-data_root = '/data1/public_dataset/DOTA/DOTA1_0/split/'
-trainsplit_ann_folder = 'trainall/labelTxt'
-trainsplit_img_folder = 'trainall/images'
-valsplit_ann_folder = 'trainall/labelTxt'
-valsplit_img_folder = 'trainall/images'
-val_ann_folder = 'trainall/labelTxt'
-val_img_folder = 'trainall/images'
-test_img_folder = 'testms/images'
-example_ann_folder = 'trainall/labelTxt'
-example_img_folder = 'trainall/images'
+dataset_type = 'RSAI'
+data_root = '/data1/public_dataset/rsai/'
+trainsplit_ann_folder = 'example/labelTxt'
+# trainsplit_ann_folder = 'split/train/labelTxt'
+trainsplit_img_folder = 'example/images'
+# trainsplit_img_folder = 'split/train/images'
+valsplit_ann_folder = 'split/val/labelTxt'
+valsplit_img_folder = 'split/val/images'
+val_ann_folder = 'origin/val/labelTxt'  # change the path to validate
+val_img_folder = 'origin/val/images'
+test_img_folder = 'split/val/images'  # # change the path to validate
 
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
     dict(type='PhotoMetricDistortion'),
-    dict(type='RMixUp',
+    dict(type='RMosaic',
          img_scale=(1024, 1024),
-         ratio_range=(1.0, 1.0),
-         pad_val=114.0,
-         flip_ratio=1,
-         change_scale=False),
+         center_ratio_range=(1.0, 1.0)),
     dict(type='Randomrotate', border_value=0, rotate_mode='value', rotate_ratio=0.5,
          rotate_values=[30, 60, 90, 120, 150],
          auto_bound=False),
@@ -162,7 +159,7 @@ train_pipeline = [
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
     dict(type='DefaultFormatBundle'),
-    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_bboxes_ignore','hor_gt_bboxes', 'hor_gt_bboxes_ignore',
+    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_bboxes_ignore', 'hor_gt_bboxes', 'hor_gt_bboxes_ignore',
                                'gt_labels']),
 ]
 
@@ -196,8 +193,8 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=4,
-    workers_per_gpu=2,
+    samples_per_gpu=1,
+    workers_per_gpu=0,
     train=train_dataset,
     val=dict(
         type=dataset_type,
@@ -211,7 +208,7 @@ data = dict(
         pipeline=test_pipeline,
         test_mode=True))
 
-custom_hooks = [dict(type='ModeSwitchHook', num_last_epochs=4, priority=48)]
+custom_hooks = [dict(type='ModeSwitchHook', num_last_epochs=5, priority=48)]
 evaluation = dict(interval=24, metric='bbox')
 checkpoint_config = dict(interval=4)
 
@@ -227,4 +224,4 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/DOTA1_0/faster_rcnn_r50_fpn_augment_1x'
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/rsai/faster_rcnn_r50_mosaic'
