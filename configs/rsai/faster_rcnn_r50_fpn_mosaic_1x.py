@@ -151,10 +151,11 @@ train_pipeline = [
     dict(type='RMosaic',
          img_scale=(1024, 1024),
          center_ratio_range=(1.0, 1.0)),
+    dict(type='RResize', img_scale=(1024, 1024)),
     dict(type='Randomrotate', border_value=0, rotate_mode='value', rotate_ratio=0.5,
          rotate_values=[30, 60, 90, 120, 150],
          auto_bound=False),
-    dict(type='RResize', img_scale=(1024, 1024)),
+    dict(type='RResize', img_scale=(1024, 1024), override=True),
     dict(type='RRandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
@@ -191,7 +192,7 @@ test_pipeline = [
             dict(type='ImageToTensor', keys=['img']),
             dict(type='Collect', keys=['img']),
         ])
-] 
+]
 data = dict(
     samples_per_gpu=1,
     workers_per_gpu=0,

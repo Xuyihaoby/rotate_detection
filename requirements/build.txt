@@ -4,3 +4,4 @@ numpy
 opencv-contrib-python==4.2.0.32
 tqdm
 shapely
+timm

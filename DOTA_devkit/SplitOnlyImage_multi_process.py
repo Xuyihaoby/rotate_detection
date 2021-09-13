@@ -96,8 +96,8 @@ class splitbase():
 
 if __name__ == '__main__':
     split = splitbase(r'/data1/public_dataset/DOTA/DOTA1_0/origin/test/images',
-                      r'/data1/public_dataset/DOTA/DOTA1_0/split/testms/images',
+                      r'/data1/public_dataset/DOTA/DOTA1_0/simple/test/images',
                       num_process=32)
-    split.splitdata(0.5)
-    split.splitdata(1.5)
+    # split.splitdata(0.5)
+    # split.splitdata(1.5)
     split.splitdata(1)

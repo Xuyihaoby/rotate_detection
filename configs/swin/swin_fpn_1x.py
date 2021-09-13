@@ -2,19 +2,26 @@ model = dict(
     type='RFasterRCNN',
     obb=True,
     submission=True,
-    pretrained='torchvision://resnet50',
+    pretrained='https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_tiny_patch4_window7_224.pth',
     backbone=dict(
-        type='ResNet',
-        depth=50,
-        num_stages=4,
+        type='SwinTransformer',
+        embed_dim=96,
+        depths=[2, 2, 6, 2],
+        num_heads=[3, 6, 12, 24],
+        window_size=7,
+        mlp_ratio=4.,
+        qkv_bias=True,
+        qk_scale=None,
+        drop_rate=0.,
+        attn_drop_rate=0.,
+        drop_path_rate=0.2,
+        ape=False,
+        patch_norm=True,
         out_indices=(0, 1, 2, 3),
-        frozen_stages=1,
-        norm_cfg=dict(type='BN', requires_grad=True),
-        norm_eval=True,
-        style='pytorch'),
+        use_checkpoint=False),
     neck=dict(
         type='FPN',
-        in_channels=[256, 512, 1024, 2048],
+        in_channels=[96, 192, 384, 768],
         out_channels=256,
         num_outs=5),
     rpn_head=dict(
@@ -121,9 +128,13 @@ model = dict(
     ))
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
-optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
-# learning policy
+optimizer = dict(type='AdamW', lr=0.0001, betas=(0.9, 0.999), weight_decay=0.05,
+                 paramwise_cfg=dict(custom_keys={'absolute_pos_embed': dict(decay_mult=0.),
+                                                 'relative_position_bias_table': dict(decay_mult=0.),
+                                                 'norm': dict(decay_mult=0.)}))
+
+optimizer_config = dict(grad_clip=None)
+
 lr_config = dict(
     policy='step',
     warmup='linear',
@@ -134,10 +145,10 @@ total_epochs = 12
 
 dataset_type = 'RSAI'
 data_root = '/data1/public_dataset/rsai/'
-trainsplit_ann_folder = 'example/labelTxt'
-# trainsplit_ann_folder = 'split/train/labelTxt'
-trainsplit_img_folder = 'example/images'
-# trainsplit_img_folder = 'split/train/images'
+# trainsplit_ann_folder = 'example/labelTxt'
+trainsplit_ann_folder = 'split/train/labelTxt'
+# trainsplit_img_folder = 'example/images'
+trainsplit_img_folder = 'split/train/images'
 valsplit_ann_folder = 'split/val/labelTxt'
 valsplit_img_folder = 'split/val/images'
 val_ann_folder = 'origin/val/labelTxt'  # change the path to validate
@@ -147,16 +158,8 @@ test_img_folder = 'split/val/images'  # # change the path to validate
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
-    dict(type='PhotoMetricDistortion'),
-    dict(type='RMixUp',
-         img_scale=(1024, 1024),
-         ratio_range=(1.0, 1.0),
-         pad_val=114.0,
-         flip_ratio=1,
-         change_scale=False),
-    dict(type='Randomrotate', border_value=0, rotate_mode='value', rotate_ratio=0.5,
-         rotate_values=[30, 60, 90, 120, 150],
-         auto_bound=False),
+    dict(type='LoadImageFromFile'),
+    dict(type='RLoadAnnotations', with_bbox=True, with_mask=True),
     dict(type='RResize', img_scale=(1024, 1024)),
     dict(type='RRandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
@@ -165,21 +168,6 @@ train_pipeline = [
     dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_bboxes_ignore', 'hor_gt_bboxes', 'hor_gt_bboxes_ignore',
                                'gt_labels']),
 ]
-
-train_dataset = dict(
-    type='MultiImageMixDataset',
-    dataset=dict(
-        type=dataset_type,
-        ann_file=data_root + trainsplit_ann_folder,
-        img_prefix=data_root + trainsplit_img_folder,
-        pipeline=[
-            dict(type='LoadImageFromFile', to_float32=True),
-            dict(type='RLoadAnnotations', with_bbox=True)
-        ],
-        filter_empty_gt=False,
-    ),
-    pipeline=train_pipeline)
-
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
@@ -198,7 +186,11 @@ test_pipeline = [
 data = dict(
     samples_per_gpu=1,
     workers_per_gpu=0,
-    train=train_dataset,
+    train=dict(
+        type=dataset_type,
+        ann_file=data_root + trainsplit_ann_folder,
+        img_prefix=data_root + trainsplit_img_folder,
+        pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
         ann_file=data_root + valsplit_ann_folder,
@@ -210,9 +202,8 @@ data = dict(
         img_prefix=data_root + test_img_folder,
         pipeline=test_pipeline,
         test_mode=True))
-
-custom_hooks = [dict(type='ModeSwitchHook', num_last_epochs=5, priority=48)]
 evaluation = dict(interval=24, metric='bbox')
+runner = dict(type='EpochBasedRunner', max_epochs=12)
 checkpoint_config = dict(interval=4)
 
 log_config = dict(
@@ -227,4 +218,4 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/rsai/faster_rcnn_r50_aug'
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/swin/swin_T'

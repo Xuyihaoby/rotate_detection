@@ -20,12 +20,14 @@ class RResize(Resize):
                  img_scale=None,
                  multiscale_mode='range',
                  ratio_range=None,
-                 bbox_clip_border=True):
+                 bbox_clip_border=True,
+                 override=False):
         super(RResize, self).__init__(img_scale=img_scale,
                                       multiscale_mode=multiscale_mode,
                                       ratio_range=ratio_range,
                                       keep_ratio=False,
-                                      bbox_clip_border=bbox_clip_border)
+                                      bbox_clip_border=bbox_clip_border,
+                                      override=override)
 
     def _resize_bboxes(self, results):
         for key in results.get('bbox_fields', []):
@@ -59,6 +61,46 @@ class RResize(Resize):
                 results[key] = results[key].rescale(results['scale'])
             else:
                 results[key] = results[key].resize(results['img_shape'][:2])
+
+    def _resize_poly(self, results):
+        poly = results['ann_info']['polygons']
+        orig_shape = poly.shape
+        poly = poly.reshape((-1, 8))
+        w_scale, h_scale, _, _ = results['scale_factor']
+        poly[:, 0::2] *= w_scale
+        poly[:, 1::2] *= h_scale
+        results['ann_info']['polygons'] = poly.reshape(orig_shape)
+
+    def __call__(self, results):
+        if 'scale' not in results:
+            if 'scale_factor' in results:
+                img_shape = results['img'].shape[:2]
+                scale_factor = results['scale_factor']
+                assert isinstance(scale_factor, float)
+                results['scale'] = tuple(
+                    [int(x * scale_factor) for x in img_shape][::-1])
+            else:
+                self._random_scale(results)
+        else:
+            if not self.override:
+                assert 'scale_factor' not in results, (
+                    'scale and scale_factor cannot be both set.')
+            else:
+                results.pop('scale')
+                if 'scale_factor' in results:
+                    results.pop('scale_factor')
+                self._random_scale(results)
+
+        self._resize_img(results)
+        self._resize_bboxes(results)
+        self._resize_masks(results)
+        self._resize_seg(results)
+        mosaic_flag = results.get('mosaic', False)
+        if mosaic_flag==True:
+            self._resize_poly(results)
+            del results['mosaic']
+            del results['scale_factor']
+        return results
 
 
 @PIPELINES.register_module()
@@ -189,8 +231,6 @@ class RRandomFlip(object):
             results['flip_direction'] = cur_dir
         if results['flip']:
             # flip image
-            # imshow_det_rbboxes(results['img'], results['gt_bboxes'], results['gt_labels'], show=False, out_file='ori.png')
-            # imshow_det_bboxes(results['img'], results['hor_gt_bboxes'], results['gt_labels'], show=False, out_file='ori.png')
             for key in results.get('img_fields', ['img']):
                 for direction in cur_dir:
                     results[key] = mmcv.imflip(
@@ -211,14 +251,11 @@ class RRandomFlip(object):
                 for direction in cur_dir:
                     results[key] = mmcv.imflip(
                         results[key], direction=direction)
-        # imshow_det_bboxes(results['img'], results['hor_gt_bboxes'], results['gt_labels'], show=False,
-        #                   out_file='./images'+results['filename'])
         # if results['rotate']:
-        #     # imgname = results['img_info']['filename']
         #     imshow_det_rbboxes(results['img'], results['gt_bboxes'], results['gt_labels'], show=False, \
         #                        out_file='/home/lzy/xyh/Netmodel/s2anet/imgaes/' + str(int(time.time() % 1000)) + '.png')
-        #     imshow_det_bboxes(results['img'], results['hor_gt_bboxes'], results['gt_labels'], show=False, \
-        #                       out_file='/home/lzy/xyh/Netmodel/s2anet/imgaesh/' + str(int(time.time() % 1000)) + '.png')
+            # imshow_det_bboxes(results['img'] / 255, results['hor_gt_bboxes'], results['gt_labels'], show=False, \
+            #                   out_file='/home/lzy/xyh/Netmodel/s2anet/imgaesh/' + str(int(time.time() % 1000)) + '.png')
         return results
 
 
@@ -314,6 +351,12 @@ class RMixUp:
 
         if results['mix_results'][0]['gt_bboxes'].shape[0] == 0:
             # empty bbox
+            return results
+
+        # update by xyh
+        # temporarily
+        if results['img_info']['filename']==results['mix_results'][0]['img_info']['filename']:
+            results.pop('mix_results')
             return results
 
         if 'scale' in results:
@@ -420,6 +463,10 @@ class RMixUp:
             retrieve_hor_gt_bboxes = retrieve_results['hor_gt_bboxes']
 
             retrive_polygons = retrieve_results['ann_info']['polygons']
+            # imshow_det_rbboxes(padded_cropped_img, retrieve_gt_bboxes, retrieve_gt_labels, show=False, \
+            #                    out_file='/home/lzy/xyh/Netmodel/s2anet/imgaes/' + str(int(time.time() % 1000)) + '.png')
+            # imshow_det_rbboxes(ori_img, results['gt_bboxes'], results['gt_labels'], show=False, \
+            #                   out_file='/home/lzy/xyh/Netmodel/s2anet/oriimgaes/' + str(int(time.time() % 1000)) + '.png')
 
             mixup_gt_bboxes = np.concatenate(
                 (results['gt_bboxes'], retrieve_gt_bboxes), axis=0)
@@ -436,6 +483,12 @@ class RMixUp:
             results['hor_gt_bboxes'] = mixup_hor_gt_bboxes
             results['gt_labels'] = mixup_gt_labels
             results['ann_info']['polygons'] = mixup_polygons
+            assert len(results['gt_bboxes']) == len(results['hor_gt_bboxes']) == len(results['gt_labels']) == len(results['ann_info']['polygons'])
+            import pdb
+            pdb.set_trace()
+            imshow_det_rbboxes(results['img'], results['gt_bboxes'], results['gt_labels'], show=False, \
+                               out_file='/home/lzy/xyh/Netmodel/s2anet/miximgaes/' + str(
+                                   int(time.time() % 1000)) + '.png')
         return results
 
     def _filter_box_candidates(self, bbox1, bbox2):
@@ -543,6 +596,9 @@ class RMosaic:
         mosaic_bboxes = []
         mosaic_hor_bboxes = []
         mosaic_polygons = []
+        # update by xyh
+        results['mosaic']=True
+
         if len(results['img'].shape) == 3:
             mosaic_img = np.full(
                 (int(self.img_scale[0] * 2), int(self.img_scale[1] * 2), 3),
@@ -639,10 +695,10 @@ class RMosaic:
         results['ann_info']['polygons'] = mosaic_polygons
 
 
-        imshow_det_rbboxes(results['img'], results['gt_bboxes'], results['gt_labels'], show=False, \
-                        out_file='/home/lzy/xyh/Netmodel/s2anet/imgaes/' + str(int(time.time() % 1000)) + '.png')
-        imshow_det_bboxes(results['img']/255, results['hor_gt_bboxes'], results['gt_labels'], show=False, \
-                                  out_file='/home/lzy/xyh/Netmodel/s2anet/imgaesh/' + str(int(time.time() % 1000)) + '.png')
+        # imshow_det_rbboxes(results['img'], results['gt_bboxes'], results['gt_labels'], show=False, \
+        #                 out_file='/home/lzy/xyh/Netmodel/s2anet/imgaes/' + str(int(time.time() % 1000)) + '.png')
+        # imshow_det_bboxes(results['img']/255, results['hor_gt_bboxes'], results['gt_labels'], show=False, \
+        #                           out_file='/home/lzy/xyh/Netmodel/s2anet/imgaesh/' + str(int(time.time() % 1000)) + '.png')
         return results
 
     def _mosaic_combine(self, loc, center_position_xy, img_shape_wh):

@@ -299,21 +299,21 @@ if __name__ == '__main__':
     # elapsed = (time.clock() - start)
     # print("Time used:", elapsed)
 
-    split_train_ms = splitbase(r'/data1/public_dataset/rsai/origin/train',
-                              r'/data1/public_dataset/rsai/split/all',
+    split_train_ms = splitbase(r'/data1/public_dataset/DOTA/DOTA1_0/origin/train',
+                              r'/data1/public_dataset/DOTA/DOTA1_0/simple/train',
                               gap=512,
                               subsize=1024,
                               num_process=40)
     split_train_ms.splitdata(1)
-    split_train_ms.splitdata(0.5)
-    split_train_ms.splitdata(1.5)
+    # split_train_ms.splitdata(0.5)
+    # split_train_ms.splitdata(1.5)
 
-    split_val_ms = splitbase(r'/data1/public_dataset/rsai/origin/val',
-                              r'/data1/public_dataset/rsai/split/all',
-                              gap=512,
-                              subsize=1024,
-                              num_process=40)
-    split_val_ms.splitdata(1)
-    split_val_ms.splitdata(0.5)
-    split_val_ms.splitdata(1.5)
+    # split_val_ms = splitbase(r'/data1/public_dataset/rsai/origin/val',
+    #                           r'/data1/public_dataset/rsai/split/all',
+    #                           gap=512,
+    #                           subsize=1024,
+    #                           num_process=40)
+    # split_val_ms.splitdata(1)
+    # split_val_ms.splitdata(0.5)
+    # split_val_ms.splitdata(1.5)
 
