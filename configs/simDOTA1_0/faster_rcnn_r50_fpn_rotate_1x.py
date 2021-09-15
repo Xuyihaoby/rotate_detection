@@ -1,4 +1,4 @@
-num = 15
+num=15
 model = dict(
     type='RFasterRCNN',
     obb=True,
@@ -19,7 +19,7 @@ model = dict(
         out_channels=256,
         num_outs=5),
     rpn_head=dict(
-        type='RRPNHeadATSS',
+        type='RRPNHead',
         in_channels=256,
         feat_channels=256,
         anchor_generator=dict(
@@ -62,7 +62,14 @@ model = dict(
     # model training and testing settings
     train_cfg=dict(
         rpn=dict(
-            assigner=dict(type='RATSSAssigner', topk=9, gpu_assign_thr=5),
+            assigner=dict(
+                type='MaxIoUAssigner',
+                pos_iou_thr=0.7,
+                neg_iou_thr=0.3,
+                min_pos_iou=0.3,
+                match_low_quality=True,
+                ignore_iof_thr=-1,
+                gpu_assign_thr=180),
             sampler=dict(
                 type='RandomSampler',
                 num=256,
@@ -143,6 +150,9 @@ img_norm_cfg = dict(
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='RLoadAnnotations', with_bbox=True),
+    dict(type='Randomrotate', border_value=0, rotate_mode='value', rotate_ratio=0.5,
+         rotate_values=[30, 60, 90, 120, 150],
+         auto_bound=False),
     dict(type='RResize', img_scale=(1024, 1024)),
     dict(type='RRandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
@@ -187,7 +197,7 @@ data = dict(
         test_mode=True))
 evaluation = dict(interval=24, metric='bbox')
 
-checkpoint_config = dict(interval=4)
+checkpoint_config = dict(interval=2)
 
 log_config = dict(
     interval=10,
@@ -199,6 +209,13 @@ log_config = dict(
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 load_from = None
-resume_from = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/faster_rcnn_r50_fpn_atss_1x/epoch_8.pth'
+resume_from = None
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/faster_rcnn_r50_fpn_atss_1x'
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/faster_rcnn_r50_fpn_rotate_1x'
+
+# mAP: 0.7249800405394021
+# ap of each class: plane:0.8918578058578293, baseball-diamond:0.7610433297234268, bridge:0.5163391393028444,
+# ground-track-field:0.7579760620678344, small-vehicle:0.7409157843974387, large-vehicle:0.7589276108891696,
+# ship:0.8588381664821094, tennis-court:0.9089558287180874, basketball-court:0.7945703836148308,
+# storage-tank:0.8434090996627599, soccer-ball-field:0.5763482693352823, roundabout:0.5932902784999655,
+# harbor:0.672777690374945, swimming-pool:0.6989052419948143, helicopter:0.5005459171696948

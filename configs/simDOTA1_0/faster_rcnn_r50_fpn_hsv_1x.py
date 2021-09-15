@@ -1,4 +1,3 @@
-num = 15
 model = dict(
     type='RFasterRCNN',
     obb=True,
@@ -19,7 +18,7 @@ model = dict(
         out_channels=256,
         num_outs=5),
     rpn_head=dict(
-        type='RRPNHeadATSS',
+        type='RRPNHead',
         in_channels=256,
         feat_channels=256,
         anchor_generator=dict(
@@ -46,7 +45,7 @@ model = dict(
             in_channels=256,
             fc_out_channels=1024,
             roi_feat_size=7,
-            num_classes=num,
+            num_classes=15,
             bbox_coder=dict(
                 type='DeltaXYWHBBoxCoder',
                 target_means=[0., 0., 0., 0.],
@@ -62,7 +61,14 @@ model = dict(
     # model training and testing settings
     train_cfg=dict(
         rpn=dict(
-            assigner=dict(type='RATSSAssigner', topk=9, gpu_assign_thr=5),
+            assigner=dict(
+                type='MaxIoUAssigner',
+                pos_iou_thr=0.7,
+                neg_iou_thr=0.3,
+                min_pos_iou=0.3,
+                match_low_quality=True,
+                ignore_iof_thr=-1,
+                gpu_assign_thr=180),
             sampler=dict(
                 type='RandomSampler',
                 num=256,
@@ -141,8 +147,12 @@ example_img_folder = 'train/images'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
-    dict(type='LoadImageFromFile'),
+    dict(type='LoadImageFromFile', to_float32=True),
     dict(type='RLoadAnnotations', with_bbox=True),
+    dict(type='PhotoMetricDistortion'),
+    dict(type='Randomrotate', border_value=0, rotate_mode='value', rotate_ratio=0.5,
+         rotate_values=[30, 60, 90, 120, 150],
+         auto_bound=False),
     dict(type='RResize', img_scale=(1024, 1024)),
     dict(type='RRandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
@@ -187,7 +197,7 @@ data = dict(
         test_mode=True))
 evaluation = dict(interval=24, metric='bbox')
 
-checkpoint_config = dict(interval=4)
+checkpoint_config = dict(interval=2)
 
 log_config = dict(
     interval=10,
@@ -199,6 +209,6 @@ log_config = dict(
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 load_from = None
-resume_from = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/faster_rcnn_r50_fpn_atss_1x/epoch_8.pth'
+resume_from = None
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/faster_rcnn_r50_fpn_atss_1x'
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/faster_rcnn_r50_fpn_hsv_1x'
