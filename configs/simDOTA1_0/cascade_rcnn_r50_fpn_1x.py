@@ -287,3 +287,9 @@ resume_from = None
 workflow = [('train', 1)]
 work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/cascade_rcnn_r50'
 
+# mAP: 0.6967120871609882
+# ap of each class: plane:0.8125759775905526, baseball-diamond:0.7551112683672065, bridge:0.47292842181621825,
+# ground-track-field:0.6963827330520076, small-vehicle:0.7333475786703573, large-vehicle:0.7656121439032034,
+# ship:0.7841171973733069, tennis-court:0.9089550210626446, basketball-court:0.7936236847382849,
+# storage-tank:0.7799624393970619, soccer-ball-field:0.5830999736135294, roundabout:0.5976809432669088,
+# harbor:0.6731636112766847, swimming-pool:0.6267668226775515, helicopter:0.46735349060930453

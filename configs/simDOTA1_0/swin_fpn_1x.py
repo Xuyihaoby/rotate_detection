@@ -1,25 +1,31 @@
-num = 15
 model = dict(
     type='RFasterRCNN',
     obb=True,
     submission=True,
-    pretrained='torchvision://resnet50',
+    pretrained='https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_tiny_patch4_window7_224.pth',
     backbone=dict(
-        type='ResNet',
-        depth=50,
-        num_stages=4,
+        type='SwinTransformer',
+        embed_dim=96,
+        depths=[2, 2, 6, 2],
+        num_heads=[3, 6, 12, 24],
+        window_size=7,
+        mlp_ratio=4.,
+        qkv_bias=True,
+        qk_scale=None,
+        drop_rate=0.,
+        attn_drop_rate=0.,
+        drop_path_rate=0.2,
+        ape=False,
+        patch_norm=True,
         out_indices=(0, 1, 2, 3),
-        frozen_stages=1,
-        norm_cfg=dict(type='BN', requires_grad=True),
-        norm_eval=True,
-        style='pytorch'),
+        use_checkpoint=False),
     neck=dict(
         type='FPN',
-        in_channels=[256, 512, 1024, 2048],
+        in_channels=[96, 192, 384, 768],
         out_channels=256,
         num_outs=5),
     rpn_head=dict(
-        type='RRPNHeadATSS',
+        type='RRPNHead',
         in_channels=256,
         feat_channels=256,
         anchor_generator=dict(
@@ -46,7 +52,7 @@ model = dict(
             in_channels=256,
             fc_out_channels=1024,
             roi_feat_size=7,
-            num_classes=num,
+            num_classes=11,
             bbox_coder=dict(
                 type='DeltaXYWHBBoxCoder',
                 target_means=[0., 0., 0., 0.],
@@ -62,7 +68,14 @@ model = dict(
     # model training and testing settings
     train_cfg=dict(
         rpn=dict(
-            assigner=dict(type='RATSSAssigner', topk=9, gpu_assign_thr=5),
+            assigner=dict(
+                type='MaxIoUAssigner',
+                pos_iou_thr=0.7,
+                neg_iou_thr=0.3,
+                min_pos_iou=0.3,
+                match_low_quality=True,
+                ignore_iof_thr=-1,
+                gpu_assign_thr=200),
             sampler=dict(
                 type='RandomSampler',
                 num=256,
@@ -115,9 +128,13 @@ model = dict(
     ))
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
-optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
-# learning policy
+optimizer = dict(type='AdamW', lr=0.0001, betas=(0.9, 0.999), weight_decay=0.05,
+                 paramwise_cfg=dict(custom_keys={'absolute_pos_embed': dict(decay_mult=0.),
+                                                 'relative_position_bias_table': dict(decay_mult=0.),
+                                                 'norm': dict(decay_mult=0.)}))
+
+optimizer_config = dict(grad_clip=None)
+
 lr_config = dict(
     policy='step',
     warmup='linear',
@@ -186,7 +203,7 @@ data = dict(
         pipeline=test_pipeline,
         test_mode=True))
 evaluation = dict(interval=24, metric='bbox')
-
+runner = dict(type='EpochBasedRunner', max_epochs=12)
 checkpoint_config = dict(interval=4)
 
 log_config = dict(
@@ -199,12 +216,6 @@ log_config = dict(
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 load_from = None
-resume_from = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/faster_rcnn_r50_fpn_atss_1x/epoch_8.pth'
+resume_from = None
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/faster_rcnn_r50_fpn_atss_1x'
-# mAP: 0.6971858575828939
-# ap of each class: plane:0.812853253063886, baseball-diamond:0.7589707328463124, bridge:0.4599304168130316,
-# ground-track-field:0.6871268893062519, small-vehicle:0.7325242116068432, large-vehicle:0.7514292990609561,
-# ship:0.8539033595720031, tennis-court:0.9083370545895115, basketball-court:0.7944911230968155,
-# storage-tank:0.7813867063794495, soccer-ball-field:0.561761632034396, roundabout:0.6211560031747319,
-# harbor:0.6591127943634467, swimming-pool:0.6211399780933433, helicopter:0.45366440974242767
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/swin_T'
