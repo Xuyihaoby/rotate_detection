@@ -378,7 +378,7 @@ class RHybridTaskCascadeRoIHead(RCascadeRoIHead):
             det_bbox_h, det_label_h, det_bbox, det_label = self.bbox_head[-1].get_bboxes(
                 rois[i],
                 cls_score_h[i],
-                bbox_pred[i],
+                bbox_pred_h[i],
                 cls_score_r[i],
                 bbox_pred[i],
                 img_shapes[i],

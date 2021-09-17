@@ -224,10 +224,12 @@ model = dict(
             nms_thr=0.7,
             min_bbox_size=0),
         rcnn=dict(
-            score_thr=0.001,
-            nms=dict(type='nms', iou_threshold=0.5),
-            max_per_img=100,
-            mask_thr_binary=0.5))
+            score_thr=0.05,
+            nms_h=dict(type='nms', iou_threshold=0.1),
+            max_per_img_h=500,
+            nms_r=dict(type='rnms', iou_threshold=0.1),
+            # nms_r=dict(type='nms_rotate', iou_threshold=merge_nms_iou_thr_dict),
+            max_per_img=500))
 )
 
 # optimizer

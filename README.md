@@ -19,14 +19,15 @@ Supported backbones:
 - [x] RegNet
 - [x] Res2Net
 - [x] ResNeSt
+- [x] swin
 
 Supported methods（rotate）:
 
-- [x] [Faster R-CNN](configs/faster_rcnn)
+- [x] RFaster R-CNN
 - [x] HSP
 - [x] RCascade RCNN
 - [x] RRetinanet
-- [ ] RHTC
+- [x] RHTC
 
 Some other methods are also supported in [projects using MMDetection](./docs/projects.md).
 
