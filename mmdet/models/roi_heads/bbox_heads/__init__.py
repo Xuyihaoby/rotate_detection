@@ -8,11 +8,13 @@ from .rconvfc_bbox_head import (RConvFCBBoxHead, RShared2FCBBoxHead, RShared4Con
 from .convfc_multiLvls_with_oriImg_single_mask_bbox_head import \
     (MultiLvlsWithOriginalImageSingleMaskShared2FCBBoxHead,
      MultiLvlsWithOriginalImageSingleMaskShared4Conv1FCBBoxHead)
+from .convfc_obbox_head import ConvFCOBBoxHead, Shared2FCOBBoxHead, Shared4Conv1FCOBBoxHead
 
 __all__ = [
     'BBoxHead', 'ConvFCBBoxHead', 'Shared2FCBBoxHead',
     'Shared4Conv1FCBBoxHead', 'DoubleConvFCBBoxHead', 'SABLHead',
     'RConvFCBBoxHead', 'RShared2FCBBoxHead', 'RShared4Conv1FCBBoxHead',
     'MultiLvlsWithOriginalImageSingleMaskShared2FCBBoxHead',
-    'MultiLvlsWithOriginalImageSingleMaskShared4Conv1FCBBoxHead'
+    'MultiLvlsWithOriginalImageSingleMaskShared4Conv1FCBBoxHead',
+    'ConvFCOBBoxHead', 'Shared2FCOBBoxHead', 'Shared4Conv1FCOBBoxHead'
 ]

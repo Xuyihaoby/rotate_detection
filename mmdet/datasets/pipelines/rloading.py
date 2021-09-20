@@ -82,7 +82,8 @@ class RLoadAnnotations(LoadAnnotations):
         if self.poly2mask:
             if self.hsp:
                 gt_masks = BitmapMasks([self._poly2mask(gt_masks, h, w)], h, w)
-            gt_masks = BitmapMasks(
+            else:
+                gt_masks = BitmapMasks(
                 [self._poly2mask(mask, h, w) for mask in gt_masks], h, w)
         else:
             gt_masks = PolygonMasks(

@@ -1,37 +1,49 @@
-num=15
+merge_nms_iou_thr_dict = {
+    'roundabout': 0.1, 'tennis-court': 0.3, 'swimming-pool': 0.1, 'storage-tank': 0.1,
+    'soccer-ball-field': 0.3, 'small-vehicle': 0.05, 'ship': 0.05, 'plane': 0.3,
+    'large-vehicle': 0.05, 'helicopter': 0.2, 'harbor': 0.0001, 'ground-track-field': 0.3,
+    'bridge': 0.0001, 'basketball-court': 0.3, 'baseball-diamond': 0.3
+}
+diff_r_max_num = {'roundabout': 100, 'tennis-court': 100, 'swimming-pool': 200, 'storage-tank': 200,
+                  'soccer-ball-field': 100, 'small-vehicle': 500, 'ship': 500, 'plane': 300,
+                  'large-vehicle': 500, 'helicopter': 100, 'harbor': 200, 'ground-track-field': 100,
+                  'bridge': 100, 'basketball-court': 100, 'baseball-diamond': 100, 'container-crane': 100}
+merge_nms_iou_thr_dict_h = {'roundabout': 0.35, 'tennis-court': 0.35, 'swimming-pool': 0.4, 'storage-tank': 0.3,
+                            'soccer-ball-field': 0.3, 'small-vehicle': 0.4, 'ship': 0.35, 'plane': 0.35,
+                            'large-vehicle': 0.4, 'helicopter': 0.4, 'harbor': 0.3, 'ground-track-field': 0.4,
+                            'bridge': 0.3, 'basketball-court': 0.4, 'baseball-diamond': 0.3, 'container-crane': 0.3}
+
+diff_h_max_num = {'roundabout': 100, 'tennis-court': 100, 'swimming-pool': 200, 'storage-tank': 200,
+                  'soccer-ball-field': 100, 'small-vehicle': 500, 'ship': 500, 'plane': 300,
+                  'large-vehicle': 500, 'helicopter': 100, 'harbor': 200, 'ground-track-field': 100,
+                  'bridge': 100, 'basketball-court': 100, 'baseball-diamond': 100, 'container-crane': 100}
+
 model = dict(
-    type='RFasterRCNN',
-    obb=True,
-    submission=True,
-    pretrained='https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_tiny_patch4_window7_224.pth',
+    type='FeatureAttenNetAllLvlSingleMaskDOTA',
+    obb=False,
+    submission=False,
+    pretrained='torchvision://resnet50',
     backbone=dict(
-        type='SwinTransformer',
-        embed_dim=96,
-        depths=[2, 2, 6, 2],
-        num_heads=[3, 6, 12, 24],
-        window_size=7,
-        mlp_ratio=4.,
-        qkv_bias=True,
-        qk_scale=None,
-        drop_rate=0.,
-        attn_drop_rate=0.,
-        drop_path_rate=0.2,
-        ape=False,
-        patch_norm=True,
+        type='ResNet',
+        depth=50,
+        num_stages=4,
         out_indices=(0, 1, 2, 3),
-        use_checkpoint=False),
+        frozen_stages=1,
+        norm_cfg=dict(type='BN', requires_grad=True),
+        norm_eval=True,
+        style='pytorch'),
     neck=dict(
         type='FPN',
-        in_channels=[96, 192, 384, 768],
+        in_channels=[256, 512, 1024, 2048],
         out_channels=256,
         num_outs=5),
     rpn_head=dict(
-        type='RRPNHead',
+        type='RPNHeadSingleMaskDotDOTA',
         in_channels=256,
         feat_channels=256,
         anchor_generator=dict(
             type='AnchorGenerator',
-            scales=[8],  # 不是面积而是尺度 意思是长和宽都需要乘上该值
+            scales=[8],
             ratios=[0.5, 1.0, 2.0],
             strides=[4, 8, 16, 32, 64]),
         bbox_coder=dict(
@@ -40,20 +52,21 @@ model = dict(
             target_stds=[1.0, 1.0, 1.0, 1.0]),
         loss_cls=dict(
             type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0),
-        loss_bbox=dict(type='L1Loss', loss_weight=1.0)),
+        loss_bbox=dict(type='L1Loss', loss_weight=1.0),
+        loss_mask=dict(type='FocalLoss')),
     roi_head=dict(
-        type='RStandardRoIHead',
+        type='HSPRoIHead',
         bbox_roi_extractor=dict(
-            type='SingleRoIExtractor',
+            type='MultiRoIWithOriginalImageSingleMaskExtractorDOTA',
             roi_layer=dict(type='RoIAlign', output_size=7, sampling_ratio=0),
             out_channels=256,
             featmap_strides=[4, 8, 16, 32]),
         bbox_head=dict(
-            type='RShared2FCBBoxHead',
+            type='MultiLvlsWithOriginalImageSingleMaskShared2FCBBoxHead',
             in_channels=256,
             fc_out_channels=1024,
             roi_feat_size=7,
-            num_classes=num,
+            num_classes=15,
             bbox_coder=dict(
                 type='DeltaXYWHBBoxCoder',
                 target_means=[0., 0., 0., 0.],
@@ -76,7 +89,7 @@ model = dict(
                 min_pos_iou=0.3,
                 match_low_quality=True,
                 ignore_iof_thr=-1,
-                gpu_assign_thr=200),
+                gpu_assign_thr=20),
             sampler=dict(
                 type='RandomSampler',
                 num=256,
@@ -100,7 +113,8 @@ model = dict(
                 neg_iou_thr=0.5,
                 min_pos_iou=0.5,
                 match_low_quality=False,
-                ignore_iof_thr=-1),
+                ignore_iof_thr=-1,
+                gpu_assign_thr=20),
             sampler=dict(
                 type='RandomSampler',
                 num=512,
@@ -119,23 +133,19 @@ model = dict(
             min_bbox_size=0),
         rcnn=dict(
             score_thr=0.05,
-            nms_h=dict(type='nms', iou_threshold=0.1),
-            max_per_img_h=500,
-            nms_r=dict(type='rnms', iou_threshold=0.1),
-            # nms_r=dict(type='nms_rotate', iou_threshold=merge_nms_iou_thr_dict),
-            max_per_img=2000)
+            nms_h=dict(type='nms', iou_threshold=merge_nms_iou_thr_dict_h),
+            max_per_img_h=diff_h_max_num,
+            # nms_r=dict(type='nms_rotated', iou_threshold=0.5),
+            nms_r=dict(type='rnms', iou_threshold=merge_nms_iou_thr_dict),
+            max_per_img=diff_r_max_num)
         # soft-nms is also supported for rcnn testing
-        # e.g., nms=dict(type='soft_nms', iou_threshold=0.5, min_score=0.05), merge_nms_iou_thr_dict
+        # e.g., nms=dict(type='soft_nms', iou_threshold=0.5, min_score=0.05)
     ))
 
 # optimizer
-optimizer = dict(type='AdamW', lr=0.0001, betas=(0.9, 0.999), weight_decay=0.05,
-                 paramwise_cfg=dict(custom_keys={'absolute_pos_embed': dict(decay_mult=0.),
-                                                 'relative_position_bias_table': dict(decay_mult=0.),
-                                                 'norm': dict(decay_mult=0.)}))
-
-optimizer_config = dict(grad_clip=None)
-
+optimizer = dict(type='SGD', lr=0.005, momentum=0.9, weight_decay=0.0001)
+optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
+# learning policy
 lr_config = dict(
     policy='step',
     warmup='linear',
@@ -160,14 +170,14 @@ img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='RLoadAnnotations', with_bbox=True),
+    dict(type='RLoadAnnotations', with_bbox=True, hsp=True, with_mask=True),
     dict(type='RResize', img_scale=(1024, 1024)),
     dict(type='RRandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_bboxes_ignore', 'hor_gt_bboxes', 'hor_gt_bboxes_ignore',
-                               'gt_labels']),
+                               'gt_labels', 'gt_masks']),
 ]
 test_pipeline = [
     dict(type='LoadImageFromFile'),
@@ -204,11 +214,11 @@ data = dict(
         pipeline=test_pipeline,
         test_mode=True))
 evaluation = dict(interval=24, metric='bbox')
-runner = dict(type='EpochBasedRunner', max_epochs=12)
-checkpoint_config = dict(interval=4)
 
+checkpoint_config = dict(interval=2)
+# yapf:disable
 log_config = dict(
-    interval=10,
+    interval=50,
     hooks=[
         dict(type='TextLoggerHook'),
         # dict(type='TensorboardLoggerHook')
@@ -219,10 +229,4 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/swin_T'
-# mAP: 0.7268593013360883
-# ap of each class: plane:0.8932244624642959, baseball-diamond:0.7685356447768735, bridge:0.5068020116208873,
-# ground-track-field:0.7326902176423744, small-vehicle:0.7278049101799755, large-vehicle:0.7555526133551228,
-# ship:0.8633897884327726, tennis-court:0.9088894856989393, basketball-court:0.792855277674266,
-# storage-tank:0.8539070557064352, soccer-ball-field:0.5826365779397601, roundabout:0.6456241674753315,
-# harbor:0.6723412749640173, swimming-pool:0.732875343027666, helicopter:0.4657606890826069
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/hsp'

@@ -21,7 +21,7 @@ model = dict(
         out_indices=(0, 1, 2, 3),
         use_checkpoint=False),
     neck=dict(
-        type='FPN',
+        type='PAFPN',
         in_channels=[96, 192, 384, 768],
         out_channels=256,
         num_outs=5),
@@ -123,7 +123,7 @@ model = dict(
             max_per_img_h=500,
             nms_r=dict(type='rnms', iou_threshold=0.1),
             # nms_r=dict(type='nms_rotate', iou_threshold=merge_nms_iou_thr_dict),
-            max_per_img=2000)
+            max_per_img=500)
         # soft-nms is also supported for rcnn testing
         # e.g., nms=dict(type='soft_nms', iou_threshold=0.5, min_score=0.05), merge_nms_iou_thr_dict
     ))
@@ -145,22 +145,25 @@ lr_config = dict(
 total_epochs = 12
 
 dataset_type = 'DOTADatasetV1'
-data_root = '/data1/public_dataset/DOTA/DOTA1_0/simple/'
-trainsplit_ann_folder = 'train/labelTxt'
-trainsplit_img_folder = 'train/images'
-valsplit_ann_folder = 'train/labelTxt'
-valsplit_img_folder = 'train/images'
-val_ann_folder = 'train/labelTxt'
-val_img_folder = 'train/images'
-test_img_folder = 'test/images'
-example_ann_folder = 'train/labelTxt'
-example_img_folder = 'train/images'
+data_root = '/data1/public_dataset/DOTA/DOTA1_0/split/'
+trainsplit_ann_folder = 'trainall/labelTxt'
+trainsplit_img_folder = 'trainall/images'
+valsplit_ann_folder = 'trainall/labelTxt'
+valsplit_img_folder = 'trainall/images'
+val_ann_folder = 'trainall/labelTxt'
+val_img_folder = 'trainall/images'
+test_img_folder = 'testms/images'
+example_ann_folder = 'trainall/labelTxt'
+example_img_folder = 'trainall/images'
 
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='RLoadAnnotations', with_bbox=True),
+    dict(type='Randomrotate', border_value=0, rotate_mode='value', rotate_ratio=0.5,
+         rotate_values=[30, 60, 90, 120, 150],
+         auto_bound=False),
     dict(type='RResize', img_scale=(1024, 1024)),
     dict(type='RRandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
@@ -219,10 +222,4 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/swin_T'
-# mAP: 0.7268593013360883
-# ap of each class: plane:0.8932244624642959, baseball-diamond:0.7685356447768735, bridge:0.5068020116208873,
-# ground-track-field:0.7326902176423744, small-vehicle:0.7278049101799755, large-vehicle:0.7555526133551228,
-# ship:0.8633897884327726, tennis-court:0.9088894856989393, basketball-court:0.792855277674266,
-# storage-tank:0.8539070557064352, soccer-ball-field:0.5826365779397601, roundabout:0.6456241674753315,
-# harbor:0.6723412749640173, swimming-pool:0.732875343027666, helicopter:0.4657606890826069
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/DOTA1_0/swin_pafpn_rotate'

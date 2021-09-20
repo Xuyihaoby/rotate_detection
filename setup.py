@@ -172,6 +172,10 @@ if __name__ == '__main__':
                 module='mmdet.ops.polygon_geo',
                 sources=['src/polygon_geo_cpu.cpp']),
             make_cuda_ext(
+                name='roi_align_rotated_cuda',
+                module='mmdet.ops.roi_align_rotated',
+                sources=['src/ROIAlignRotated_cpu.cpp', 'src/ROIAlignRotated_cuda.cu']),
+            make_cuda_ext(
                 name='orn_cuda',
                 module='mmdet.ops.orn',
                 sources=['src/vision.cpp',

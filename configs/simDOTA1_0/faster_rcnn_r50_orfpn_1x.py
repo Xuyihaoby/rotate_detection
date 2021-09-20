@@ -1,28 +1,21 @@
-num=15
+num = 15
 model = dict(
     type='RFasterRCNN',
     obb=True,
     submission=True,
-    pretrained='https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_tiny_patch4_window7_224.pth',
+    pretrained='torchvision://resnet50',
     backbone=dict(
-        type='SwinTransformer',
-        embed_dim=96,
-        depths=[2, 2, 6, 2],
-        num_heads=[3, 6, 12, 24],
-        window_size=7,
-        mlp_ratio=4.,
-        qkv_bias=True,
-        qk_scale=None,
-        drop_rate=0.,
-        attn_drop_rate=0.,
-        drop_path_rate=0.2,
-        ape=False,
-        patch_norm=True,
+        type='ResNet',
+        depth=50,
+        num_stages=4,
         out_indices=(0, 1, 2, 3),
-        use_checkpoint=False),
+        frozen_stages=1,
+        norm_cfg=dict(type='BN', requires_grad=True),
+        norm_eval=True,
+        style='pytorch'),
     neck=dict(
         type='FPN',
-        in_channels=[96, 192, 384, 768],
+        in_channels=[256, 512, 1024, 2048],
         out_channels=256,
         num_outs=5),
     rpn_head=dict(
@@ -123,19 +116,15 @@ model = dict(
             max_per_img_h=500,
             nms_r=dict(type='rnms', iou_threshold=0.1),
             # nms_r=dict(type='nms_rotate', iou_threshold=merge_nms_iou_thr_dict),
-            max_per_img=2000)
+            max_per_img=500)
         # soft-nms is also supported for rcnn testing
         # e.g., nms=dict(type='soft_nms', iou_threshold=0.5, min_score=0.05), merge_nms_iou_thr_dict
     ))
 
 # optimizer
-optimizer = dict(type='AdamW', lr=0.0001, betas=(0.9, 0.999), weight_decay=0.05,
-                 paramwise_cfg=dict(custom_keys={'absolute_pos_embed': dict(decay_mult=0.),
-                                                 'relative_position_bias_table': dict(decay_mult=0.),
-                                                 'norm': dict(decay_mult=0.)}))
-
-optimizer_config = dict(grad_clip=None)
-
+optimizer = dict(type='SGD', lr=0.0025, momentum=0.9, weight_decay=0.0001)
+optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
+# learning policy
 lr_config = dict(
     policy='step',
     warmup='linear',
@@ -185,8 +174,8 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=2,
-    workers_per_gpu=2,
+    samples_per_gpu=1,
+    workers_per_gpu=0,
     train=dict(
         type=dataset_type,
         ann_file=data_root + trainsplit_ann_folder,
@@ -204,7 +193,7 @@ data = dict(
         pipeline=test_pipeline,
         test_mode=True))
 evaluation = dict(interval=24, metric='bbox')
-runner = dict(type='EpochBasedRunner', max_epochs=12)
+
 checkpoint_config = dict(interval=4)
 
 log_config = dict(
@@ -219,10 +208,4 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/swin_T'
-# mAP: 0.7268593013360883
-# ap of each class: plane:0.8932244624642959, baseball-diamond:0.7685356447768735, bridge:0.5068020116208873,
-# ground-track-field:0.7326902176423744, small-vehicle:0.7278049101799755, large-vehicle:0.7555526133551228,
-# ship:0.8633897884327726, tennis-court:0.9088894856989393, basketball-court:0.792855277674266,
-# storage-tank:0.8539070557064352, soccer-ball-field:0.5826365779397601, roundabout:0.6456241674753315,
-# harbor:0.6723412749640173, swimming-pool:0.732875343027666, helicopter:0.4657606890826069
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/faster_rcnn_r50_orfpn'
