@@ -48,7 +48,7 @@ roi_align_rotated = _ROIAlignRotated.apply
 
 
 class RoIAlignRotated(nn.Module):
-    def __init__(self, out_size, spatial_scale, sample_num):
+    def __init__(self, output_size, spatial_scale, sampling_ratio):
         """
         Args:
             out_size (tuple): h, w
@@ -64,9 +64,9 @@ class RoIAlignRotated(nn.Module):
             from the underlying signal at continuous coordinates 0.5 and 1.5).
         """
         super(RoIAlignRotated, self).__init__()
-        self.out_size = _pair(out_size)
+        self.out_size = _pair(output_size)
         self.spatial_scale = spatial_scale
-        self.sample_num = sample_num
+        self.sample_num = sampling_ratio
 
     def forward(self, input, rois):
         """
