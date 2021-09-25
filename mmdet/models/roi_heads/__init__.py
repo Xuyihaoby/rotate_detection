@@ -21,6 +21,7 @@ from .HSP_roi_head import HSPRoIHead
 from .rstandard_roi_head_wo_hor import RStandardRoIHeadWOHor
 from .rcascade_roi_head import RCascadeRoIHead
 from .rhtc_roi_head import RHybridTaskCascadeRoIHead
+from .oriented_roi_head import OrientedRoIHead
 
 
 __all__ = [
@@ -32,5 +33,6 @@ __all__ = [
     'SingleRoIExtractor', 'PISARoIHead', 'PointRendRoIHead', 'MaskPointHead',
     'CoarseMaskHead', 'DynamicRoIHead', 'TridentRoIHead', 'RStandardRoIHead',
     'HSPRoIHead', 'RCascadeRoIHead',
-    'RHybridTaskCascadeRoIHead'
+    'RHybridTaskCascadeRoIHead',
+    'OrientedRoIHead'
 ]

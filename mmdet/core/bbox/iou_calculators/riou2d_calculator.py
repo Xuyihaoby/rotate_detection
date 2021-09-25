@@ -24,9 +24,9 @@ class RBboxOverlaps2D(object):
         assert bboxes1.size(-1) in [0, 5, 6]
         assert bboxes2.size(-1) in [0, 5, 6]
         if bboxes2.size(-1) == 6:
-            bboxes2 = bboxes2[..., :5]
+            bboxes2 = bboxes2[..., :5].contiguous()
         if bboxes1.size(-1) == 6:
-            bboxes1 = bboxes1[..., :5]
+            bboxes1 = bboxes1[..., :5].contiguous()
         return rbbox_overlaps(bboxes1, bboxes2, mode, is_aligned)
 
     def __repr__(self):

@@ -64,9 +64,9 @@ class RoIAlignRotated(nn.Module):
             from the underlying signal at continuous coordinates 0.5 and 1.5).
         """
         super(RoIAlignRotated, self).__init__()
-        self.out_size = _pair(output_size)
+        self.output_size = _pair(output_size)
         self.spatial_scale = spatial_scale
-        self.sample_num = sampling_ratio
+        self.sampling_ratio = sampling_ratio
 
     def forward(self, input, rois):
         """
@@ -81,13 +81,13 @@ class RoIAlignRotated(nn.Module):
             input = input.float()
             rois = rois.float()
         return roi_align_rotated(
-            input, rois, self.out_size, self.spatial_scale, self.sample_num
+            input, rois, self.output_size, self.spatial_scale, self.sampling_ratio
         ).to(dtype=orig_dtype)
 
     def __repr__(self):
         tmpstr = self.__class__.__name__ + "("
-        tmpstr += "out_size=" + str(self.out_size[0])
+        tmpstr += "output_size=" + str(self.output_size[0])
         tmpstr += ", spatial_scale=" + str(self.spatial_scale)
-        tmpstr += ", sample_num=" + str(self.sample_num)
+        tmpstr += ", sampling_ratio=" + str(self.sampling_ratio)
         tmpstr += ")"
         return tmpstr

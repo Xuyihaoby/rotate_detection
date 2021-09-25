@@ -14,7 +14,7 @@ from mmdet.core import build_bbox_coder
 
 
 @HEADS.register_module()
-class ConvFCOBBoxHead(BBoxHead):
+class OrientedBBoxHead(BBoxHead):
     r"""More general bbox head, with shared conv and fc layers and two optional
     separated branches.
 
@@ -42,7 +42,7 @@ class ConvFCOBBoxHead(BBoxHead):
                  norm_cfg=None,
                  *args,
                  **kwargs):
-        super(ConvFCOBBoxHead, self).__init__(*args, **kwargs)
+        super(OrientedBBoxHead, self).__init__(*args, **kwargs)
         self.bbox_coder_r = build_bbox_coder(bbox_coder_r)
         assert (num_shared_convs + num_shared_fcs + num_cls_convs +
                 num_cls_fcs + num_reg_convs + num_reg_fcs > 0)
@@ -139,8 +139,6 @@ class ConvFCOBBoxHead(BBoxHead):
         return branch_convs, branch_fcs, last_layer_dim
 
     def init_weights(self):
-        # super(RConvFCBBoxHead, self).init_weights()
-        # conv layers are already initialized by ConvModule
         for module_list in [self.shared_fcs, self.cls_fcs, self.reg_fcs]:
             for m in module_list.modules():
                 if isinstance(m, nn.Linear):
@@ -242,12 +240,12 @@ class ConvFCOBBoxHead(BBoxHead):
                     concat=True):
         # 为了便于理解将下列列表每个元素的维度表上
         # pos_gt_bboxes[0].size() >>> torch.Size([22, 5])
-        # pos_bboxes_list[0].size() >>> torch.Size([22, 4])
+        # pos_bboxes_list[0].size() >>> torch.Size([22, 5])
         # gt_bboxes[0].size() >>> torch.Size([16, 5])
         pos_bboxes_list = [res.pos_bboxes for res in sampling_results]
-        # list( len = batchsize ) each is [N, 4]
+        # list( len = batchsize ) each is [N, 5]
         neg_bboxes_list = [res.neg_bboxes for res in sampling_results]
-        # list( len = batchsize ) each is [N, 4]
+        # list( len = batchsize ) each is [N, 5]
         pos_gt_labels_list = [res.pos_gt_labels for res in sampling_results]
         pos_gt_bboxes = [gt_bboxes[i][res.pos_assigned_gt_inds, :] for i, res in enumerate(sampling_results)]
         # list( len = batchsize ) each is [N, 5]
@@ -422,7 +420,7 @@ class ConvFCOBBoxHead(BBoxHead):
 
 
 @HEADS.register_module()
-class Shared2FCOBBoxHead(ConvFCOBBoxHead):
+class Shared2FCOBBoxHead(OrientedBBoxHead):
 
     def __init__(self, fc_out_channels=1024, *args, **kwargs):
         super(Shared2FCOBBoxHead, self).__init__(
@@ -438,7 +436,7 @@ class Shared2FCOBBoxHead(ConvFCOBBoxHead):
 
 
 @HEADS.register_module()
-class Shared4Conv1FCOBBoxHead(ConvFCOBBoxHead):
+class Shared4Conv1FCOBBoxHead(OrientedBBoxHead):
 
     def __init__(self, fc_out_channels=1024, *args, **kwargs):
         super(Shared4Conv1FCOBBoxHead, self).__init__(
