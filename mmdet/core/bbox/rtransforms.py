@@ -3,10 +3,6 @@ import numpy as np
 import cv2
 import torch
 
-
-# from ..bbox import bbox_mapping_back
-# from mmdet.models.utils import transRotate2Quadrangle
-
 def rbbox2result(bboxes, labels, num_classes):
     """Convert detection results to a list of numpy arrays.
 
@@ -134,46 +130,6 @@ def delta2bbox_rotate_from_rotate(rois, deltas,
     return bboxes
 
 
-# def rbbox2result(bboxes_h, labels_h, bboxes_r, labels_r, is_box_voting = False):
-# 	"""Convert detection results to a list of numpy arrays.
-#
-# 	Args:
-# 		bboxes_h (Tensor): shape (n, 5)
-# 		labels_h (Tensor): shape (n, ), 0-start.
-# 		bboxes_r (Tensor): shape (n, 6)/(n, 9)
-# 		labels_r (Tensor): shape (n, ), 0-start.
-#
-# 	Returns:
-# 		list(dict): bbox results of each type
-# 	"""
-# 	## horizontal
-# 	if bboxes_h.shape[0] == 0:
-# 		results_h = np.zeros((0, 6), dtype = np.float32) ## [n, 6(x1,y1, x2,y2, score, label(0-start.))]
-# 	else:
-# 		## [n, 6(x1,y1, x2,y2, score, label(1-start.))]
-# 		## convert from 0-start to 1-start, just for use merge_func
-# 		results_h = torch.cat([bboxes_h.float(), labels_h.unsqueeze(1).float() + 1.], dim = -1).cpu().numpy()
-#
-# 	if bboxes_r is None and labels_r is None:
-# 		return dict(horizontal = results_h)
-# 	else:
-# 		## rotate
-# 		if bboxes_r.shape[0] == 0:
-# 			results_r = np.zeros((0, 10), dtype = np.float32) ## [n, 10(x1,y1, x2,y2, x3,y3, x4,y4, score, label(0-start.))]
-# 		else:
-# 			bboxes_r = bboxes_r.float().cpu().numpy() ## [n, 6]/[n, 9]
-# 			labels_r = labels_r.float().cpu().numpy() ## [n]
-#
-# 			if not is_box_voting:
-# 				## [n, 10(x1,y1, x2,y2, x3,y3, x4,y4, score, label(1-start.))]
-# 				## convert from 0-start to 1-start, just for use merge_func
-# 				bboxes_r = transRotate2Quadrangle(coordinates = bboxes_r, with_label_last = True)
-# 			else:
-# 				bboxes_r = bboxes_r
-# 			results_r = np.concatenate([bboxes_r, np.expand_dims(labels_r, axis = -1) + 1.], axis = -1)
-#
-# 		return dict(horizontal = results_h, rotate = results_r)
-
 
 def transRotate2Quadrangle(coordinates, with_label_last=False):
     """
@@ -223,3 +179,24 @@ def rbbox2roi(bbox_list):
         rois_list.append(rois)
     rois = torch.cat(rois_list, dim=0)
     return rois
+
+def CV_L2LT_RB_TORCH(coordinates):
+    assert coordinates.shape[-1] == 5
+    devices = coordinates.device
+    _coor = coordinates.clone().cpu().numpy()
+    _fourpoints = []
+    for cd in _coor:
+        quad = cv2.boxPoints(((cd[0], cd[1]), (cd[2], cd[3]), cd[4]))
+        _fourpoints.append(np.reshape(quad, [-1, ]))
+    _result = np.array(_fourpoints, dtype=np.float32)
+    xs = _result[:, 0::2]
+    ys = _result[:, 1::2]
+    x1 = np.min(xs, axis=-1)
+    y1 = np.min(ys, axis=-1)
+    x2 = np.max(xs, axis=-1)
+    y2 = np.max(ys, axis=-1)
+    _temp = [x1, y1, x2, y2]
+    _twopoint = np.stack(_temp, axis=1)
+    result = torch.from_numpy(_twopoint).to(devices)
+    return result
+

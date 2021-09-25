@@ -4,11 +4,15 @@ import torch.nn.functional as F
 from mmcv.cnn import normal_init
 from mmdet.ops import batched_rnms
 from mmdet.core import anchor_inside_flags, unmap
+from mmcv.ops import batched_nms
 
 from ..builder import HEADS
 from .anchor_head import AnchorHead
 from .rpn_test_mixin import RPNTestMixin
-from mmdet.core import multi_apply, force_fp32, images_to_levels
+from mmdet.core import multi_apply, images_to_levels
+from mmcv.runner import force_fp32
+
+from mmdet.core.bbox.rtransforms import CV_L2LT_RB_TORCH
 
 
 @HEADS.register_module()
@@ -55,8 +59,8 @@ class ORPNHead(RPNTestMixin, AnchorHead):
         loss_cls = self.loss_cls(
             cls_score, labels, label_weights, avg_factor=num_total_samples)
         # regression loss
-        bbox_targets = bbox_targets.reshape(-1, 5)  # [batchsize, num_bboxes, 5]
-        bbox_weights = bbox_weights.reshape(-1, 5)  # [batchsize, num_bboxes, 5]
+        bbox_targets = bbox_targets.reshape(-1, 5)  # [batchsize*num_bboxes, 5]
+        bbox_weights = bbox_weights.reshape(-1, 5)  # [batchsize*num_bboxes, 5]
         bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(-1, 5)
         # [batch_size, 5*num_base_anchors, H, W] --> [batch_size, H, W, 5*num_base_anchors] --> [N, 5]
         # TODO: reshape, self.reg_decoded_bbox
@@ -80,7 +84,7 @@ class ORPNHead(RPNTestMixin, AnchorHead):
              img_metas,
              gt_bboxes_ignore=None):
         # cls：channel = num_classes * anchors; list[] five tensors(depend on lvls) each is [bactchsize, channel, H, W]
-        # box_pred: channel = anchors * 4;five tensors(depend on lvls) each is [bactchsize, channel, H, W]
+        # box_pred: channel = anchors * 5;five tensors(depend on lvls) each is [bactchsize, channel, H, W]
         featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
         assert len(featmap_sizes) == self.anchor_generator.num_levels
         device = cls_scores[0].device
@@ -106,7 +110,6 @@ class ORPNHead(RPNTestMixin, AnchorHead):
         # self.sampling主要根据sampling loss_cls的方式来决定
         num_total_samples = (
             num_total_pos + num_total_neg if self.sampling else num_total_pos)
-
         # anchor number of multi levels
         num_level_anchors = [anchors.size(0) for anchors in anchor_list[0]]
         # concat all level anchors and flags to a single tensor
@@ -201,7 +204,6 @@ class ORPNHead(RPNTestMixin, AnchorHead):
                                   inside_flags)
             bbox_targets = unmap(bbox_targets, num_total_anchors, inside_flags)
             bbox_weights = unmap(bbox_weights, num_total_anchors, inside_flags)
-
         return (labels, label_weights, bbox_targets, bbox_weights, pos_inds,
                 neg_inds, sampling_result)
 
@@ -327,7 +329,7 @@ class ORPNHead(RPNTestMixin, AnchorHead):
         anchors = torch.cat(mlvl_valid_anchors)  # [[2000, 5], ..(num_lvls)] --> [num, 4]
         rpn_bbox_pred = torch.cat(mlvl_bbox_preds)
         proposals = self.bbox_coder.decode(
-            anchors, rpn_bbox_pred, max_shape=img_shape) # [num, 5]
+            anchors, rpn_bbox_pred, max_shape=img_shape)  # [num, 5]
         ids = torch.cat(level_ids)
 
         if cfg.min_bbox_size > 0:
@@ -346,7 +348,6 @@ class ORPNHead(RPNTestMixin, AnchorHead):
         # dets[n, 5(x, y, w, h, theta, scores)]
         # keep index
         return dets[:cfg.nms_post]
-
     def forward_train(self,
                       x,
                       img_metas,
