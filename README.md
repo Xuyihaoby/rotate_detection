@@ -23,11 +23,12 @@ Supported backbones:
 
 Supported methods（rotate）:
 
-- [x] RFaster R-CNN
+- [x] RFaster R-CNN(hbb+obb)
 - [x] HSP
-- [x] RCascade RCNN
-- [x] RRetinanet
-- [x] RHTC
+- [x] RCascade RCNN(hbb proposal&hbb+obb)
+- [x] RRetinanet(obb)
+- [x] RHTC(hbb proposal&hbb+obb)
+- [x] Oriented RCNN
 
 Some other methods are also supported in [projects using MMDetection](./docs/projects.md).
 

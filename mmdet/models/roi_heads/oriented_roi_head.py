@@ -231,6 +231,53 @@ class OrientedRoIHead(BaseRoIHead, RBBoxTestMixin, MaskTestMixin):
                 mask_test_cfg=self.test_cfg.get('mask'))
             return bbox_results, segm_results
 
+    def simple_test_bboxes(self,
+                           x,
+                           img_metas,
+                           proposals,
+                           rcnn_test_cfg,
+                           rescale=False):
+        """Test only det bboxes without augmentation."""
+        rois = rbbox2roi(proposals)
+        # rois [1000, 5] [x1, y1, x2, y2, scores] ---> [batchind, x1, y1, x2, y2]
+        bbox_results = self._bbox_forward(x, rois)
+        img_shapes = tuple(meta['img_shape'] for meta in img_metas)
+        scale_factors = tuple(meta['scale_factor'] for meta in img_metas)
+
+        # split batch bbox prediction back to each image
+        cls_score = bbox_results['cls_score']
+        bbox_pred = bbox_results['bbox_pred']
+        num_proposals_per_img = tuple(len(p) for p in proposals)
+        rois = rois.split(num_proposals_per_img, 0)
+        cls_score = cls_score.split(num_proposals_per_img, 0)
+
+        # some detector with_reg is False, bbox_pred will be None
+        if bbox_pred is not None:
+            # the bbox prediction of some detectors like SABL is not Tensor
+            if isinstance(bbox_pred, torch.Tensor):
+                bbox_pred = bbox_pred.split(num_proposals_per_img, 0)
+            else:
+                bbox_pred = self.bbox_head.bbox_pred_split(
+                    bbox_pred, num_proposals_per_img)
+        else:
+            bbox_pred = (None,) * len(proposals)
+
+        # apply bbox post-processing to each image individually
+        det_bboxes = []
+        det_labels = []
+        for i in range(len(proposals)):
+            det_bbox, det_label = self.bbox_head.get_bboxes(
+                rois[i],
+                cls_score[i],
+                bbox_pred[i],
+                img_shapes[i],
+                scale_factors[i],
+                rescale=rescale,
+                cfg=rcnn_test_cfg)
+            det_bboxes.append(det_bbox)
+            det_labels.append(det_label)
+        return det_bboxes, det_labels
+
     def simple_test(self,
                     x,
                     proposal_list,
@@ -242,7 +289,7 @@ class OrientedRoIHead(BaseRoIHead, RBBoxTestMixin, MaskTestMixin):
         """Test without augmentation."""
         assert self.with_bbox, 'Bbox head must be implemented.'
         # proposal_list [n,5]----[x1,y1,x2,y2,score]
-        det_bboxes_h, det_labels_h, det_bboxes, det_labels = self.simple_test_bboxes(
+        det_bboxes, det_labels = self.simple_test_bboxes(
             x, img_metas, proposal_list, self.test_cfg, rescale=rescale)
         # det_bboxes is list len=test_batchsize [n, 5] ---[x1, y1, x2, y2, score]
         # det_bboxes is list len=test_batchsize [n]   n is nms = dict(max_per_img)
@@ -253,7 +300,7 @@ class OrientedRoIHead(BaseRoIHead, RBBoxTestMixin, MaskTestMixin):
                     x, img_metas, det_bboxes, det_labels, rescale=rescale)
                 return det_bboxes, det_labels, segm_results
             else:
-                return det_bboxes_h, det_labels_h, det_bboxes, det_labels
+                return det_bboxes, det_labels
 
         if submission == False:
             if obb:
@@ -262,19 +309,19 @@ class OrientedRoIHead(BaseRoIHead, RBBoxTestMixin, MaskTestMixin):
                                  self.bbox_head.num_classes)
                     for i in range(len(det_bboxes))
                 ]
-            else:
-                bbox_results = [
-                    bbox2result(det_bboxes_h[i], det_labels_h[i],
-                                 self.bbox_head.num_classes)
-                    for i in range(len(det_bboxes))
-                ]
+            # else:
+            #     bbox_results = [
+            #         bbox2result(det_bboxes_h[i], det_labels_h[i],
+            #                      self.bbox_head.num_classes)
+            #         for i in range(len(det_bboxes))
+            #     ]
         else:
             bbox_results={}
-            bbox_results['hbb'] = [
-                    bbox2result(det_bboxes_h[i], det_labels_h[i],
-                                 self.bbox_head.num_classes)
-                    for i in range(len(det_bboxes))
-                ]
+            # bbox_results['hbb'] = [
+            #         bbox2result(det_bboxes_h[i], det_labels_h[i],
+            #                      self.bbox_head.num_classes)
+            #         for i in range(len(det_bboxes))
+            #     ]
             bbox_results['rbb'] = [
                     rbbox2result(det_bboxes[i], det_labels[i],
                                  self.bbox_head.num_classes)

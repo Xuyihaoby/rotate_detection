@@ -134,16 +134,16 @@ lr_config = dict(
 total_epochs = 12
 
 dataset_type = 'DOTADatasetV1'
-data_root = '/data1/public_dataset/DOTA/DOTA1_0/simple/'
-trainsplit_ann_folder = 'train/labelTxt'
-trainsplit_img_folder = 'train/images'
-valsplit_ann_folder = 'train/labelTxt'
-valsplit_img_folder = 'train/images'
-val_ann_folder = 'train/labelTxt'
-val_img_folder = 'train/images'
-test_img_folder = 'test/images'
-example_ann_folder = 'train/labelTxt'
-example_img_folder = 'train/images'
+data_root = '/data1/public_dataset/DOTA/DOTA1_0/split/'
+trainsplit_ann_folder = 'trainall/labelTxt'
+trainsplit_img_folder = 'trainall/images'
+valsplit_ann_folder = 'trainall/labelTxt'
+valsplit_img_folder = 'trainall/images'
+val_ann_folder = 'trainall/labelTxt'
+val_img_folder = 'trainall/images'
+test_img_folder = 'testms/images'
+example_ann_folder = 'trainall/labelTxt'
+example_img_folder = 'trainall/images'
 
 
 img_norm_cfg = dict(
@@ -209,4 +209,4 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/oriented_rcnn'
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/DOTA1_0/oriented_rcnn'

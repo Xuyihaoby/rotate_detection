@@ -324,7 +324,7 @@ class OrientedBBoxHead(BBoxHead):
                 losses['loss_bbox'] = bbox_pred[pos_inds].sum()
         return losses
 
-    @force_fp32(apply_to=('cls_score', 'bbox_pred', 'cls_score_h', 'bbox_pred_h'))
+    @force_fp32(apply_to=('cls_score', 'bbox_pred'))
     def get_bboxes(self,
                    rois,
                    cls_score,
