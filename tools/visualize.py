@@ -35,7 +35,7 @@ def visualGT(cfg, num, dstpath):
             cv.imwrite(osp.join(dstpath, osp.basename(_singlevis)), img)
 
 def visualINF(cfg, num, dstpath):
-    dstpath = osp.join(dstpath, 'GT')
+    dstpath = osp.join(dstpath, 'INF')
     os.makedirs(dstpath, exist_ok=True)
     device = 'cuda:0'
     # init a detector
@@ -44,11 +44,9 @@ def visualINF(cfg, num, dstpath):
     imglist = glob.glob(img_path + '/*')
     selectnum = min(num, len(imglist))
     _tovis = random.sample(imglist, selectnum)
-    for _singlevis in tqdm(_tovis):
-        import pdb
-        pdb.set_trace()
+    for _singlevis in tqdm.tqdm(_tovis):
         base_name = os.path.basename(_singlevis)
-        dst_name = dstpath + base_name
+        dst_name = os.path.join(dstpath, base_name)
         # inference the demo image
         result = inference_detector(model, _singlevis)
         show_result_pyplot(model, _singlevis, result, dst_name)

@@ -1,5 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
+import cv2 as cv
+import os
 
 import mmcv
 import numpy as np
@@ -266,6 +268,19 @@ class BaseDetector(nn.Module, metaclass=ABCMeta):
             loss=loss, log_vars=log_vars, num_samples=len(data['img_metas']))
 
         return outputs
+
+    def show_rpn_obbresults(self, proposal_list, img_metas):
+        _proposal_list = proposal_list[0].cpu().numpy()
+        RPN_result = []
+        for _proposal in _proposal_list:
+            _proposalCV = cv.boxPoints(((_proposal[0], _proposal[1]), (_proposal[2], _proposal[3]), _proposal[4]*180/np.pi))
+            RPN_result.append(_proposalCV)
+        RPN_proposal = np.array(RPN_result)
+        _img = cv.imread(img_metas[0]['filename'])
+        nplines = RPN_proposal.reshape(-1, 4, 2).astype(dtype=np.int32)
+        cv.polylines(_img, nplines, isClosed=True, color=(255, 125, 125), thickness=1)
+        cv.imwrite('/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/visual/RPN/' +
+                   os.path.basename(img_metas[0]['filename']), _img)
 
     def show_result(self,
                     img,

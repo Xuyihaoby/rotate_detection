@@ -118,9 +118,9 @@ class OrientedRoIHead(BaseRoIHead, RBBoxTestMixin, MaskTestMixin):
         return losses
 
     def _bbox_forward(self, x, rois, roi_format='CV_LEFT'):
-        if roi_format == 'CV_LEFT':
-            _rois = rois.clone()
-            _rois[:, -1] = -_rois[:, -1]
+        _rois = rois.clone()
+        # if roi_format == 'CV_LEFT':
+        #     _rois[:, -1] = -_rois[:, -1]
         bbox_feats = self.bbox_roi_extractor(
             x[:self.bbox_roi_extractor.num_inputs], _rois)
 

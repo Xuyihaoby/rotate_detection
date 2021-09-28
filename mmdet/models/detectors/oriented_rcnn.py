@@ -7,6 +7,8 @@ import numpy as np
 from ..builder import DETECTORS, build_backbone, build_head, build_neck
 from .base import BaseDetector
 from .rfaster_rcnn import RFasterRCNN
+import cv2 as cv
+import os
 
 from mmdet.core.visualization import imshow_det_rbboxes, imshow_det_bboxes
 
@@ -72,3 +74,20 @@ class OientedRCNN(RFasterRCNN):
         losses.update(roi_losses)
 
         return losses
+
+    def simple_test(self, img, img_metas, proposals=None, rescale=False):
+        """Test without augmentation."""
+        assert self.with_bbox, 'Bbox head must be implemented.'
+
+        x = self.extract_feat(img)
+
+        if proposals is None:
+            proposal_list = self.rpn_head.simple_test_rpn(x, img_metas)
+        else:
+            proposal_list = proposals
+
+        self.show_rpn_obbresults(proposal_list, img_metas)
+
+        return self.roi_head.simple_test(
+            x, proposal_list, img_metas, rescale=rescale, obb=self.obb, submission=self.submission)
+

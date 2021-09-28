@@ -285,6 +285,7 @@ class ORPNHead(RPNTestMixin, AnchorHead):
         # cls_score_list  [[num_base_achors, H, W],..(nun_lvls)]
         # bbox_pred_list  [[5*num_base_achors, H, W],..(nun_lvls)]
         # cfg指的是proposal_cfg
+
         cfg = self.test_cfg if cfg is None else cfg
         # bboxes from different level should be independent during NMS,
         # level_ids are used as labels for batched NMS to separate them
@@ -348,6 +349,7 @@ class ORPNHead(RPNTestMixin, AnchorHead):
         # dets[n, 5(x, y, w, h, theta, scores)]
         # keep index
         return dets[:cfg.nms_post]
+
     def forward_train(self,
                       x,
                       img_metas,
