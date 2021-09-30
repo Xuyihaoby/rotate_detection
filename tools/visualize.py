@@ -51,6 +51,18 @@ def visualINF(cfg, num, dstpath):
         result = inference_detector(model, _singlevis)
         show_result_pyplot(model, _singlevis, result, dst_name)
 
+def visualSP(cfg, dstpath, name):
+    dstpath = osp.join(dstpath, 'SP')
+    os.makedirs(dstpath, exist_ok=True)
+    device = 'cuda:0'
+    # init a detector
+    model = init_detector(cfg, checkpoint_file, device=device)
+    img_path = cfg.data.test.img_prefix
+    img_name = osp.join(img_path, name)
+    dst_name = os.path.join(dstpath, name)
+    result = inference_detector(model, img_name)
+    show_result_pyplot(model, img_name, result, dst_name)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -60,6 +72,7 @@ if __name__ == '__main__':
     parser.add_argument('--dst', default='./checkpoints/visual')
     parser.add_argument('--num', type=int, default=5, help='the number of images you want to visual')
     parser.add_argument('--gtpath', default='None')
+    parser.add_argument('--img', default='None')
     args = parser.parse_args()
 
     cfg = Config.fromfile(args.config)
@@ -74,6 +87,6 @@ if __name__ == '__main__':
         visualINF(cfg, args.num, args.dst)
 
     elif args.mode == 'SP':
-        pass
+        visualSP(cfg, args.dst, args.img)
 
 

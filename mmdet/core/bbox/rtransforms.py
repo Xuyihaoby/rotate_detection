@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 import torch
 
+
 def rbbox2result(bboxes, labels, num_classes):
     """Convert detection results to a list of numpy arrays.
 
@@ -130,7 +131,6 @@ def delta2bbox_rotate_from_rotate(rois, deltas,
     return bboxes
 
 
-
 def transRotate2Quadrangle(coordinates, with_label_last=False):
     """
 	Transform boxes from (x_ctr, y_ctr, w, h, theta(label)) to (x1,y1, x2,y2, x3,y3, x4,y4(label)).
@@ -180,6 +180,7 @@ def rbbox2roi(bbox_list):
     rois = torch.cat(rois_list, dim=0)
     return rois
 
+
 def CV_L2LT_RB_TORCH(coordinates):
     assert coordinates.shape[-1] == 5
     devices = coordinates.device
@@ -199,4 +200,3 @@ def CV_L2LT_RB_TORCH(coordinates):
     _twopoint = np.stack(_temp, axis=1)
     result = torch.from_numpy(_twopoint).to(devices)
     return result
-

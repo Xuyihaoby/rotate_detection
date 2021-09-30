@@ -133,14 +133,14 @@ lr_config = dict(
 total_epochs = 12
 
 dataset_type = 'DOTADatasetV1'
-data_root = '/data1/public_dataset/DOTA/DOTA1_0/split/'
+data_root = '/data1/public_dataset/DOTA/DOTA1_0/simple/'
 trainsplit_ann_folder = 'trainall/labelTxt'
 trainsplit_img_folder = 'trainall/images'
 valsplit_ann_folder = 'trainall/labelTxt'
 valsplit_img_folder = 'trainall/images'
 val_ann_folder = 'trainall/labelTxt'
 val_img_folder = 'trainall/images'
-test_img_folder = 'testms/images'
+test_img_folder = 'test/images'
 example_ann_folder = 'trainall/labelTxt'
 example_img_folder = 'trainall/images'
 

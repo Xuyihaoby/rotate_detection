@@ -1,7 +1,7 @@
 model = dict(
     type='RFasterRCNN',
     obb=True,
-    submission=True,
+    submission=False,
     pretrained='torchvision://resnet50',
     backbone=dict(
         type='ResNet',

@@ -69,7 +69,7 @@ class OientedRCNN(RFasterRCNN):
 
         roi_losses = self.roi_head.forward_train(x, img_metas, proposal_list,
                                                  hor_gt_bboxes, gt_bboxes, gt_labels,
-                                                 gt_bboxes_ignore, gt_masks,
+                                                 hor_gt_bboxes_ignore ,gt_bboxes_ignore, gt_masks,
                                                  **kwargs)
         losses.update(roi_losses)
 
@@ -86,7 +86,7 @@ class OientedRCNN(RFasterRCNN):
         else:
             proposal_list = proposals
 
-        self.show_rpn_obbresults(proposal_list, img_metas)
+        # self.show_rpn_obbresults(proposal_list, img_metas)
 
         return self.roi_head.simple_test(
             x, proposal_list, img_metas, rescale=rescale, obb=self.obb, submission=self.submission)
