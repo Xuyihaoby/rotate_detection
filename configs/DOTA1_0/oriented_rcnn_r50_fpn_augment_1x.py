@@ -81,8 +81,8 @@ model = dict(
         rpn_proposal=dict(
             nms_across_levels=False,
             nms_pre=2000,
-            nms_post=1000,
-            max_num=1000,
+            nms_post=2000,
+            max_num=2000,
             nms_thr=0.7,
             min_bbox_size=0),
         rcnn=dict(
@@ -116,13 +116,13 @@ model = dict(
             max_per_img_h=500,
             nms_r=dict(type='rnms', iou_threshold=0.1),
             # nms_r=dict(type='nms_rotate', iou_threshold=merge_nms_iou_thr_dict),
-            max_per_img=500)
+            max_per_img=2000)
         # soft-nms is also supported for rcnn testing
         # e.g., nms=dict(type='soft_nms', iou_threshold=0.5, min_score=0.05), merge_nms_iou_thr_dict
     ))
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
@@ -134,23 +134,27 @@ lr_config = dict(
 total_epochs = 12
 
 dataset_type = 'DOTADatasetV1'
-data_root = '/data1/public_dataset/DOTA/DOTA1_0/simple/'
-trainsplit_ann_folder = 'train/labelTxt'
-trainsplit_img_folder = 'train/images'
-valsplit_ann_folder = 'train/labelTxt'
-valsplit_img_folder = 'train/images'
-val_ann_folder = 'train/labelTxt'
-val_img_folder = 'train/images'
-test_img_folder = 'test/images'
-example_ann_folder = 'train/labelTxt'
-example_img_folder = 'train/images'
+data_root = '/data1/public_dataset/DOTA/DOTA1_0/split/'
+trainsplit_ann_folder = 'trainall/labelTxt'
+trainsplit_img_folder = 'trainall/images'
+valsplit_ann_folder = 'trainall/labelTxt'
+valsplit_img_folder = 'trainall/images'
+val_ann_folder = 'trainall/labelTxt'
+val_img_folder = 'trainall/images'
+test_img_folder = 'testms/images'
+example_ann_folder = 'trainall/labelTxt'
+example_img_folder = 'trainall/images'
 
 
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
-    dict(type='LoadImageFromFile'),
-    dict(type='RLoadAnnotations', with_bbox=True, with_mask=True),
+    dict(type='LoadImageFromFile', to_float32=True),
+    dict(type='RLoadAnnotations', with_bbox=True),
+    dict(type='PhotoMetricDistortion'),
+    dict(type='Randomrotate', border_value=0, rotate_mode='value', rotate_ratio=0.5,
+         rotate_values=[30, 60, 90, 120, 150],
+         auto_bound=False),
     dict(type='RResize', img_scale=(1024, 1024)),
     dict(type='RRandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
@@ -209,4 +213,4 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/oriented_rcnn_new'
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/DOTA1_0/oriented_rcnn_aug'

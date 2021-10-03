@@ -344,8 +344,13 @@ class ORPNHead(RPNTestMixin, AnchorHead):
                 proposals = proposals[valid_inds, :]
                 scores = scores[valid_inds]
                 ids = ids[valid_inds]
-        nms_cfg = dict(type='rnms', iou_threshold=cfg.nms_thr)
-        dets, keep = batched_rnms(proposals, scores, ids, nms_cfg)
+        nms_cfg = dict(type='nms', iou_threshold=cfg.nms_thr)
+
+        hpropsals = CV_L2LT_RB_TORCH(proposals)
+        # inspired by oriented rcnn
+        _, keep = batched_nms(hpropsals, scores, ids, nms_cfg)
+        dets = torch.cat([proposals, scores[:, None]], dim=1)
+        dets = dets[keep]
         # dets[n, 5(x, y, w, h, theta, scores)]
         # keep index
         return dets[:cfg.nms_post]
