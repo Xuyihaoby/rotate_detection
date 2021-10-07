@@ -96,7 +96,7 @@ class RResize(Resize):
         self._resize_masks(results)
         self._resize_seg(results)
         mosaic_flag = results.get('mosaic', False)
-        if mosaic_flag==True:
+        if mosaic_flag == True:
             self._resize_poly(results)
             del results['mosaic']
             del results['scale_factor']
@@ -251,11 +251,17 @@ class RRandomFlip(object):
                 for direction in cur_dir:
                     results[key] = mmcv.imflip(
                         results[key], direction=direction)
+
+        # imshow_det_rbboxes(results['img'], results['gt_bboxes'], results['gt_labels'], show=False, \
+        #                    out_file='/home/lzy/xyh/Netmodel/s2anet/imgaes/' + str(int(time.time() % 1000)) + '.png')
+        #
+        # imshow_det_bboxes(results['img'], results['hor_gt_bboxes'], results['gt_labels'], show=False, \
+        #                   out_file='/home/lzy/xyh/Netmodel/s2anet/imgaesh/' + str(int(time.time() % 1000)) + '.png')
         # if results['rotate']:
         #     imshow_det_rbboxes(results['img'], results['gt_bboxes'], results['gt_labels'], show=False, \
         #                        out_file='/home/lzy/xyh/Netmodel/s2anet/imgaes/' + str(int(time.time() % 1000)) + '.png')
-            # imshow_det_bboxes(results['img'] / 255, results['hor_gt_bboxes'], results['gt_labels'], show=False, \
-            #                   out_file='/home/lzy/xyh/Netmodel/s2anet/imgaesh/' + str(int(time.time() % 1000)) + '.png')
+        # imshow_det_bboxes(results['img'] / 255, results['hor_gt_bboxes'], results['gt_labels'], show=False, \
+        #                   out_file='/home/lzy/xyh/Netmodel/s2anet/imgaesh/' + str(int(time.time() % 1000)) + '.png')
         return results
 
 
@@ -308,7 +314,7 @@ class RMixUp:
         self.min_bbox_size = min_bbox_size
         self.min_area_ratio = min_area_ratio
         self.max_aspect_ratio = max_aspect_ratio
-        self.change_scale=change_scale
+        self.change_scale = change_scale
 
     def __call__(self, results):
         """Call function to make a mixup of image.
@@ -330,7 +336,7 @@ class RMixUp:
         """
 
         for i in range(self.max_iters):
-            index = random.randint(0, len(dataset)-1)
+            index = random.randint(0, len(dataset) - 1)
             gt_bboxes_i = dataset.get_ann_info(index)['bboxes']
             if len(gt_bboxes_i) != 0:
                 break
@@ -355,7 +361,7 @@ class RMixUp:
 
         # update by xyh
         # temporarily
-        if results['img_info']['filename']==results['mix_results'][0]['img_info']['filename']:
+        if results['img_info']['filename'] == results['mix_results'][0]['img_info']['filename']:
             results.pop('mix_results')
             return results
 
@@ -437,7 +443,7 @@ class RMixUp:
             keep_list = self._filter_box_candidates(retrieve_gt_bboxes.T,
                                                     cp_retrieve_gt_bboxes.T)
 
-        # 8. mix up
+            # 8. mix up
             if keep_list.sum() >= 1.0:
                 ori_img = ori_img.astype(np.float32)
                 mixup_img = 0.5 * ori_img + 0.5 * padded_cropped_img.astype(
@@ -483,7 +489,8 @@ class RMixUp:
             results['hor_gt_bboxes'] = mixup_hor_gt_bboxes
             results['gt_labels'] = mixup_gt_labels
             results['ann_info']['polygons'] = mixup_polygons
-            assert len(results['gt_bboxes']) == len(results['hor_gt_bboxes']) == len(results['gt_labels']) == len(results['ann_info']['polygons'])
+            assert len(results['gt_bboxes']) == len(results['hor_gt_bboxes']) == len(results['gt_labels']) == len(
+                results['ann_info']['polygons'])
             import pdb
             pdb.set_trace()
             imshow_det_rbboxes(results['img'], results['gt_bboxes'], results['gt_labels'], show=False, \
@@ -516,6 +523,7 @@ class RMixUp:
         repr_str += f'min_area_ratio={self.min_area_ratio})'
         repr_str += f'max_aspect_ratio={self.max_aspect_ratio})'
         return repr_str
+
 
 @PIPELINES.register_module()
 class RMosaic:
@@ -581,7 +589,7 @@ class RMosaic:
             list: indexes.
         """
 
-        indexs = [random.randint(0, len(dataset)-1) for _ in range(3)]
+        indexs = [random.randint(0, len(dataset) - 1) for _ in range(3)]
         return indexs
 
     def _mosaic_transform(self, results):
@@ -597,7 +605,7 @@ class RMosaic:
         mosaic_hor_bboxes = []
         mosaic_polygons = []
         # update by xyh
-        results['mosaic']=True
+        results['mosaic'] = True
 
         if len(results['img'].shape) == 3:
             mosaic_img = np.full(
@@ -694,7 +702,6 @@ class RMosaic:
         results['gt_labels'] = mosaic_labels
         results['ann_info']['polygons'] = mosaic_polygons
 
-
         # imshow_det_rbboxes(results['img'], results['gt_bboxes'], results['gt_labels'], show=False, \
         #                 out_file='/home/lzy/xyh/Netmodel/s2anet/imgaes/' + str(int(time.time() % 1000)) + '.png')
         # imshow_det_bboxes(results['img']/255, results['hor_gt_bboxes'], results['gt_labels'], show=False, \
@@ -710,7 +717,7 @@ class RMosaic:
                              center_position_xy[0], \
                              center_position_xy[1]
             crop_coord = img_shape_wh[0] - (x2 - x1), img_shape_wh[1] - (
-                y2 - y1), img_shape_wh[0], img_shape_wh[1]
+                    y2 - y1), img_shape_wh[0], img_shape_wh[1]
 
         elif loc == 'top_right':
             # index1 to top right part of image

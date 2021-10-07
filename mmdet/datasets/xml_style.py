@@ -25,14 +25,6 @@ class XMLDataset(CustomDataset):
         self.min_size = min_size
 
     def load_annotations(self, ann_file):
-        """Load annotation from XML style ann_file.
-
-        Args:
-            ann_file (str): Path of XML file.
-
-        Returns:
-            list[dict]: Annotation info from XML file.
-        """
 
         data_infos = []
         img_ids = mmcv.list_from_file(ann_file)

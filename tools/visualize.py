@@ -9,30 +9,38 @@ import os.path as osp
 import argparse
 import tqdm
 
-def visualGT(cfg, num, dstpath):
+def visualGT(cfg, num, dstpath, sp=None):
     dstpath = osp.join(dstpath, 'GT')
     os.makedirs(dstpath, exist_ok=True)
     img_path = cfg.data.train.img_prefix
-    imglist = glob.glob(img_path+'/*')
-    selectnum = min(num, len(imglist))
-    _tovis = random.sample(imglist, selectnum)
-    for _singlevis in tqdm.tqdm(_tovis):
-        img = cv.imread(_singlevis)
-        ann_path = _singlevis.replace('images', 'labelTxt').replace('png', 'txt')
-        assert osp.exists(ann_path), 'ann_file must be a file'
-        with open(ann_path, 'r') as fread:
-            lines = fread.readlines()
-            if len(lines) == 0:
-                continue
-            nplines = []
-            # read lines
-            for line in lines:
-                line = line.split()
-                npline = np.array(line[:8], dtype=np.float32).astype(np.int32)
-                nplines.append(npline[np.newaxis])
-            nplines = np.concatenate(nplines, 0).reshape(-1, 4, 2)
-            cv.polylines(img, nplines, isClosed=True, color=(255, 125, 125), thickness=3)
-            cv.imwrite(osp.join(dstpath, osp.basename(_singlevis)), img)
+    if cfg.data.train.type in ['SSDD']:
+        _img_path = osp.join(img_path, 'JPEGImages')
+    if sp == None:
+        imglist = glob.glob(_img_path + '/*')
+        selectnum = min(num, len(imglist))
+        _tovis = random.sample(imglist, selectnum)
+        for _singlevis in tqdm.tqdm(_tovis):
+            img = cv.imread(_singlevis)
+            ann_path = _singlevis.replace('images', 'labelTxt').replace('png', 'txt')
+            assert osp.exists(ann_path), 'ann_file must be a file'
+            with open(ann_path, 'r') as fread:
+                lines = fread.readlines()
+                if len(lines) == 0:
+                    continue
+                nplines = []
+                # read lines
+                for line in lines:
+                    line = line.split()
+                    npline = np.array(line[:8], dtype=np.float32).astype(np.int32)
+                    nplines.append(npline[np.newaxis])
+                nplines = np.concatenate(nplines, 0).reshape(-1, 4, 2)
+                cv.polylines(img, nplines, isClosed=True, color=(255, 125, 125), thickness=3)
+                cv.imwrite(osp.join(dstpath, osp.basename(_singlevis)), img)
+    else:
+        pass
+
+
+
 
 def visualINF(cfg, num, dstpath):
     dstpath = osp.join(dstpath, 'INF')
@@ -81,7 +89,7 @@ if __name__ == '__main__':
     checkpoint_file = osp.join(cfg.work_dir, 'epoch_12.pth')
 
     if args.mode == 'GT':
-        visualGT(cfg, args.num, args.dst)
+        visualGT(cfg, args.num, args.dst, args.img)
 
     elif args.mode == 'INF':
         visualINF(cfg, args.num, args.dst)
