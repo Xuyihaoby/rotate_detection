@@ -181,22 +181,23 @@ def rbbox2roi(bbox_list):
     return rois
 
 
-def CV_L2LT_RB_TORCH(coordinates):
+def CV_L_Rad2LT_RB_TORCH(coordinates):
     assert coordinates.shape[-1] == 5
     devices = coordinates.device
     _coor = coordinates.clone().cpu().numpy()
     _fourpoints = []
     for cd in _coor:
-        quad = cv2.boxPoints(((cd[0], cd[1]), (cd[2], cd[3]), cd[4]))
+        quad = cv2.boxPoints(((cd[0], cd[1]), (cd[2], cd[3]), cd[4]*180/np.pi))
         _fourpoints.append(np.reshape(quad, [-1, ]))
     _result = np.array(_fourpoints, dtype=np.float32)
     xs = _result[:, 0::2]
     ys = _result[:, 1::2]
-    x1 = np.min(xs, axis=-1)
-    y1 = np.min(ys, axis=-1)
-    x2 = np.max(xs, axis=-1)
-    y2 = np.max(ys, axis=-1)
+    x1 = np.min(xs, axis=-1).clip(min=0)
+    y1 = np.min(ys, axis=-1).clip(min=0)
+    x2 = np.max(xs, axis=-1).clip(min=0)
+    y2 = np.max(ys, axis=-1).clip(min=0)
     _temp = [x1, y1, x2, y2]
     _twopoint = np.stack(_temp, axis=1)
     result = torch.from_numpy(_twopoint).to(devices)
     return result
+

@@ -12,7 +12,7 @@ from .rpn_test_mixin import RPNTestMixin
 from mmdet.core import multi_apply, images_to_levels
 from mmcv.runner import force_fp32
 
-from mmdet.core.bbox.rtransforms import CV_L2LT_RB_TORCH
+from mmdet.core.bbox.rtransforms import CV_L_Rad2LT_RB_TORCH
 
 
 @HEADS.register_module()
@@ -346,7 +346,7 @@ class ORPNHead(RPNTestMixin, AnchorHead):
                 ids = ids[valid_inds]
         nms_cfg = dict(type='nms', iou_threshold=cfg.nms_thr)
 
-        hpropsals = CV_L2LT_RB_TORCH(proposals)
+        hpropsals = CV_L_Rad2LT_RB_TORCH(proposals)
         # inspired by oriented rcnn
         _, keep = batched_nms(hpropsals, scores, ids, nms_cfg)
         dets = torch.cat([proposals, scores[:, None]], dim=1)
