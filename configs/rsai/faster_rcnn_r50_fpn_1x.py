@@ -1,7 +1,7 @@
 model = dict(
     type='RFasterRCNN',
     obb=True,
-    submission=True,
+    submission=False,
     pretrained='torchvision://resnet50',
     backbone=dict(
         type='ResNet',
@@ -142,7 +142,7 @@ valsplit_ann_folder = 'split/val/labelTxt'
 valsplit_img_folder = 'split/val/images'
 val_ann_folder = 'origin/val/labelTxt'  # change the path to validate
 val_img_folder = 'origin/val/images'
-test_img_folder = 'split/val/images'  # # change the path to validate
+test_img_folder = 'origin/val/images'  # # change the path to validate
 
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
@@ -161,7 +161,7 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='MultiScaleFlipAug',
-        img_scale=(1024, 1024),
+        img_scale=(4096, 4096),
         flip=False,
         transforms=[
             dict(type='RResize'),
@@ -182,8 +182,8 @@ data = dict(
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
-        ann_file=data_root + valsplit_ann_folder,
-        img_prefix=data_root + valsplit_img_folder,
+        ann_file=data_root + val_ann_folder,
+        img_prefix=data_root + val_img_folder,
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,

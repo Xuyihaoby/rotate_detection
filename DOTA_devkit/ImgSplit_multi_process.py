@@ -299,8 +299,8 @@ if __name__ == '__main__':
     # elapsed = (time.clock() - start)
     # print("Time used:", elapsed)
 
-    split_train_ms = splitbase(r'/data1/public_dataset/DOTA/DOTA1_0/origin/train',
-                              r'/data1/public_dataset/DOTA/DOTA1_0/simple/train',
+    split_train_ms = splitbase(r'/data1/public_dataset/DOTA/DOTA1_0/origin/val',
+                              r'/data1/public_dataset/DOTA/DOTA1_0/simple/val',
                               gap=512,
                               subsize=1024,
                               num_process=40)

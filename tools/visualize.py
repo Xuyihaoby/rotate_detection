@@ -49,7 +49,13 @@ def visualINF(cfg, num, dstpath):
     # init a detector
     model = init_detector(cfg, checkpoint_file, device=device)
     img_path = cfg.data.test.img_prefix
-    imglist = glob.glob(img_path + '/*')
+    if cfg.data.test.type in ['SSDD']:
+        with open(osp.join(img_path, 'test.txt'), 'r') as f:
+            lines = f.readlines()
+        imglist = [glob.glob(osp.join(img_path, 'JPEGImages', lines[i].strip()+'*'))[0] for i in range(len(lines))]
+        print(len(imglist))
+    else:
+        imglist = glob.glob(img_path + '/*')
     selectnum = min(num, len(imglist))
     _tovis = random.sample(imglist, selectnum)
     for _singlevis in tqdm.tqdm(_tovis):

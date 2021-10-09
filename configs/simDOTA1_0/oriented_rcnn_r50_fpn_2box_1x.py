@@ -1,7 +1,7 @@
 model = dict(
-    type='RFasterRCNN',
+    type='OientedRCNN',
     obb=True,
-    submission=False,
+    submission=True,
     pretrained='torchvision://resnet50',
     backbone=dict(
         type='ResNet',
@@ -18,7 +18,7 @@ model = dict(
         out_channels=256,
         num_outs=5),
     rpn_head=dict(
-        type='RRPNHead',
+        type='ORPNHead',
         in_channels=256,
         feat_channels=256,
         anchor_generator=dict(
@@ -27,31 +27,32 @@ model = dict(
             ratios=[0.5, 1.0, 2.0],
             strides=[4, 8, 16, 32, 64]),
         bbox_coder=dict(
-            type='DeltaXYWHBBoxCoder',
-            target_means=[.0, .0, .0, .0],
-            target_stds=[1.0, 1.0, 1.0, 1.0]),
+            type='DeltaXYWHBThetaBoxCoder',
+            target_means=[.0, .0, .0, .0, .0],
+            target_stds=[1.0, 1.0, 1.0, 1.0, 1.0]),
         loss_cls=dict(
             type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0),
-        loss_bbox=dict(type='L1Loss', loss_weight=1.0)),
+        loss_bbox=dict(type='SmoothL1Loss', loss_weight=1.0)),
     roi_head=dict(
-        type='RStandardRoIHead',
+        type='OrientedRoIHead',
+        num_bboxtype=2,
         bbox_roi_extractor=dict(
-            type='SingleRoIExtractor',
-            roi_layer=dict(type='RoIAlign', output_size=7, sampling_ratio=0),
+            type='SingleRRoIExtractor',
+            roi_layer=dict(type='RoIAlignRotated', output_size=7, sampling_ratio=0),
             out_channels=256,
             featmap_strides=[4, 8, 16, 32]),
         bbox_head=dict(
-            type='RShared2FCBBoxHead',
+            type='Oriented2BBoxHead',
             in_channels=256,
             fc_out_channels=1024,
             roi_feat_size=7,
-            num_classes=1,
+            num_classes=15,
             bbox_coder=dict(
                 type='DeltaXYWHBBoxCoder',
                 target_means=[0., 0., 0., 0.],
                 target_stds=[0.1, 0.1, 0.2, 0.2]),
             bbox_coder_r=dict(
-                type='DeltaXYWHBThetaBoxCoder',
+                type='DeltaRXYWHThetaBBoxCoder',
                 target_means=[0., 0., 0., 0., 0.],
                 target_stds=[0.1, 0.1, 0.2, 0.2, 0.2]),
             reg_class_agnostic=False,
@@ -92,9 +93,10 @@ model = dict(
                 neg_iou_thr=0.5,
                 min_pos_iou=0.5,
                 match_low_quality=False,
-                ignore_iof_thr=-1),
+                ignore_iof_thr=-1,
+                iou_calculator=dict(type='RBboxOverlaps2D')),
             sampler=dict(
-                type='RandomSampler',
+                type='RRandomSampler',
                 num=512,
                 pos_fraction=0.25,
                 neg_pos_ub=-1,
@@ -121,7 +123,7 @@ model = dict(
     ))
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.001, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
@@ -129,36 +131,39 @@ lr_config = dict(
     warmup='linear',
     warmup_iters=500,
     warmup_ratio=0.001,
-    step=[100, 140])
-total_epochs = 150
+    step=[8, 11])
+total_epochs = 12
 
-dataset_type = 'SSDD'
-data_root = '/data1/public_dataset/SAR/SSDD/'
-train_ann_folder = 'train.txt'
-train_img_folder = ''
-val_ann_folder = 'test.txt'
-val_img_folder = ''
-test_ann_folder = 'test.txt'
-test_img_folder = ''
+dataset_type = 'DOTADatasetV1'
+data_root = '/data1/public_dataset/DOTA/DOTA1_0/simple/'
+trainsplit_ann_folder = 'train/labelTxt'
+trainsplit_img_folder = 'train/images'
+valsplit_ann_folder = 'train/labelTxt'
+valsplit_img_folder = 'train/images'
+val_ann_folder = 'train/labelTxt'
+val_img_folder = 'train/images'
+test_img_folder = 'test/images'
+example_ann_folder = 'train/labelTxt'
+example_img_folder = 'train/images'
 
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='RLoadAnnotations', with_bbox=True),
-    dict(type='RResize', img_scale=(608, 608)),
+    dict(type='RResize', img_scale=(1024, 1024)),
     dict(type='RRandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
     dict(type='DefaultFormatBundle'),
-    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_bboxes_ignore','hor_gt_bboxes', 'hor_gt_bboxes_ignore',
+    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_bboxes_ignore', 'hor_gt_bboxes', 'hor_gt_bboxes_ignore',
                                'gt_labels']),
 ]
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='MultiScaleFlipAug',
-        img_scale=(608, 608),
+        img_scale=(1024, 1024),
         flip=False,
         transforms=[
             dict(type='RResize'),
@@ -170,27 +175,27 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=16,
+    samples_per_gpu=4,
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
-        ann_file=data_root + train_ann_folder,
-        img_prefix=data_root + train_img_folder,
+        ann_file=data_root + trainsplit_ann_folder,
+        img_prefix=data_root + trainsplit_img_folder,
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
-        ann_file=data_root + val_ann_folder,
-        img_prefix=data_root + val_img_folder,
+        ann_file=data_root + valsplit_ann_folder,
+        img_prefix=data_root + valsplit_img_folder,
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + test_ann_folder,
+        ann_file=data_root + test_img_folder,
         img_prefix=data_root + test_img_folder,
         pipeline=test_pipeline,
         test_mode=True))
-# evaluation = dict(interval=24, metric='bbox')
+evaluation = dict(interval=24, metric='bbox')
 
-checkpoint_config = dict(interval=50)
+checkpoint_config = dict(interval=4)
 
 log_config = dict(
     interval=10,
@@ -204,4 +209,4 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/SSDD/faster_rcnn_1x'
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/oriented2bbox'

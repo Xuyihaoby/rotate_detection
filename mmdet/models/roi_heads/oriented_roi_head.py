@@ -164,7 +164,7 @@ class OrientedRoIHead(BaseRoIHead, RBBoxTestMixin, MaskTestMixin):
             for i in range(len(sampling_results)):
                 sampling_results[i].neg_hor_bboxes = CV_L_Rad2LT_RB_TORCH(sampling_results[i].neg_bboxes)
                 sampling_results[i].pos_hor_bboxes = CV_L_Rad2LT_RB_TORCH(sampling_results[i].pos_bboxes)
-                sampling_results[i].pos_hor_gt_bboxes = hor_gt_bboxes[i][sampling_results[i].pos_inds.tolist(), :]
+                sampling_results[i].pos_hor_gt_bboxes = hor_gt_bboxes[i][sampling_results[i].pos_assigned_gt_inds.tolist(), :]
             bbox_targets = self.bbox_head.get_targets(sampling_results, gt_bboxes,
                                                       gt_labels, self.train_cfg)
 
@@ -378,11 +378,11 @@ class OrientedRoIHead(BaseRoIHead, RBBoxTestMixin, MaskTestMixin):
             #     ]
         else:
             bbox_results = {}
-            # bbox_results['hbb'] = [
-            #         bbox2result(det_bboxes_h[i], det_labels_h[i],
-            #                      self.bbox_head.num_classes)
-            #         for i in range(len(det_bboxes))
-            #     ]
+            bbox_results['hbb'] = [
+                    bbox2result(det_bboxes_h[i], det_labels_h[i],
+                                 self.bbox_head.num_classes)
+                    for i in range(len(det_bboxes))
+                ]
             bbox_results['rbb'] = [
                 rbbox2result(det_bboxes[i], det_labels[i],
                              self.bbox_head.num_classes)

@@ -39,8 +39,6 @@ def rdets2points(rbboxes):
     # if p1x.size == 0:
     #     return np.stack([p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y, prob], axis=-1)
     # else:
-    #     # import pdb
-    #     # pdb.set_trace()
     #     yet = np.stack([p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y, prob], axis=-1)
     #     indice = np.unique((yet < 0).nonzero()[0])
     #     compelete = np.delete(yet, indice, axis=0)
@@ -202,8 +200,6 @@ def htpfp_default(det_bboxes,
                 fp[i, (det_areas >= min_area) & (det_areas < max_area)] = 1
                 # 个人认为这一段写的很不对劲
         return tp, fp
-    print(det_bboxes.shape)
-    print(gt_bboxes.shape)
     ious = bbox_overlaps(det_bboxes, gt_bboxes)
     # print("how are you")
     # for each det, the max iou with all gts
@@ -253,8 +249,6 @@ def rget_cls_results(det_results, annotations, class_id):
     Returns:
         tuple[list[np.ndarray]]: detected bboxes, gt bboxes, ignored gt bboxes
     """
-    # import pdb
-    # pdb.set_trace()
     cls_dets = [rdets2points(img_res[class_id]) for img_res in det_results]
     # （list）[[每一图片的单个目标的检测以及一个score], ...图片数]
     # cls_dets = [img_res[class_id] for img_res in det_results]
@@ -313,8 +307,6 @@ def reval_map(det_results,
         tuple: (mAP, [dict, dict, ...])
     """
     assert len(det_results) == len(annotations)
-    # import pdb
-    # pdb.set_trace()
 
     # (list)[(list)[(list)[该list内一共有num_class个array，每个array对应的该类里的[bbox(4
     # 个), score]], .., (test_batchsize)],...(numsamples)]
@@ -332,12 +324,6 @@ def reval_map(det_results,
         # get gt and det bboxes of this class
         cls_dets, cls_gts, cls_gts_ignore = rget_cls_results(
             det_results, annotations, i)
-        # （list）[[每一图片的单个目标的检测的坐标以及一个score], ...图片数]
-        # if i == 6:
-        #     import pdb
-        #     pdb.set_trace()
-        #     m = np.vstack(cls_dets)
-
         tpfp = pool.starmap(
             rtpfp_default,
             zip(cls_dets, cls_gts, cls_gts_ignore,
@@ -478,8 +464,6 @@ def heval_map(det_results,
         tuple: (mAP, [dict, dict, ...])
     """
     assert len(det_results) == len(annotations)
-    # import pdb
-    # pdb.set_trace()
 
     # (list)[(list)[(list)[该list内一共有num_class个array，每个array对应的该类里的[bbox(4
     # 个), score]], .., (test_batchsize)],...(numsamples)]
@@ -497,8 +481,6 @@ def heval_map(det_results,
         cls_dets, cls_gts, cls_gts_ignore = hget_cls_results(
             det_results, annotations, i)
         # （list）[[每一图片的单个目标的检测四个点的坐标以及一个score], ...图片数]
-        # import pdb
-        # pdb.set_trace()
 
         tpfp = pool.starmap(
             htpfp_default,

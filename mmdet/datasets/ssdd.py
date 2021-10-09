@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 from mmcv.utils import print_log
 
-from mmdet.core import eval_map, eval_recalls
+from mmdet.core import eval_map, eval_recalls, reval_map
 from .builder import DATASETS
 from .xml_style import XMLDataset
 
@@ -10,6 +10,7 @@ import os.path as osp
 import numpy as np
 import xml.etree.ElementTree as ET
 import cv2
+from itertools import chain
 
 
 @DATASETS.register_module()
@@ -24,8 +25,7 @@ class SSDD(XMLDataset):
         elif 'VOC2012' in self.img_prefix:
             self.year = 2012
         else:
-            self.year = 2007
-
+            self.year = 'SSDD'
     def get_ann_info(self, idx):
         """Get annotation from XML file by index.
 
@@ -118,8 +118,6 @@ class SSDD(XMLDataset):
             labels = np.zeros((0, ))
             bboxes = np.zeros((0, 5))
         else:
-            # import pdb
-            # pdb.set_trace()
             hbboxes = np.array(hbboxes, ndmin=2) - 1
             polygons = np.array(polygons, ndmin=2) - 1
             labels = np.array(labels)
@@ -159,25 +157,6 @@ class SSDD(XMLDataset):
                  proposal_nums=(100, 300, 1000),
                  iou_thr=0.5,
                  scale_ranges=None):
-        """Evaluate in VOC protocol.
-
-        Args:
-            results (list[list | tuple]): Testing results of the dataset.
-            metric (str | list[str]): Metrics to be evaluated. Options are
-                'mAP', 'recall'.
-            logger (logging.Logger | str, optional): Logger used for printing
-                related information during evaluation. Default: None.
-            proposal_nums (Sequence[int]): Proposal number used for evaluating
-                recalls, such as recall@100, recall@1000.
-                Default: (100, 300, 1000).
-            iou_thr (float | list[float]): IoU threshold. Default: 0.5.
-            scale_ranges (list[tuple], optional): Scale ranges for evaluating
-                mAP. If not specified, all bounding boxes would be included in
-                evaluation. Default: None.
-
-        Returns:
-            dict[str, float]: AP/recall metrics.
-        """
 
         if not isinstance(metric, str):
             assert len(metric) == 1
@@ -197,15 +176,26 @@ class SSDD(XMLDataset):
             mean_aps = []
             for iou_thr in iou_thrs:
                 print_log(f'\n{"-" * 15}iou_thr: {iou_thr}{"-" * 15}')
-                mean_ap, _ = eval_map(
-                    results,
-                    annotations,
-                    scale_ranges=None,
-                    iou_thr=iou_thr,
-                    dataset=ds_name,
-                    logger=logger)
-                mean_aps.append(mean_ap)
-                eval_results[f'AP{int(iou_thr * 100):02d}'] = round(mean_ap, 3)
+                if results[0][0].shape[1] == 5:
+                    mean_ap, _ = eval_map(
+                        results,
+                        annotations,
+                        scale_ranges=None,
+                        iou_thr=iou_thr,
+                        dataset=ds_name,
+                        logger=logger)
+                    mean_aps.append(mean_ap)
+                    eval_results[f'AP{int(iou_thr * 100):02d}'] = round(mean_ap, 3)
+                elif results[0][0].shape[1] == 6:
+                    mean_ap, _ = reval_map(
+                        results,
+                        annotations,
+                        scale_ranges=scale_ranges,
+                        iou_thr=iou_thr,
+                        dataset=self.CLASSES,
+                        logger=logger)
+                    mean_aps.append(mean_ap)
+                    eval_results[f'AP{int(iou_thr * 100):02d}'] = round(mean_ap, 3)
             eval_results['mAP'] = sum(mean_aps) / len(mean_aps)
         elif metric == 'recall':
             gt_bboxes = [ann['bboxes'] for ann in annotations]
