@@ -83,7 +83,7 @@ model = dict(
             nms_pre=2000,
             nms_post=2000,
             max_num=2000,
-            nms_thr=0.7,
+            nms_thr=0.8,
             min_bbox_size=0),
         rcnn=dict(
             assigner=dict(
@@ -108,7 +108,7 @@ model = dict(
             nms_pre=2000,
             nms_post=2000,
             max_num=2000,
-            nms_thr=0.7,
+            nms_thr=0.8,
             min_bbox_size=0),
         rcnn=dict(
             score_thr=0.05,
@@ -122,7 +122,7 @@ model = dict(
     ))
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
