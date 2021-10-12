@@ -211,6 +211,6 @@ log_config = dict(
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 load_from = None
-resume_from = None
+resume_from = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/DOTA1_0/oriented_rcnn_aug/epoch_4.pth'
 workflow = [('train', 1)]
 work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/DOTA1_0/oriented_rcnn_aug'

@@ -1,6 +1,6 @@
 model = dict(
     type='RFasterRCNN',
-    obb=True,
+    obb=False,
     submission=False,
     pretrained='torchvision://resnet50',
     backbone=dict(
@@ -129,8 +129,8 @@ lr_config = dict(
     warmup='linear',
     warmup_iters=500,
     warmup_ratio=0.001,
-    step=[120, 160])
-total_epochs = 200
+    step=[100, 200])
+total_epochs = 300
 
 dataset_type = 'SSDD'
 data_root = '/data1/public_dataset/SAR/SSDD/'
@@ -204,4 +204,4 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/SSDD/faster_rcnn_200_1x'
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/SSDD/faster_rcnn_300_1x'

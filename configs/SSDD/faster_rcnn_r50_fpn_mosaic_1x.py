@@ -1,7 +1,7 @@
 model = dict(
     type='RFasterRCNN',
-    obb=True,
-    submission=True,
+    obb=False,
+    submission=False,
     pretrained='torchvision://resnet50',
     backbone=dict(
         type='ResNet',
@@ -45,7 +45,7 @@ model = dict(
             in_channels=256,
             fc_out_channels=1024,
             roi_feat_size=7,
-            num_classes=18,
+            num_classes=1,
             bbox_coder=dict(
                 type='DeltaXYWHBBoxCoder',
                 target_means=[0., 0., 0., 0.],
@@ -121,7 +121,7 @@ model = dict(
     ))
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.0025, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
@@ -129,27 +129,30 @@ lr_config = dict(
     warmup='linear',
     warmup_iters=500,
     warmup_ratio=0.001,
-    step=[8, 11])
-total_epochs = 12
+    step=[120, 160])
+total_epochs = 200
 
-dataset_type = 'DOTADatasetV2'
-data_root = '/data/xuyihao/mmdetection/dataset/DOTA-v2.0/'
-trainsplit_ann_folder = 'trainallsplit/labelTxt'
-trainsplit_img_folder = 'trainallsplit/images'
-valsplit_ann_folder = 'trainallsplit/labelTxt'
-valsplit_img_folder = 'trainallsplit/images'
-val_ann_folder = 'val/labelTxt'
-val_img_folder = 'val/images'
-test_img_folder = 'testallsplit/images'
-example_ann_folder = 'examplesplit/labelTxt'
-example_img_folder = 'examplesplit/images'
+dataset_type = 'SSDD'
+data_root = '/data1/public_dataset/SAR/SSDD/'
+train_ann_folder = 'train.txt'
+train_img_folder = ''
+val_ann_folder = 'test.txt'
+val_img_folder = ''
+test_ann_folder = 'test.txt'
+test_img_folder = ''
 
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
-    dict(type='LoadImageFromFile'),
-    dict(type='RLoadAnnotations', with_bbox=True, with_mask=True),
-    dict(type='RResize', img_scale=(1024, 1024)),
+    dict(type='PhotoMetricDistortion'),
+    dict(type='RMosaic',
+         img_scale=(608, 608),
+         center_ratio_range=(1.0, 1.0)),
+    dict(type='RResize', img_scale=(608, 608)),
+    dict(type='Randomrotate', border_value=0, rotate_mode='value', rotate_ratio=0.5,
+         rotate_values=[30, 60, 90, 120, 150],
+         auto_bound=False),
+    dict(type='RResize', img_scale=(608, 608), override=True),
     dict(type='RRandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
@@ -157,11 +160,26 @@ train_pipeline = [
     dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_bboxes_ignore', 'hor_gt_bboxes', 'hor_gt_bboxes_ignore',
                                'gt_labels']),
 ]
+
+train_dataset = dict(
+    type='MultiImageMixDataset',
+    dataset=dict(
+        type=dataset_type,
+        ann_file=data_root + train_ann_folder,
+        img_prefix=data_root + train_img_folder,
+        pipeline=[
+            dict(type='LoadImageFromFile', to_float32=True),
+            dict(type='RLoadAnnotations', with_bbox=True)
+        ],
+        filter_empty_gt=False,
+    ),
+    pipeline=train_pipeline)
+
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='MultiScaleFlipAug',
-        img_scale=(1024, 1024),
+        img_scale=(608, 608),
         flip=False,
         transforms=[
             dict(type='RResize'),
@@ -173,27 +191,24 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=4,
+    samples_per_gpu=12,
     workers_per_gpu=2,
-    train=dict(
-        type=dataset_type,
-        ann_file=data_root + trainsplit_ann_folder,
-        img_prefix=data_root + trainsplit_img_folder,
-        pipeline=train_pipeline),
+    train=train_dataset,
     val=dict(
         type=dataset_type,
-        ann_file=data_root + valsplit_ann_folder,
-        img_prefix=data_root + valsplit_img_folder,
+        ann_file=data_root + val_ann_folder,
+        img_prefix=data_root + val_img_folder,
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + test_img_folder,
+        ann_file=data_root + val_ann_folder,
         img_prefix=data_root + test_img_folder,
         pipeline=test_pipeline,
         test_mode=True))
-evaluation = dict(interval=24, metric='bbox')
 
-checkpoint_config = dict(interval=4)
+custom_hooks = [dict(type='ModeSwitchHook', num_last_epochs=30, priority=48)]
+evaluation = dict(interval=24, metric='bbox')
+checkpoint_config = dict(interval=50)
 
 log_config = dict(
     interval=10,
@@ -207,4 +222,4 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/data/xuyihao/mmdetection/configs/DOTA2_0/work_dir/faster_rcnn_r50_fpn_1x_dotav2'
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/SSDD/faster_rcnn_r50_mosaic'

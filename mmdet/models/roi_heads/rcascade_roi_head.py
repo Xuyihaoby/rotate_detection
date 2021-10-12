@@ -3,7 +3,7 @@ import torch.nn as nn
 
 from mmdet.core import (bbox2result, bbox2roi, bbox_mapping, build_assigner,
                         build_sampler, merge_aug_bboxes, merge_aug_masks,
-                        multiclass_nms, rbbox2result)
+                        multiclass_nms, rbbox2result, rbbox2roi)
 from ..builder import HEADS, build_head, build_roi_extractor
 from .base_roi_head import BaseRoIHead
 from .test_mixins import BBoxTestMixin, MaskTestMixin, RBBoxTestMixin
@@ -144,11 +144,12 @@ class RCascadeRoIHead(BaseRoIHead, RBBoxTestMixin, MaskTestMixin):
         bbox_feats = bbox_roi_extractor(x[:bbox_roi_extractor.num_inputs],
                                         rois)
 
+
         # do not support caffe_c4 model anymore
-        cls_score_h, bbox_pred_h, cls_score, bbox_pred = bbox_head(bbox_feats)
+        cls_score, bbox_pred = bbox_head(bbox_feats)
 
         bbox_results = dict(
-            cls_score=cls_score, bbox_pred=bbox_pred, cls_score_h=cls_score_h, bbox_pred_h=bbox_pred_h, \
+            cls_score=cls_score, bbox_pred=bbox_pred,\
             bbox_feats=bbox_feats)
         return bbox_results
 
@@ -545,3 +546,205 @@ class RCascadeRoIHead(BaseRoIHead, RBBoxTestMixin, MaskTestMixin):
             return [(bbox_result, segm_result)]
         else:
             return [bbox_result]
+        
+
+@HEADS.register_module()
+class orientcasroihead(RCascadeRoIHead):
+    def __init__(self, **kwargs):
+        super(orientcasroihead, self).__init__(**kwargs)
+
+    def forward_train(self,
+                      x,
+                      img_metas,
+                      proposal_list,
+                      hor_gt_bboxes,
+                      gt_bboxes,
+                      gt_labels,
+                      hor_gt_bboxes_ignore=None,
+                      gt_bboxes_ignore=None,
+                      gt_masks=None):
+        losses = dict()
+        for i in range(self.num_stages):
+            self.current_stage = i
+            rcnn_train_cfg = self.train_cfg[i]
+            lw = self.stage_loss_weights[i]
+
+            # assign gts and sample proposals
+            sampling_results = []
+            if self.with_bbox or self.with_mask:
+                bbox_assigner = self.bbox_assigner[i]
+                bbox_sampler = self.bbox_sampler[i]
+                num_imgs = len(img_metas)
+
+                # 关于ignore 之后可以思考一下能不能合理利用一下
+                if hor_gt_bboxes_ignore is None:
+                    hor_gt_bboxes_ignore = [None for _ in range(num_imgs)]
+                if gt_bboxes_ignore is None:
+                    gt_bboxes_ignore = [None for _ in range(num_imgs)]
+
+                # TODO go deeper
+                for j in range(num_imgs):
+                    assign_result = bbox_assigner.assign(
+                        proposal_list[j], gt_bboxes[j], gt_bboxes_ignore[j],
+                        gt_labels[j])
+                    sampling_result = bbox_sampler.sample(
+                        assign_result,
+                        proposal_list[j],
+                        gt_bboxes[j],
+                        gt_labels[j],
+                        feats=[lvl_feat[j][None] for lvl_feat in x])
+                    sampling_results.append(sampling_result)
+            # bbox head forward and loss
+            bbox_results = self._bbox_forward_train(i, x, sampling_results,
+                                                    gt_bboxes, gt_labels,
+                                                    rcnn_train_cfg)
+
+            for name, value in bbox_results['loss_bbox'].items():
+                losses[f's{i}.{name}'] = (
+                    value * lw if 'loss' in name else value)
+
+            # mask head forward and loss
+            # 暂时不许呀考虑这个mask
+            if self.with_mask:
+                mask_results = self._mask_forward_train(
+                    i, x, sampling_results, gt_masks, rcnn_train_cfg,
+                    bbox_results['bbox_feats'])
+                for name, value in mask_results['loss_mask'].items():
+                    losses[f's{i}.{name}'] = (
+                        value * lw if 'loss' in name else value)
+
+            # refine bboxes
+            if i < self.num_stages - 1:
+                pos_is_gts = [res.pos_is_gt for res in sampling_results]
+                # bbox_targets is a tuple
+                roi_labels = bbox_results['bbox_targets'][0]
+                with torch.no_grad():
+                    roi_labels = torch.where(
+                        roi_labels == self.bbox_head[i].num_classes,
+                        bbox_results['cls_score'][:, :-1].argmax(1),
+                        roi_labels)
+                    proposal_list = self.bbox_head[i].refine_bboxes(
+                        bbox_results['rois'], roi_labels,
+                        bbox_results['bbox_pred'], pos_is_gts, img_metas)
+
+        return losses
+
+    def _bbox_forward_train(self, stage, x, sampling_results, gt_bboxes,
+                            gt_labels, rcnn_train_cfg):
+        """Run forward function and calculate loss for box head in training."""
+        rois = rbbox2roi([res.bboxes for res in sampling_results])
+        bbox_results = self._bbox_forward(stage, x, rois)
+        bbox_targets = self.bbox_head[stage].get_targets(
+            sampling_results, gt_bboxes, gt_labels, rcnn_train_cfg)
+
+        loss_bbox = self.bbox_head[stage].loss(bbox_results['cls_score'], bbox_results['bbox_pred'],
+                                               rois, *bbox_targets)
+        bbox_results.update(
+            loss_bbox=loss_bbox, rois=rois, bbox_targets=bbox_targets)
+        return bbox_results
+
+    def simple_test(self, x, proposal_list, img_metas, rescale=False, obb=True, submission=True):
+        """Test without augmentation."""
+        assert self.with_bbox, 'Bbox head must be implemented.'
+        num_imgs = len(proposal_list)
+        img_shapes = tuple(meta['img_shape'] for meta in img_metas)
+        ori_shapes = tuple(meta['ori_shape'] for meta in img_metas)
+        scale_factors = tuple(meta['scale_factor'] for meta in img_metas)
+
+        ms_scores_r = []
+        rcnn_test_cfg = self.test_cfg
+
+        rois = bbox2roi(proposal_list)
+        for i in range(self.num_stages):
+            bbox_results = self._bbox_forward(i, x, rois)
+
+            # split batch bbox prediction back to each image
+            cls_score = bbox_results['cls_score']
+            bbox_pred = bbox_results['bbox_pred']
+            num_proposals_per_img = tuple(
+                len(proposals) for proposals in proposal_list)
+            # split proposal
+            rois = rois.split(num_proposals_per_img, 0)
+
+            # rotate
+            cls_score = cls_score.split(num_proposals_per_img, 0)
+
+            # rotate
+            if isinstance(bbox_pred, torch.Tensor):
+                bbox_pred = bbox_pred.split(num_proposals_per_img, 0)
+            else:
+                bbox_pred = self.bbox_head[i].bbox_pred_split(
+                    bbox_pred, num_proposals_per_img)
+
+            ms_scores_r.append(cls_score)
+
+            if i < self.num_stages - 1:
+                # 注意这里用的仍然是水平预测bbox的种类
+                bbox_label = [s[:, :-1].argmax(dim=1) for s in cls_score]
+                rois = torch.cat([
+                    self.bbox_head[i].regress_by_class(rois[j], bbox_label[j],
+                                                       bbox_pred[j],
+                                                       img_metas[j])
+                    for j in range(num_imgs)
+                ])
+                # regress by class 将预测的偏移进行解码操作
+
+        # average scores of each image by stages
+        # rotate
+        cls_score_r = [
+            sum([score_r[i] for score_r in ms_scores_r]) / float(len(ms_scores_r))
+            for i in range(num_imgs)
+        ]
+
+        # apply bbox post-processing to each image individually
+        det_bboxes = []
+        det_bboxes_h = []
+        det_labels = []
+        det_labels_h = []
+        for i in range(num_imgs):
+            det_bbox, det_label = self.bbox_head[-1].get_bboxes(
+                rois[i],
+                cls_score_r[i],
+                bbox_pred[i],
+                img_shapes[i],
+                scale_factors[i],
+                rescale=rescale,
+                cfg=rcnn_test_cfg)
+
+            # 返回bbox
+            det_bboxes.append(det_bbox)
+            det_labels.append(det_label)
+
+        if torch.onnx.is_in_onnx_export():
+            return det_bboxes, det_labels
+
+        if submission == True:
+            ensenmble_results = {}
+            ensenmble_results['hbb'] = [
+                bbox2result(det_bboxes_h[i], det_labels_h[i],
+                            self.bbox_head[-1].num_classes)
+                for i in range(num_imgs)
+            ]
+            ensenmble_results['rbb'] = [
+                rbbox2result(det_bboxes[i], det_labels[i],
+                             self.bbox_head[-1].num_classes)
+                for i in range(num_imgs)
+            ]
+        else:
+            if obb:
+                ensenmble_results = [
+                    rbbox2result(det_bboxes[i], det_labels[i],
+                                 self.bbox_head[-1].num_classes)
+                    for i in range(num_imgs)
+                ]
+            else:
+                ensenmble_results = [
+                    bbox2result(det_bboxes_h[i], det_labels_h[i],
+                                 self.bbox_head[-1].num_classes)
+                    for i in range(num_imgs)
+                ]
+        # 暂时不考虑实例分割
+        if self.with_mask:
+            assert not self.with_mask, 'not yet complete'
+
+        return ensenmble_results

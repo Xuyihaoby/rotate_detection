@@ -372,19 +372,19 @@ class OrientedBBoxHead(BBoxHead):
 
     @force_fp32(apply_to=('bbox_pred', ))
     def regress_by_class(self, rois, label, bbox_pred, img_meta):
-        assert rois.size(1) == 4 or rois.size(1) == 5, repr(rois.shape)
+        assert (rois.size(1) == 4 or rois.size(1) == 5), repr(rois.shape)
         if not self.reg_class_agnostic:
             label = label * 4
             inds = torch.stack((label, label + 1, label + 2, label + 3), 1)
             bbox_pred = torch.gather(bbox_pred, 1, inds)
-        assert bbox_pred.size(1) == 4
+        assert bbox_pred.size(1) == 4 or bbox_pred.size(1) == 5
 
         # 这里其实将正负样本都进行了相应的解码处理
-        if rois.size(1) == 4:
-            new_rois = self.bbox_coder.decode(
+        if rois.size(1) == 5:
+            new_rois = self.bbox_coder_r.decode(
                 rois, bbox_pred, max_shape=img_meta['img_shape'])
         else:
-            bboxes = self.bbox_coder.decode(
+            bboxes = self.bbox_coder_r.decode(
                 rois[:, 1:], bbox_pred, max_shape=img_meta['img_shape'])
             new_rois = torch.cat((rois[:, [0]], bboxes), dim=1)
 

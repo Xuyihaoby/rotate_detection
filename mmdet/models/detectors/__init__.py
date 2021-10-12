@@ -30,7 +30,7 @@ from .rfaster_rcnn import RFasterRCNN
 from .feature_attention_net_all_lvl_single_mask_dota import FeatureAttenNetAllLvlSingleMaskDOTA
 from .oriented_rcnn import OientedRCNN  # 中途搁置，用于进行任意方向锚框
 from .rfaster_rcnn_srpn_dota import RFasterRCNNSRPN  # HSP的ablation study
-from .rcascade_rcnn import RCascadeRCNN
+from .rcascade_rcnn import (RCascadeRCNN, OrientedCasRCNN)
 from .rretinanet import RRetinaNet
 from .rhtc import RHybridTaskCascade
 
@@ -42,7 +42,7 @@ __all__ = [
     'FOVEA', 'FSAF', 'NASFCOS', 'PointRend', 'GFL', 'CornerNet', 'PAA',
     'YOLOV3', 'YOLACT', 'VFNet', 'DETR', 'TridentFasterRCNN',
 
-    'RFasterRCNN', 'RCascadeRCNN',
+    'RFasterRCNN', 'RCascadeRCNN', 'OrientedCasRCNN',
     'OientedRCNN', 'FeatureAttenNetAllLvlSingleMaskDOTA', 'RFasterRCNNSRPN',
     'RRetinaNet',
     'RHybridTaskCascade'

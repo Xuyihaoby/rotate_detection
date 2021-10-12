@@ -105,3 +105,38 @@ class OHEMSampler(BaseSampler):
                 neg_inds.size(0)).fill_(self.bbox_head.num_classes)
             return self.hard_mining(neg_inds, num_expected, bboxes[neg_inds],
                                     neg_labels, feats)
+
+
+@BBOX_SAMPLERS.register_module()
+class ROHEMSampler(OHEMSampler):
+    def __init__(self, **kwargs):
+        super(ROHEMSampler, self).__init__(**kwargs)
+
+    def hard_mining(self, inds, num_expected, bboxes, labels, feats):
+        with torch.no_grad():
+            rois = bbox2roi([bboxes])
+            if not hasattr(self.context, 'num_stages'):
+                bbox_results = self.context._bbox_forward(feats, rois)
+            else:
+                bbox_results = self.context._bbox_forward(
+                    self.context.current_stage, feats, rois)
+            cls_score = bbox_results['cls_score']
+            cls_score_h = bbox_results['cls_score_h']
+            loss = self.bbox_head.loss(
+                cls_score=cls_score,
+                bbox_pred=None,
+                cls_score_h=cls_score_h,
+                bbox_pred_h=None,
+                rois=rois,
+                labels=labels,
+                label_weights=cls_score.new_ones(cls_score.size(0)),
+                hor_bbox_targets=None,
+                hor_bbox_weights=None,
+                bbox_targets=None,
+                bbox_weights=None,
+                reduction_override='none')
+            loss_cls = loss['loss_cls']
+            loss_cls_h = loss['loss_cls_h']
+            lossa = loss_cls + loss_cls_h
+            _, topk_loss_inds = lossa.topk(num_expected)
+        return inds[topk_loss_inds]

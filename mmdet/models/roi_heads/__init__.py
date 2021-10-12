@@ -19,7 +19,7 @@ from .trident_roi_head import TridentRoIHead
 from .rstandard_roi_head import RStandardRoIHead
 from .HSP_roi_head import HSPRoIHead
 from .rstandard_roi_head_wo_hor import RStandardRoIHeadWOHor
-from .rcascade_roi_head import RCascadeRoIHead
+from .rcascade_roi_head import (RCascadeRoIHead, orientcasroihead)
 from .rhtc_roi_head import RHybridTaskCascadeRoIHead
 from .oriented_roi_head import OrientedRoIHead
 
@@ -32,7 +32,7 @@ __all__ = [
     'HTCMaskHead', 'FusedSemanticHead', 'GridHead', 'MaskIoUHead',
     'SingleRoIExtractor', 'PISARoIHead', 'PointRendRoIHead', 'MaskPointHead',
     'CoarseMaskHead', 'DynamicRoIHead', 'TridentRoIHead', 'RStandardRoIHead',
-    'HSPRoIHead', 'RCascadeRoIHead',
+    'HSPRoIHead', 'RCascadeRoIHead', 'orientcasroihead',
     'RHybridTaskCascadeRoIHead',
     'OrientedRoIHead'
 ]
