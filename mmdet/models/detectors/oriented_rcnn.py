@@ -86,7 +86,7 @@ class OientedRCNN(RFasterRCNN):
         else:
             proposal_list = proposals
 
-        # self.show_rpn_obbresults(proposal_list, img_metas)
+        self.show_rpn_obbresults(proposal_list, img_metas)
 
         return self.roi_head.simple_test(
             x, proposal_list, img_metas, rescale=rescale, obb=self.obb, submission=self.submission)
