@@ -36,8 +36,8 @@ def rotate_single_run(name, srcpath):
 
 if __name__ == '__main__':
 
-    # srcpath = '/data/xuyihao/mmdetection/dataset/competetion/data'
-    srcpath = '/data1/public_dataset/rsai/split/all'
+    srcpath = '/data1/public_dataset/DOTA/DOTA1_0/split/trainall'
+    # srcpath = '/data1/public_dataset/rsai/split/all'
     # pool = Pool(32)
     imgnames = util.GetFileFromThisRootDir(os.path.join(srcpath, 'images'))
     names = [util.custombasename(x) for x in imgnames]
@@ -48,9 +48,9 @@ if __name__ == '__main__':
 
         objs = util.parse_dota_poly2(os.path.join(src_labelTxt, name + '.txt'))
         for stem in objs:
-            cate_2[stem['name']] += 1
+            cate[stem['name']] += 1
 
 
-    print(cate_2)
+    print(cate)
 
 

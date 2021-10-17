@@ -3,6 +3,43 @@ import numpy as np
 import cv2
 import torch
 
+def rbbox_flip(bboxes, img_shape, direction='horizontal'):
+    """Flip bboxes horizontally or vertically.
+
+    Args:
+        bboxes (Tensor): Shape (..., 4*k)
+        img_shape (tuple): Image shape.
+        direction (str): Flip direction, options are "horizontal", "vertical",
+            "diagonal". Default: "horizontal"
+
+    Returns:
+        Tensor: Flipped bboxes.
+    """
+    assert bboxes.shape[-1] % 5 == 0
+    assert direction in ['horizontal', 'vertical']
+    flipped = bboxes.clone()
+    if direction == 'horizontal':
+        flipped[..., 0::5] = img_shape[1] - bboxes[..., 0::5]
+    elif direction == 'vertical':
+        flipped[..., 1::5] = img_shape[0] - bboxes[..., 1::5]
+    flipped[:, 4::5] = -np.pi / 2 - bboxes[:, 4::5]
+    flipped[:, 2::5] = bboxes[:, 3::5]
+    flipped[:, 3::5] = bboxes[:, 2::5]
+    return flipped
+
+def rbbox_mapping_back(bboxes,
+                      img_shape,
+                      scale_factor,
+                      flip,
+                      flip_direction='horizontal'):
+    """Map bboxes from testing scale to original image scale."""
+    new_bboxes = rbbox_flip(bboxes, img_shape,
+                           flip_direction) if flip else bboxes
+    scale_factor = torch.from_numpy(scale_factor).to(bboxes) # array ---> tensor
+    scale_factor = torch.cat([scale_factor, scale_factor.new_ones(1)])
+    _scale_factor = scale_factor.clone().to(new_bboxes)
+    new_bboxes = new_bboxes.view(-1, 5) / _scale_factor
+    return new_bboxes.view(bboxes.shape)
 
 def rbbox2result(bboxes, labels, num_classes):
     """Convert detection results to a list of numpy arrays.
@@ -184,6 +221,8 @@ def rbbox2roi(bbox_list):
 def CV_L_Rad2LT_RB_TORCH(coordinates):
     assert coordinates.shape[-1] == 5
     devices = coordinates.device
+    if coordinates.shape[0] == 0:
+        return torch.zeros((0, 4), device=devices)
     _coor = coordinates.clone().cpu().numpy()
     _fourpoints = []
     for cd in _coor:

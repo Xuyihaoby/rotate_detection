@@ -229,6 +229,10 @@ class RRandomFlip(object):
         # 'pad_shape', 'scale_factor', 'keep_ratio', 'flip']
         if 'flip_direction' not in results:
             results['flip_direction'] = cur_dir
+        else:
+            cur_dir = results['flip_direction']
+            if isinstance(cur_dir, str):
+                cur_dir = [cur_dir]
         if results['flip']:
             # flip image
             for key in results.get('img_fields', ['img']):
@@ -263,6 +267,9 @@ class RRandomFlip(object):
         # imshow_det_bboxes(results['img'] / 255, results['hor_gt_bboxes'], results['gt_labels'], show=False, \
         #                   out_file='/home/lzy/xyh/Netmodel/s2anet/imgaesh/' + str(int(time.time() % 1000)) + '.png')
         return results
+
+    def __repr__(self):
+        return self.__class__.__name__ + f'(flip_ratio={self.flip_ratio})'
 
 
 @PIPELINES.register_module()

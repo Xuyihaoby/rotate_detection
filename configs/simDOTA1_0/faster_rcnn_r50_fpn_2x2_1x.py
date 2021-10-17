@@ -160,8 +160,8 @@ train_pipeline = [
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
-        type='RMultiScaleFlipAug',
-        img_scale=[(1024, 1024), (2048, 2048)],
+        type='MultiScaleFlipAug',
+        img_scale=(1024, 1024),
         flip=False,
         transforms=[
             dict(type='RResize'),
@@ -173,7 +173,7 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=4,
+    samples_per_gpu=2,
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
@@ -207,4 +207,4 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/faster_rcnn_r50_fpn_1x'
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/faster_rcnn_r50_fpn_2x2_1x'

@@ -14,9 +14,9 @@ def visualGT(cfg, num, dstpath, sp=None):
     os.makedirs(dstpath, exist_ok=True)
     img_path = cfg.data.train.img_prefix
     if cfg.data.train.type in ['SSDD']:
-        _img_path = osp.join(img_path, 'JPEGImages')
+        img_path = osp.join(img_path, 'JPEGImages')
     if sp == None:
-        imglist = glob.glob(_img_path + '/*')
+        imglist = glob.glob(img_path + '/*')
         selectnum = min(num, len(imglist))
         _tovis = random.sample(imglist, selectnum)
         for _singlevis in tqdm.tqdm(_tovis):
@@ -37,6 +37,21 @@ def visualGT(cfg, num, dstpath, sp=None):
                 cv.polylines(img, nplines, isClosed=True, color=(255, 125, 125), thickness=3)
                 cv.imwrite(osp.join(dstpath, osp.basename(_singlevis)), img)
     else:
+        img_path = osp.join(img_path, sp)
+        img = cv.imread(img_path)
+        ann_path = img_path.replace('images', 'labelTxt').replace('png', 'txt')
+        assert osp.exists(ann_path), 'ann_file must be a file'
+        with open(ann_path, 'r') as fread:
+            lines = fread.readlines()
+            nplines = []
+            # read lines
+            for line in lines:
+                line = line.split()
+                npline = np.array(line[:8], dtype=np.float32).astype(np.int32)
+                nplines.append(npline[np.newaxis])
+            nplines = np.concatenate(nplines, 0).reshape(-1, 4, 2)
+            cv.polylines(img, nplines, isClosed=True, color=(255, 125, 125), thickness=3)
+            cv.imwrite(osp.join(dstpath, osp.basename(_singlevis)), img)
         pass
 
 
@@ -83,7 +98,7 @@ if __name__ == '__main__':
     parser.add_argument('config', help='test config file path')
     # parser.add_argument('pth', help='the pth need to load')
     parser.add_argument('--mode', default='INF', help='the way you need to visualize the result(GT/INF/SP)')
-    parser.add_argument('--dst', default='./checkpoints/visual')
+    parser.add_argument('--dst', default='/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/visual')
     parser.add_argument('--num', type=int, default=5, help='the number of images you want to visual')
     parser.add_argument('--gtpath', default='None')
     parser.add_argument('--img', default='None')

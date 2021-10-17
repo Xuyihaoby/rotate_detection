@@ -15,6 +15,7 @@ from .transforms import (Albu, CutOut, Expand, MinIoURandomCrop, Normalize,
 from .rtransforms import (RResize, RRandomFlip, RMixUp, RMosaic)
 from .rloading import RLoadAnnotations
 from .randomrotate import Randomrotate
+from .rtest_time_aug import RMultiScaleFlipAug
 
 __all__ = [
     'Compose', 'to_tensor', 'ToTensor', 'ImageToTensor', 'ToDataContainer',
@@ -27,5 +28,5 @@ __all__ = [
     'Rotate', 'ColorTransform', 'EqualizeTransform', 'BrightnessTransform',
     'ContrastTransform', 'Translate', 'MixUp', 'Mosaic',
     'RResize', 'RRandomFlip', 'RLoadAnnotations', 'Randomrotate', 'RMixUp',
-    'RMosaic'
+    'RMosaic', 'RMultiScaleFlipAug'
 ]

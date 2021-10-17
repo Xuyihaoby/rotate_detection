@@ -3,8 +3,8 @@ import sys
 
 import torch
 
-from mmdet.core import (bbox2roi, bbox_mapping, merge_aug_bboxes,
-                        merge_aug_masks, multiclass_nms)
+from mmdet.core import (bbox2roi, bbox_mapping, merge_aug_bboxes, rmerge_aug_bboxes,
+                        merge_aug_masks, multiclass_nms, multiclass_nms_r)
 
 logger = logging.getLogger(__name__)
 
@@ -344,6 +344,8 @@ class RBBoxTestMixin(object):
         """Test det bboxes with test time augmentation."""
         aug_bboxes = []
         aug_scores = []
+        aug_bboxes_h = []
+        aug_scores_h = []
         for x, img_meta in zip(feats, img_metas):
             # only one image in the batch
             img_shape = img_meta[0]['img_shape']
@@ -355,8 +357,10 @@ class RBBoxTestMixin(object):
                                      scale_factor, flip, flip_direction)
             rois = bbox2roi([proposals])
             bbox_results = self._bbox_forward(x, rois)
-            bboxes, scores = self.bbox_head.get_bboxes(
+            bboxes_h, scores_h, bboxes, scores = self.bbox_head.get_bboxes(
                 rois,
+                bbox_results['cls_score_h'],
+                bbox_results['bbox_pred_h'],
                 bbox_results['cls_score'],
                 bbox_results['bbox_pred'],
                 img_shape,
@@ -365,11 +369,20 @@ class RBBoxTestMixin(object):
                 cfg=None)
             aug_bboxes.append(bboxes)
             aug_scores.append(scores)
+            aug_bboxes_h.append(bboxes_h)
+            aug_scores_h.append(scores_h)
         # after merging, bboxes will be rescaled to the original image size
-        merged_bboxes, merged_scores = merge_aug_bboxes(
-            aug_bboxes, aug_scores, img_metas, rcnn_test_cfg)
-        det_bboxes, det_labels = multiclass_nms(merged_bboxes, merged_scores,
+        merged_bboxes_h, merged_scores_h = merge_aug_bboxes(
+            aug_bboxes_h, aug_scores_h, img_metas, rcnn_test_cfg)
+        det_bboxes_h, det_labels_h = multiclass_nms(merged_bboxes_h, merged_scores_h,
                                                 rcnn_test_cfg.score_thr,
-                                                rcnn_test_cfg.nms,
-                                                rcnn_test_cfg.max_per_img)
-        return det_bboxes, det_labels
+                                                rcnn_test_cfg.nms_h,
+                                                rcnn_test_cfg.max_per_img_h)
+
+        merged_bboxes, merged_scores = rmerge_aug_bboxes(
+            aug_bboxes, aug_scores, img_metas, rcnn_test_cfg)
+        det_bboxes, det_labels = multiclass_nms_r(merged_bboxes, merged_scores,
+                                                    rcnn_test_cfg.score_thr,
+                                                    rcnn_test_cfg.nms_r,
+                                                    rcnn_test_cfg.max_per_img)
+        return det_bboxes, det_labels, det_bboxes_h, det_labels_h

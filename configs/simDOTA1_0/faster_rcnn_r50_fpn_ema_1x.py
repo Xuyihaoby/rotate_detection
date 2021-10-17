@@ -160,8 +160,8 @@ train_pipeline = [
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
-        type='RMultiScaleFlipAug',
-        img_scale=[(1024, 1024), (2048, 2048)],
+        type='MultiScaleFlipAug',
+        img_scale=(1024, 1024),
         flip=False,
         transforms=[
             dict(type='RResize'),
@@ -206,5 +206,7 @@ dist_params = dict(backend='nccl')
 log_level = 'INFO'
 load_from = None
 resume_from = None
+
+custom_hooks = [dict(type='ExpMomentumEMAHook', resume_from=resume_from, priority=49)]
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/faster_rcnn_r50_fpn_1x'
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/faster_rcnn_r50_fpn_ema_1x'

@@ -3,6 +3,7 @@ import torch
 from mmcv.ops import nms
 
 from ..bbox import bbox_mapping_back
+from ..bbox import rbbox_mapping_back
 
 
 def merge_aug_proposals(aug_proposals, img_metas, rpn_test_cfg):
@@ -66,6 +67,24 @@ def merge_aug_bboxes(aug_bboxes, aug_scores, img_metas, rcnn_test_cfg):
         flip = img_info[0]['flip']
         flip_direction = img_info[0]['flip_direction']
         bboxes = bbox_mapping_back(bboxes, img_shape, scale_factor, flip,
+                                   flip_direction)
+        recovered_bboxes.append(bboxes)
+    bboxes = torch.stack(recovered_bboxes).mean(dim=0)
+    if aug_scores is None:
+        return bboxes
+    else:
+        scores = torch.stack(aug_scores).mean(dim=0)
+        return bboxes, scores
+
+
+def rmerge_aug_bboxes(aug_bboxes, aug_scores, img_metas, rcnn_test_cfg):
+    recovered_bboxes = []
+    for bboxes, img_info in zip(aug_bboxes, img_metas):
+        img_shape = img_info[0]['img_shape']
+        scale_factor = img_info[0]['scale_factor']
+        flip = img_info[0]['flip']
+        flip_direction = img_info[0]['flip_direction']
+        bboxes = rbbox_mapping_back(bboxes, img_shape, scale_factor, flip,
                                    flip_direction)
         recovered_bboxes.append(bboxes)
     bboxes = torch.stack(recovered_bboxes).mean(dim=0)

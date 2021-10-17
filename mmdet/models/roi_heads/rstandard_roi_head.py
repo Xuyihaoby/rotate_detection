@@ -311,7 +311,7 @@ class RStandardRoIHead(BaseRoIHead, RBBoxTestMixin, MaskTestMixin):
         If rescale is False, then returned bboxes and masks will fit the scale
         of imgs[0].
         """
-        det_bboxes, det_labels = self.aug_test_bboxes(x, img_metas,
+        det_bboxes, det_labels, det_bboxes_h, det_labels_h = self.aug_test_bboxes(x, img_metas,
                                                       proposal_list,
                                                       self.test_cfg)
 
@@ -321,7 +321,7 @@ class RStandardRoIHead(BaseRoIHead, RBBoxTestMixin, MaskTestMixin):
             _det_bboxes = det_bboxes.clone()
             _det_bboxes[:, :4] *= det_bboxes.new_tensor(
                 img_metas[0][0]['scale_factor'])
-        bbox_results = bbox2result(_det_bboxes, det_labels,
+        bbox_results = rbbox2result(_det_bboxes, det_labels,
                                    self.bbox_head.num_classes)
 
         # det_bboxes always keep the original scale

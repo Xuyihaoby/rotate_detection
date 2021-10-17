@@ -45,7 +45,7 @@ model = dict(
             in_channels=256,
             fc_out_channels=1024,
             roi_feat_size=7,
-            num_classes=18,
+            num_classes=15,
             bbox_coder=dict(
                 type='DeltaXYWHBBoxCoder',
                 target_means=[0., 0., 0., 0.],
@@ -132,17 +132,17 @@ lr_config = dict(
     step=[8, 11])
 total_epochs = 12
 
-dataset_type = 'DOTADatasetV2'
-data_root = '/data/xuyihao/mmdetection/dataset/DOTA-v2.0/'
-trainsplit_ann_folder = 'trainallsplit/labelTxt'
-trainsplit_img_folder = 'trainallsplit/images'
-valsplit_ann_folder = 'trainallsplit/labelTxt'
-valsplit_img_folder = 'trainallsplit/images'
-val_ann_folder = 'val/labelTxt'
-val_img_folder = 'val/images'
-test_img_folder = 'testallsplit/images'
-example_ann_folder = 'examplesplit/labelTxt'
-example_img_folder = 'examplesplit/images'
+dataset_type = 'RSAI'
+data_root = '/data1/public_dataset/rsai/'
+trainsplit_ann_folder = 'example/labelTxt'
+# trainsplit_ann_folder = 'split/train/labelTxt'
+trainsplit_img_folder = 'example/images'
+# trainsplit_img_folder = 'split/train/images'
+valsplit_ann_folder = 'split/val/labelTxt'
+valsplit_img_folder = 'split/val/images'
+val_ann_folder = 'origin/val/labelTxt'  # change the path to validate
+val_img_folder = 'origin/val/images'
+test_img_folder = 'split/val/images'  # # change the path to validate
 
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
@@ -160,7 +160,7 @@ train_pipeline = [
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
-        type='MultiScaleFlipAug',
+        type='RMultiScaleFlipAug',
         img_scale=(1024, 1024),
         flip=False,
         transforms=[
@@ -173,8 +173,8 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=4,
-    workers_per_gpu=2,
+    samples_per_gpu=1,
+    workers_per_gpu=0,
     train=dict(
         type=dataset_type,
         ann_file=data_root + trainsplit_ann_folder,
