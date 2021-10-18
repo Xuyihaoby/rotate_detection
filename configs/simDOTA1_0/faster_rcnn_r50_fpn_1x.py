@@ -161,7 +161,7 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='RMultiScaleFlipAug',
-        img_scale=[(1024, 1024), (2048, 2048)],
+        img_scale=(1024, 1024),
         flip=False,
         transforms=[
             dict(type='RResize'),

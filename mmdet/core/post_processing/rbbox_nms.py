@@ -14,7 +14,8 @@ def multiclass_nms_r(multi_bboxes,
                      nms_cfg,
                      max_num=-1,
                      score_factors=None,
-                     return_inds=False):
+                     return_inds=False,
+                     class_agnostic=False):
     """NMS for multi-class bboxes.
 
     Args:
@@ -74,7 +75,7 @@ def multiclass_nms_r(multi_bboxes,
 
     # updated by xyh
     if isinstance(nms_cfg['iou_threshold'], float):
-        dets, keep = batched_rnms(bboxes, scores, labels, nms_cfg, class_agnostic=False)
+        dets, keep = batched_rnms(bboxes, scores, labels, nms_cfg, class_agnostic=class_agnostic)
 
         if max_num > 0:
             dets = dets[:max_num]
@@ -99,7 +100,7 @@ def multiclass_nms_r(multi_bboxes,
             scores_ = scores[labels == i]
             if bboxes_.size(0) == 0:
                 continue
-            dets_, keep_ = batched_rnms(bboxes_, scores_, labels_, nms_cfg_, class_agnostic=False)
+            dets_, keep_ = batched_rnms(bboxes_, scores_, labels_, nms_cfg_, class_agnostic=class_agnostic)
             _, sub_indice = dets_[:, 5].sort(descending=True)
             dets_ = dets_[sub_indice]
             keep_ = keep_[sub_indice]
