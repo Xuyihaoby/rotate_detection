@@ -112,10 +112,7 @@ def inference_detector(model, img):
     # just get the actual data from DataContainer
     data['img_metas'] = [img_metas.data[0] for img_metas in data['img_metas']]
     # update by xyh
-    if cfg.data.test.pipeline[1].flip == False:
-        data['img'] = [img.data[0] for img in data['img']]
-    else:
-        data['img'] = [img.data for img in data['img']]
+    data['img'] = [img.data[0] for img in data['img']]
     if next(model.parameters()).is_cuda:
         # scatter to specified GPU
         data = scatter(data, [device])[0]

@@ -17,7 +17,7 @@ class ModeSwitchHook(Hook):
 
     def __init__(self,
                  num_last_epochs=15,
-                 skip_type_keys=('Mosaic', 'RandomAffine', 'MixUp')):
+                 skip_type_keys=('Mosaic', 'RandomAffine', 'MixUp', 'RMosaic', 'RMixUp')):
         self.num_last_epochs = num_last_epochs
         self.skip_type_keys = skip_type_keys
 

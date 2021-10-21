@@ -51,7 +51,7 @@ def visualGT(cfg, num, dstpath, sp=None):
                 nplines.append(npline[np.newaxis])
             nplines = np.concatenate(nplines, 0).reshape(-1, 4, 2)
             cv.polylines(img, nplines, isClosed=True, color=(255, 125, 125), thickness=3)
-            cv.imwrite(osp.join(dstpath, osp.basename(_singlevis)), img)
+            cv.imwrite(osp.join(dstpath, osp.basename(img)), img)
         pass
 
 

@@ -48,7 +48,8 @@ def replace_ImageToTensor(pipelines):
     """
     pipelines = copy.deepcopy(pipelines)
     for i, pipeline in enumerate(pipelines):
-        if pipeline['type'] == 'MultiScaleFlipAug':
+        # update by xyh
+        if pipeline['type'] in ['MultiScaleFlipAug', 'RMultiScaleFlipAug']:
             assert 'transforms' in pipeline
             pipeline['transforms'] = replace_ImageToTensor(
                 pipeline['transforms'])

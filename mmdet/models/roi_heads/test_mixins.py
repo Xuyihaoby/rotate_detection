@@ -381,10 +381,10 @@ class RBBoxTestMixin(object):
 
         merged_bboxes, merged_scores = rmerge_aug_bboxes(
             aug_bboxes, aug_scores, img_metas, rcnn_test_cfg)
-        rcnn_test_cfg.nms_r.iou_threshold = 0.7
+        rcnn_test_cfg.nms_r.iou_threshold = 0.05
         det_bboxes, det_labels = multiclass_nms_r(merged_bboxes, merged_scores,
                                                     rcnn_test_cfg.score_thr,
                                                     rcnn_test_cfg.nms_r,
                                                     rcnn_test_cfg.max_per_img,
-                                                    class_agnostic=True)
+                                                    class_agnostic=False)
         return det_bboxes, det_labels, det_bboxes_h, det_labels_h
