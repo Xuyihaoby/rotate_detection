@@ -498,11 +498,6 @@ class RMixUp:
             results['ann_info']['polygons'] = mixup_polygons
             assert len(results['gt_bboxes']) == len(results['hor_gt_bboxes']) == len(results['gt_labels']) == len(
                 results['ann_info']['polygons'])
-            import pdb
-            pdb.set_trace()
-            imshow_det_rbboxes(results['img'], results['gt_bboxes'], results['gt_labels'], show=False, \
-                               out_file='/home/lzy/xyh/Netmodel/s2anet/miximgaes/' + str(
-                                   int(time.time() % 1000)) + '.png')
         return results
 
     def _filter_box_candidates(self, bbox1, bbox2):
