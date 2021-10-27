@@ -1,8 +1,8 @@
 _base_ = ['../_base_/swa.py']
 model = dict(
-    type='OientedRCNN',
+    type='RFasterRCNN',
     obb=True,
-    submission=False,
+    submission=True,
     pretrained='torchvision://resnet50',
     backbone=dict(
         type='ResNet',
@@ -19,7 +19,7 @@ model = dict(
         out_channels=256,
         num_outs=5),
     rpn_head=dict(
-        type='ORPNHead',
+        type='RRPNHead',
         in_channels=256,
         feat_channels=256,
         anchor_generator=dict(
@@ -28,22 +28,21 @@ model = dict(
             ratios=[0.5, 1.0, 2.0],
             strides=[4, 8, 16, 32, 64]),
         bbox_coder=dict(
-            type='DeltaXYWHBThetaBoxCoder',
-            target_means=[.0, .0, .0, .0, .0],
-            target_stds=[1.0, 1.0, 1.0, 1.0, 1.0]),
+            type='DeltaXYWHBBoxCoder',
+            target_means=[.0, .0, .0, .0],
+            target_stds=[1.0, 1.0, 1.0, 1.0]),
         loss_cls=dict(
             type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0),
-        loss_bbox=dict(type='SmoothL1Loss', loss_weight=1.0)),
+        loss_bbox=dict(type='L1Loss', loss_weight=1.0)),
     roi_head=dict(
-        type='OrientedRoIHead',
-        num_bboxtype=2,
+        type='RStandardRoIHead',
         bbox_roi_extractor=dict(
-            type='SingleRRoIExtractor',
-            roi_layer=dict(type='RoIAlignRotated', output_size=7, sampling_ratio=0),
+            type='SingleRoIExtractor',
+            roi_layer=dict(type='RoIAlign', output_size=7, sampling_ratio=0),
             out_channels=256,
             featmap_strides=[4, 8, 16, 32]),
         bbox_head=dict(
-            type='Oriented2BBoxHead',
+            type='RShared2FCBBoxHead',
             in_channels=256,
             fc_out_channels=1024,
             roi_feat_size=7,
@@ -53,7 +52,7 @@ model = dict(
                 target_means=[0., 0., 0., 0.],
                 target_stds=[0.1, 0.1, 0.2, 0.2]),
             bbox_coder_r=dict(
-                type='DeltaRXYWHThetaBBoxCoder',
+                type='DeltaXYWHBThetaBoxCoder',
                 target_means=[0., 0., 0., 0., 0.],
                 target_stds=[0.1, 0.1, 0.2, 0.2, 0.2]),
             reg_class_agnostic=False,
@@ -94,10 +93,9 @@ model = dict(
                 neg_iou_thr=0.5,
                 min_pos_iou=0.5,
                 match_low_quality=False,
-                ignore_iof_thr=-1,
-                iou_calculator=dict(type='RBboxOverlaps2D')),
+                ignore_iof_thr=-1),
             sampler=dict(
-                type='RRandomSampler',
+                type='RandomSampler',
                 num=512,
                 pos_fraction=0.25,
                 neg_pos_ub=-1,
@@ -118,7 +116,7 @@ model = dict(
             max_per_img_h=500,
             nms_r=dict(type='rnms', iou_threshold=0.1),
             # nms_r=dict(type='nms_rotate', iou_threshold=merge_nms_iou_thr_dict),
-            max_per_img=2000)
+            max_per_img=500)
         # soft-nms is also supported for rcnn testing
         # e.g., nms=dict(type='soft_nms', iou_threshold=0.5, min_score=0.05), merge_nms_iou_thr_dict
     ))
@@ -136,22 +134,23 @@ lr_config = dict(
 total_epochs = 12
 
 dataset_type = 'DOTADatasetV1'
-data_root = '/data1/public_dataset/DOTA/DOTA1_0/split/'
-trainsplit_ann_folder = 'trainall/labelTxt'
-trainsplit_img_folder = 'trainall/images'
-valsplit_ann_folder = 'trainall/labelTxt'
-valsplit_img_folder = 'trainall/images'
-val_ann_folder = 'trainall/labelTxt'
-val_img_folder = 'trainall/images'
-test_img_folder = 'testms/images'
-example_ann_folder = 'trainall/labelTxt'
-example_img_folder = 'trainall/images'
+data_root = '/data1/public_dataset/DOTA/DOTA1_0/simple/'
+trainsplit_ann_folder = 'train/labelTxt'
+trainsplit_img_folder = 'train/images'
+valsplit_ann_folder = 'train/labelTxt'
+valsplit_img_folder = 'train/images'
+val_ann_folder = 'train/labelTxt'
+val_img_folder = 'train/images'
+test_img_folder = 'test/images'
+example_ann_folder = 'train/labelTxt'
+example_img_folder = 'train/images'
 
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
-    dict(type='LoadImageFromFile'),
+    dict(type='LoadImageFromFile', to_float32=True),
     dict(type='RLoadAnnotations', with_bbox=True),
+    dict(type='PhotoMetricDistortion'),
     dict(type='Randomrotate', border_value=0, rotate_mode='value', rotate_ratio=0.5,
          rotate_values=[30, 60, 90, 120, 150],
          auto_bound=False),
@@ -166,7 +165,7 @@ train_pipeline = [
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
-        type='MultiScaleFlipAug',
+        type='RMultiScaleFlipAug',
         img_scale=(1024, 1024),
         flip=False,
         transforms=[
@@ -198,7 +197,6 @@ data = dict(
         pipeline=test_pipeline,
         test_mode=True))
 evaluation = dict(interval=24, metric='bbox')
-
 checkpoint_config = dict(interval=4)
 
 log_config = dict(
@@ -208,10 +206,17 @@ log_config = dict(
         # dict(type='TensorboardLoggerHook')
     ])
 # yapf:enable
-only_swa_training = True
+only_swa_training=True
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/DOTA1_0/oriented2bbox'
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/faster_rcnn_r50_mosamix'
+
+# mAP: 0.7493325310905473
+# ap of each class: plane:0.8906016304922213, baseball-diamond:0.7732269321886, bridge:0.5362092591471581,
+# ground-track-field:0.7462912894013657, small-vehicle:0.7859396517496082, large-vehicle:0.7767325337625122,
+# ship:0.8714674083069488, tennis-court:0.9087417813351116, basketball-court:0.8496458491475763,
+# storage-tank:0.845310975176461, soccer-ball-field:0.6272632994794598, roundabout:0.5987707754678387,
+# harbor:0.7465006960131182, swimming-pool:0.7242181030712995, helicopter:0.5590677816189297
