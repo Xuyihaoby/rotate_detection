@@ -566,11 +566,16 @@ class RMosaic:
     def __init__(self,
                  img_scale=(1024, 1024),
                  center_ratio_range=(0.5, 1.5),
-                 pad_val=114):
+                 pad_val=114,
+                 filter=False,
+                 filter_size=4
+                 ):
         assert isinstance(img_scale, tuple)
         self.img_scale = img_scale
         self.center_ratio_range = center_ratio_range
         self.pad_val = pad_val
+        self.filter = filter
+        self.filter_size = filter_size
 
     def __call__(self, results):
         """Call function to make a mosaic of image.
@@ -695,6 +700,17 @@ class RMosaic:
             # mosaic_bboxes[:, 1::2] = np.clip(mosaic_bboxes[:, 1::2], 0,
             #                                  2 * self.img_scale[0])
             mosaic_labels = np.concatenate(mosaic_labels, 0)
+        # update by xyh
+        if self.filter:
+            inds = self.filter_gt(mosaic_bboxes, self.filter_size)
+            # import pdb
+            # pdb.set_trace()
+            mosaic_bboxes = mosaic_bboxes[inds]
+            mosaic_hor_bboxes = mosaic_hor_bboxes[inds]
+            mosaic_labels = mosaic_labels[inds]
+            mosaic_polygons = mosaic_polygons[inds]
+            assert mosaic_bboxes.shape[0] == mosaic_hor_bboxes.shape[0] == mosaic_labels.shape[0] \
+                   == mosaic_polygons.shape[0]
 
         results['img'] = mosaic_img
         results['img_shape'] = mosaic_img.shape
@@ -754,6 +770,12 @@ class RMosaic:
 
         paste_coord = x1, y1, x2, y2
         return paste_coord, crop_coord
+
+    # update by xyh
+    def filter_gt(self, bboxes, size):
+        if bboxes.shape[0] == 0:
+            return None
+        return bboxes[:, 2] * bboxes[:, 3] > size
 
     def __repr__(self):
         repr_str = self.__class__.__name__
