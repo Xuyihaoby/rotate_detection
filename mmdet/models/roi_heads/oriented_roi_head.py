@@ -4,7 +4,7 @@ from mmdet.core import bbox2result, bbox2roi, build_assigner, build_sampler
 from ..builder import HEADS, build_head, build_roi_extractor
 from .base_roi_head import BaseRoIHead
 from .test_mixins import BBoxTestMixin, MaskTestMixin, RBBoxTestMixin
-from mmdet.core import rbbox2result, rbbox2roi, CV_L_Rad2LT_RB_TORCH
+from mmdet.core import rbbox2result, rbbox2roi, CV_L_Rad2LT_RB_TORCH, CV_L_Rad2LE_DEF_TORCH
 
 
 @HEADS.register_module()
@@ -125,6 +125,7 @@ class OrientedRoIHead(BaseRoIHead, RBBoxTestMixin, MaskTestMixin):
     def _bbox_forward(self, x, rois, roi_format='CV_LEFT'):
         _rois = rois.clone()
         if roi_format == 'CV_LEFT':
+            _rois[:, 1:] = CV_L_Rad2LE_DEF_TORCH(_rois[:, 1:])
             _rois[:, -1] = -_rois[:, -1]
         bbox_feats = self.bbox_roi_extractor(
             x[:self.bbox_roi_extractor.num_inputs], _rois)

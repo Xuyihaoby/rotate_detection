@@ -1,6 +1,8 @@
 # model settings
 model = dict(
     type='OrientedCasRCNN',
+    obb=True,
+    submission=False,
     pretrained='torchvision://resnet50',
     backbone=dict(
         type='ResNet',
@@ -193,7 +195,7 @@ model = dict(
             min_bbox_size=0),
         rcnn=dict(
             score_thr=0.05,
-            nms=dict(type='rnms', iou_threshold=0.1),
+            nms_r=dict(type='rnms', iou_threshold=0.1),
             max_per_img=500))
 )
 

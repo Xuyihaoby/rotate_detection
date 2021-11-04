@@ -13,7 +13,7 @@ from .transforms import (bbox2distance, bbox2result, bbox2roi,
                          bbox_mapping_back, bbox_rescale, bbox_xyxy_to_cxcywh,
                          distance2bbox, roi2bbox)
 
-from .rtransforms import (rbbox2result, rbbox2roi, CV_L_Rad2LT_RB_TORCH, rbbox_mapping_back)
+from .rtransforms import (rbbox2result, rbbox2roi, CV_L_Rad2LT_RB_TORCH, CV_L_Rad2LE_DEF_TORCH, rbbox_mapping_back)
 
 __all__ = [
     'bbox_overlaps', 'BboxOverlaps2D', 'BaseAssigner', 'MaxIoUAssigner',
@@ -28,6 +28,6 @@ __all__ = [
     'RegionAssigner',
 
      'DeltaXYWHBThetaBoxCoder', 'rbbox2result', 'rbbox2roi', 'CV_L_Rad2LT_RB_TORCH',
-    'rbbox_mapping_back'
+    'rbbox_mapping_back', 'CV_L_Rad2LE_DEF_TORCH'
 
 ]

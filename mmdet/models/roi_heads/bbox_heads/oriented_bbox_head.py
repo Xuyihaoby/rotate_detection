@@ -372,7 +372,7 @@ class OrientedBBoxHead(BBoxHead):
 
     @force_fp32(apply_to=('bbox_pred', ))
     def regress_by_class(self, rois, label, bbox_pred, img_meta):
-        assert (rois.size(1) == 4 or rois.size(1) == 5), repr(rois.shape)
+        assert (rois.size(1) == 5 or rois.size(1) == 6), repr(rois.shape)
         if not self.reg_class_agnostic:
             label = label * 4
             inds = torch.stack((label, label + 1, label + 2, label + 3), 1)

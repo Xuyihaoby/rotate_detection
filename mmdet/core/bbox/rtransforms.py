@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 import torch
 
+
 def rbbox_flip(bboxes, img_shape, direction='horizontal'):
     """Flip bboxes horizontally or vertically.
 
@@ -27,19 +28,21 @@ def rbbox_flip(bboxes, img_shape, direction='horizontal'):
     flipped[:, 3::5] = bboxes[:, 2::5]
     return flipped
 
+
 def rbbox_mapping_back(bboxes,
-                      img_shape,
-                      scale_factor,
-                      flip,
-                      flip_direction='horizontal'):
+                       img_shape,
+                       scale_factor,
+                       flip,
+                       flip_direction='horizontal'):
     """Map bboxes from testing scale to original image scale."""
     new_bboxes = rbbox_flip(bboxes, img_shape,
-                           flip_direction) if flip else bboxes
-    scale_factor = torch.from_numpy(scale_factor).to(bboxes) # array ---> tensor
+                            flip_direction) if flip else bboxes
+    scale_factor = torch.from_numpy(scale_factor).to(bboxes)  # array ---> tensor
     scale_factor = torch.cat([scale_factor, scale_factor.new_ones(1)])
     _scale_factor = scale_factor.clone().to(new_bboxes)
     new_bboxes = new_bboxes.view(-1, 5) / _scale_factor
     return new_bboxes.view(bboxes.shape)
+
 
 def rbbox2result(bboxes, labels, num_classes):
     """Convert detection results to a list of numpy arrays.
@@ -226,7 +229,7 @@ def CV_L_Rad2LT_RB_TORCH(coordinates):
     _coor = coordinates.clone().cpu().numpy()
     _fourpoints = []
     for cd in _coor:
-        quad = cv2.boxPoints(((cd[0], cd[1]), (cd[2], cd[3]), cd[4]*180/np.pi))
+        quad = cv2.boxPoints(((cd[0], cd[1]), (cd[2], cd[3]), cd[4] * 180 / np.pi))
         _fourpoints.append(np.reshape(quad, [-1, ]))
     _result = np.array(_fourpoints, dtype=np.float32)
     xs = _result[:, 0::2]
@@ -238,5 +241,15 @@ def CV_L_Rad2LT_RB_TORCH(coordinates):
     _temp = [x1, y1, x2, y2]
     _twopoint = np.stack(_temp, axis=1)
     result = torch.from_numpy(_twopoint).to(devices)
+    assert result.requires_grad == coordinates.requires_grad
     return result
 
+
+def CV_L_Rad2LE_DEF_TORCH(coordinates):
+    assert coordinates.shape[-1] == 5
+    new_coordinates = coordinates.clone()
+    x, y, w, h, theta = coordinates.split((1, 1, 1, 1, 1), dim=-1)
+    inds = (w > h) * (theta < 0)
+    new_coordinates[inds.squeeze(1), 2], new_coordinates[inds.squeeze(1), 3] = new_coordinates[inds.squeeze(1), 3], new_coordinates[inds.squeeze(1), 2]
+    new_coordinates[inds.squeeze(1), 4] = new_coordinates[inds.squeeze(1), 4] + np.pi / 2
+    return new_coordinates
