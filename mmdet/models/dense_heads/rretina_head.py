@@ -376,7 +376,7 @@ class RRetinaHead(AnchorHead):
             mlvl_scores.append(scores)
         mlvl_bboxes = torch.cat(mlvl_bboxes)
         if rescale:
-            mlvl_bboxes[:, :5] /= mlvl_bboxes.new_tensor(scale_factor)
+            mlvl_bboxes[:, :4] /= mlvl_bboxes.new_tensor(scale_factor)
         mlvl_scores = torch.cat(mlvl_scores)
         if self.use_sigmoid_cls:
             padding = mlvl_scores.new_zeros(mlvl_scores.shape[0], 1)

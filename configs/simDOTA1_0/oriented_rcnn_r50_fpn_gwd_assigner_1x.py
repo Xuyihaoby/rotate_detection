@@ -1,8 +1,7 @@
-num=15
 model = dict(
-    type='RFasterRCNN',
+    type='OientedRCNN',
     obb=True,
-    submission=True,
+    submission=False,
     pretrained='torchvision://resnet50',
     backbone=dict(
         type='ResNet',
@@ -19,7 +18,7 @@ model = dict(
         out_channels=256,
         num_outs=5),
     rpn_head=dict(
-        type='RRPNHead',
+        type='ORPNHead',
         in_channels=256,
         feat_channels=256,
         anchor_generator=dict(
@@ -28,31 +27,31 @@ model = dict(
             ratios=[0.5, 1.0, 2.0],
             strides=[4, 8, 16, 32, 64]),
         bbox_coder=dict(
-            type='DeltaXYWHBBoxCoder',
-            target_means=[.0, .0, .0, .0],
-            target_stds=[1.0, 1.0, 1.0, 1.0]),
+            type='DeltaXYWHBThetaBoxCoder',
+            target_means=[.0, .0, .0, .0, .0],
+            target_stds=[1.0, 1.0, 1.0, 1.0, 1.0]),
         loss_cls=dict(
             type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0),
-        loss_bbox=dict(type='L1Loss', loss_weight=1.0)),
+        loss_bbox=dict(type='SmoothL1Loss', loss_weight=1.0)),
     roi_head=dict(
-        type='RStandardRoIHead',
+        type='OrientedRoIHead',
         bbox_roi_extractor=dict(
-            type='SingleRoIExtractor',
-            roi_layer=dict(type='RoIAlign', output_size=7, sampling_ratio=0),
+            type='SingleRRoIExtractor',
+            roi_layer=dict(type='RoIAlignRotated', output_size=7, sampling_ratio=0),
             out_channels=256,
             featmap_strides=[4, 8, 16, 32]),
         bbox_head=dict(
-            type='RShared2FCBBoxHead',
+            type='Shared2FCOBBoxHead',
             in_channels=256,
             fc_out_channels=1024,
             roi_feat_size=7,
-            num_classes=num,
+            num_classes=15,
             bbox_coder=dict(
                 type='DeltaXYWHBBoxCoder',
                 target_means=[0., 0., 0., 0.],
                 target_stds=[0.1, 0.1, 0.2, 0.2]),
             bbox_coder_r=dict(
-                type='DeltaXYWHBThetaBoxCoder',
+                type='DeltaRXYWHThetaBBoxCoder',
                 target_means=[0., 0., 0., 0., 0.],
                 target_stds=[0.1, 0.1, 0.2, 0.2, 0.2]),
             reg_class_agnostic=False,
@@ -69,7 +68,7 @@ model = dict(
                 min_pos_iou=0.3,
                 match_low_quality=True,
                 ignore_iof_thr=-1,
-                gpu_assign_thr=180),
+                gpu_assign_thr=200),
             sampler=dict(
                 type='RandomSampler',
                 num=256,
@@ -82,20 +81,21 @@ model = dict(
         rpn_proposal=dict(
             nms_across_levels=False,
             nms_pre=2000,
-            nms_post=1000,
-            max_num=1000,
-            nms_thr=0.7,
+            nms_post=2000,
+            max_num=2000,
+            nms_thr=0.8,
             min_bbox_size=0),
         rcnn=dict(
             assigner=dict(
-                type='MaxIoUAssigner',
+                type='MaxIoUGWDAssigner',
                 pos_iou_thr=0.5,
                 neg_iou_thr=0.5,
                 min_pos_iou=0.5,
                 match_low_quality=False,
-                ignore_iof_thr=-1),
+                ignore_iof_thr=-1,
+                iou_calculator=dict(type='RBboxOverlaps2D')),
             sampler=dict(
-                type='RandomSampler',
+                type='RRandomSampler',
                 num=512,
                 pos_fraction=0.25,
                 neg_pos_ub=-1,
@@ -108,7 +108,7 @@ model = dict(
             nms_pre=2000,
             nms_post=2000,
             max_num=2000,
-            nms_thr=0.7,
+            nms_thr=0.8,
             min_bbox_size=0),
         rcnn=dict(
             score_thr=0.05,
@@ -145,14 +145,12 @@ test_img_folder = 'test/images'
 example_ann_folder = 'train/labelTxt'
 example_img_folder = 'train/images'
 
+
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='RLoadAnnotations', with_bbox=True),
-    dict(type='Randomrotate', border_value=0, rotate_mode='value', rotate_ratio=0.5,
-         rotate_values=[30, 60, 90, 120, 150],
-         auto_bound=True),
+    dict(type='RLoadAnnotations', with_bbox=True, with_mask=True),
     dict(type='RResize', img_scale=(1024, 1024)),
     dict(type='RRandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
@@ -197,7 +195,7 @@ data = dict(
         test_mode=True))
 evaluation = dict(interval=24, metric='bbox')
 
-checkpoint_config = dict(interval=2)
+checkpoint_config = dict(interval=4)
 
 log_config = dict(
     interval=10,
@@ -211,27 +209,4 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/faster_rcnn_r50_fpn_rotate_autobound_1x'
-
-# mAP: 0.7249800405394021
-# ap of each class: plane:0.8918578058578293, baseball-diamond:0.7610433297234268, bridge:0.5163391393028444,
-# ground-track-field:0.7579760620678344, small-vehicle:0.7409157843974387, large-vehicle:0.7589276108891696,
-# ship:0.8588381664821094, tennis-court:0.9089558287180874, basketball-court:0.7945703836148308,
-# storage-tank:0.8434090996627599, soccer-ball-field:0.5763482693352823, roundabout:0.5932902784999655,
-# harbor:0.672777690374945, swimming-pool:0.6989052419948143, helicopter:0.5005459171696948
-
-# rotate not autobound and return none
-# mAP: 0.7271554623939506
-# ap of each class: plane:0.8946062699151093, baseball-diamond:0.7697294138364948, bridge:0.5256202739181712,
-# ground-track-field:0.6993159076880046, small-vehicle:0.7415718811201266, large-vehicle:0.7590999311104293,
-# ship:0.8603937755756835, tennis-court:0.9088918380889186, basketball-court:0.7969718072811477,
-# storage-tank:0.8473749674227399, soccer-ball-field:0.5918882708184484, roundabout:0.6236095377019149,
-# harbor:0.6682916123905228, swimming-pool:0.6994968302463765, helicopter:0.5204696187951706
-
-# rotate autobound
-# mAP: 0.7250239650816613
-# ap of each class: plane:0.8912729654883923, baseball-diamond:0.7658572504904938, bridge:0.5258219738092649,
-# ground-track-field:0.7201784130283843, small-vehicle:0.7352987303248087, large-vehicle:0.7585632226610446,
-# ship:0.8624983135545037, tennis-court:0.9083840744646541, basketball-court:0.8333197335618877,
-# storage-tank:0.833528563997191, soccer-ball-field:0.6019054524561919, roundabout:0.5815709460917866,
-# harbor:0.6707614867776706, swimming-pool:0.7011900596288574, helicopter:0.48520828988978887
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/oriented_rcnn_gwd_assigner'

@@ -194,4 +194,5 @@ class Randomrotate(object):
             if results['gt_labels'].shape[0] == 0:
                 results['gt_bboxes'] = results['gt_bboxes_ignore']
                 results['hor_gt_bboxes'] = results['hor_gt_bboxes_ignore']
+                return None
         return results
