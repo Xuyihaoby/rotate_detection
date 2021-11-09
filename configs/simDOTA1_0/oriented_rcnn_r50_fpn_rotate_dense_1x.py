@@ -1,7 +1,7 @@
 model = dict(
     type='OientedRCNN',
     obb=True,
-    submission=True,
+    submission=False,
     pretrained='torchvision://resnet50',
     backbone=dict(
         type='ResNet',
@@ -35,14 +35,13 @@ model = dict(
         loss_bbox=dict(type='SmoothL1Loss', loss_weight=1.0)),
     roi_head=dict(
         type='OrientedRoIHead',
-        num_bboxtype=2,
         bbox_roi_extractor=dict(
             type='SingleRRoIExtractor',
             roi_layer=dict(type='RoIAlignRotated', output_size=7, sampling_ratio=0),
             out_channels=256,
             featmap_strides=[4, 8, 16, 32]),
         bbox_head=dict(
-            type='Oriented2BBoxHead',
+            type='Shared2FCOBBoxHead',
             in_channels=256,
             fc_out_channels=1024,
             roi_feat_size=7,
@@ -82,9 +81,9 @@ model = dict(
         rpn_proposal=dict(
             nms_across_levels=False,
             nms_pre=2000,
-            nms_post=2000,
-            max_num=2000,
-            nms_thr=0.8,
+            nms_post=1000,
+            max_num=1000,
+            nms_thr=0.7,
             min_bbox_size=0),
         rcnn=dict(
             assigner=dict(
@@ -123,7 +122,7 @@ model = dict(
     ))
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
@@ -146,14 +145,12 @@ test_img_folder = 'test/images'
 example_ann_folder = 'train/labelTxt'
 example_img_folder = 'train/images'
 
+
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='RLoadAnnotations', with_bbox=True),
-    dict(type='Randomrotate', border_value=0, rotate_mode='value', rotate_ratio=0.7,
-         rotate_values=[15, 30,45, 60, 75, 90, 105, 120, 135, 150, 165],
-         auto_bound=False),
+    dict(type='RLoadAnnotations', with_bbox=True, with_mask=True),
     dict(type='RResize', img_scale=(1024, 1024)),
     dict(type='RRandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
@@ -212,4 +209,4 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/oriented2bbox_rotatedense'
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/oriented_rcnn_new'

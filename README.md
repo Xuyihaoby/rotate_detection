@@ -20,6 +20,7 @@ Supported backbones:
 - [x] Res2Net
 - [x] ResNeSt
 - [x] swin
+- [x] reresnet
 
 Supported methods（rotate）:
 
