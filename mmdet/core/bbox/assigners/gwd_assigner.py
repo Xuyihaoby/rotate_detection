@@ -117,7 +117,7 @@ class MaxIoUGWDAssigner(BaseAssigner):
         # 3. assign positive: above positive IoU threshold
         # pos_inds = max_overlaps >= self.pos_iou_thr
         # assigned_gt_inds[pos_inds] = argmax_overlaps[pos_inds] + 1
-        pos_inds = min_gwd_distance <= 14
+        pos_inds = min_gwd_distance <= 20
         assigned_gt_inds[pos_inds] = argmin_gwd_distance[pos_inds] + 1
 
         # 暂时先不考虑低质量锚框的情况

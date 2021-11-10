@@ -10,8 +10,10 @@ import torch.utils.checkpoint as cp
 from e2cnn import gspaces
 from mmcv.cnn import (constant_init, kaiming_init)
 from torch.nn.modules.batchnorm import _BatchNorm
+from mmcv.runner import load_checkpoint
+import logging
 
-from .base_backbone import BaseBackbone
+# from .base_backbone import BaseBackbone
 from ..builder import BACKBONES
 
 # Set default Orientation=8, .i.e, the group C8
@@ -24,7 +26,7 @@ if 'Orientation' in os.environ:
     Orientation = int(os.environ['Orientation'])
 if 'fixparams' in os.environ:
     fixparams = True
-print('ReResNet Orientation: {}\tFix Params: {}'.format(Orientation, fixparams))
+# print('ReResNet Orientation: {}\tFix Params: {}'.format(Orientation, fixparams))
 
 # define the equivariant group. We use C8 group by default.
 gspace = gspaces.Rot2dOnR2(N=Orientation)
@@ -523,8 +525,8 @@ class ResLayer(nn.Sequential):
         super(ResLayer, self).__init__(*layers)
 
 
-@BACKBONES.register_module
-class ReResNet(BaseBackbone):
+@BACKBONES.register_module()
+class ReResNet(nn.Module):
     """ReResNet backbone.
 
     Please refer to the `paper <https://arxiv.org/abs/1512.03385>`_ for
@@ -695,7 +697,15 @@ class ReResNet(BaseBackbone):
                 param.requires_grad = False
 
     def init_weights(self, pretrained=None):
-        super(ReResNet, self).init_weights(pretrained)
+        if isinstance(pretrained, str):
+            logger = logging.getLogger()
+            load_checkpoint(self, pretrained, strict=False, logger=logger)
+        elif pretrained is None:
+            # use default initializer or customized initializer in subclasses
+            pass
+        else:
+            raise TypeError('pretrained must be a str or None.'
+                            f' But received {type(pretrained)}.')
         if pretrained is None:
             for m in self.modules():
                 if isinstance(m, nn.Conv2d):

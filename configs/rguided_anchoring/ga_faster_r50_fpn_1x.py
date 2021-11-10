@@ -1,7 +1,7 @@
 model = dict(
-    type='OientedRCNN',
+    type='RFasterRCNN',
     obb=True,
-    submission=False,
+    submission=True,
     pretrained='torchvision://resnet50',
     backbone=dict(
         type='ResNet',
@@ -18,30 +18,48 @@ model = dict(
         out_channels=256,
         num_outs=5),
     rpn_head=dict(
-        type='ORPNHead',
+        type='GARPNHead',
         in_channels=256,
         feat_channels=256,
-        anchor_generator=dict(
+        approx_anchor_generator=dict(
             type='AnchorGenerator',
-            scales=[8],  # 不是面积而是尺度 意思是长和宽都需要乘上该值
+            octave_base_scale=8,
+            scales_per_octave=3,
             ratios=[0.5, 1.0, 2.0],
             strides=[4, 8, 16, 32, 64]),
+        square_anchor_generator=dict(
+            type='AnchorGenerator',
+            ratios=[1.0],
+            scales=[8],
+            strides=[4, 8, 16, 32, 64]),
+        anchor_coder=dict(
+            type='DeltaXYWHBBoxCoder',
+            target_means=[.0, .0, .0, .0],
+            target_stds=[0.07, 0.07, 0.14, 0.14]),
         bbox_coder=dict(
-            type='DeltaXYWHBThetaBoxCoder',
-            target_means=[.0, .0, .0, .0, .0],
-            target_stds=[1.0, 1.0, 1.0, 1.0, 1.0]),
+            type='DeltaXYWHBBoxCoder',
+            target_means=[.0, .0, .0, .0],
+            target_stds=[0.07, 0.07, 0.11, 0.11]),
+        loc_filter_thr=0.01,
+        loss_loc=dict(
+            type='FocalLoss',
+            use_sigmoid=True,
+            gamma=2.0,
+            alpha=0.25,
+            loss_weight=1.0),
+        loss_shape=dict(type='BoundedIoULoss', beta=0.2, loss_weight=1.0),
         loss_cls=dict(
             type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0),
-        loss_bbox=dict(type='SmoothL1Loss', loss_weight=1.0)),
+        loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.0)),
     roi_head=dict(
-        type='OrientedRoIHead',
+        type='RStandardRoIHead',
         bbox_roi_extractor=dict(
-            type='SingleRRoIExtractor',
-            roi_layer=dict(type='RoIAlignRotated', output_size=7, sampling_ratio=0),
+            type='SingleRoIExtractor',
+            roi_layer=dict(type='RoIAlign', output_size=7, sampling_ratio=0),
             out_channels=256,
             featmap_strides=[4, 8, 16, 32]),
         bbox_head=dict(
-            type='Shared2FCOBBoxHead',
+            type='RShared2FCBBoxHead',
             in_channels=256,
             fc_out_channels=1024,
             roi_feat_size=7,
@@ -51,7 +69,7 @@ model = dict(
                 target_means=[0., 0., 0., 0.],
                 target_stds=[0.1, 0.1, 0.2, 0.2]),
             bbox_coder_r=dict(
-                type='DeltaRXYWHThetaBBoxCoder',
+                type='DeltaXYWHBThetaBoxCoder',
                 target_means=[0., 0., 0., 0., 0.],
                 target_stds=[0.1, 0.1, 0.2, 0.2, 0.2]),
             reg_class_agnostic=False,
@@ -75,27 +93,41 @@ model = dict(
                 pos_fraction=0.5,
                 neg_pos_ub=-1,
                 add_gt_as_proposals=False),
-            allowed_border=-1,
+            ga_assigner=dict(
+                type='ApproxMaxIoUAssigner',
+                pos_iou_thr=0.7,
+                neg_iou_thr=0.3,
+                min_pos_iou=0.3,
+                ignore_iof_thr=-1,
+                gpu_assign_thr=200),
+            ga_sampler=dict(
+                type='RandomSampler',
+                num=256,
+                pos_fraction=0.5,
+                neg_pos_ub=-1,
+                add_gt_as_proposals=False),
             pos_weight=-1,
-            debug=False),
+            debug=False,
+            allowed_border=-1,
+            center_ratio=0.2,
+            ignore_ratio=0.5),
         rpn_proposal=dict(
             nms_across_levels=False,
             nms_pre=2000,
-            nms_post=2000,
-            max_num=2000,
-            nms_thr=0.8,
+            nms_post=1000,
+            max_num=1000,
+            nms_thr=0.7,
             min_bbox_size=0),
         rcnn=dict(
             assigner=dict(
-                type='MaxIoUGWDAssigner',
+                type='MaxIoUAssigner',
                 pos_iou_thr=0.5,
                 neg_iou_thr=0.5,
                 min_pos_iou=0.5,
                 match_low_quality=False,
-                ignore_iof_thr=-1,
-                iou_calculator=dict(type='RBboxOverlaps2D')),
+                ignore_iof_thr=-1),
             sampler=dict(
-                type='RRandomSampler',
+                type='RandomSampler',
                 num=512,
                 pos_fraction=0.25,
                 neg_pos_ub=-1,
@@ -108,10 +140,10 @@ model = dict(
             nms_pre=2000,
             nms_post=2000,
             max_num=2000,
-            nms_thr=0.8,
+            nms_thr=0.7,
             min_bbox_size=0),
         rcnn=dict(
-            score_thr=0.05,
+            score_thr=1e-3,
             nms_h=dict(type='nms', iou_threshold=0.1),
             max_per_img_h=500,
             nms_r=dict(type='rnms', iou_threshold=0.1),
@@ -122,7 +154,7 @@ model = dict(
     ))
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.005, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
@@ -134,7 +166,7 @@ lr_config = dict(
 total_epochs = 12
 
 dataset_type = 'DOTADatasetV1'
-data_root = '/data1/public_dataset/DOTA/DOTA1_0/simple/'
+data_root = '/data1/public_dataset/DOTA1_0/simple/'
 trainsplit_ann_folder = 'train/labelTxt'
 trainsplit_img_folder = 'train/images'
 valsplit_ann_folder = 'train/labelTxt'
@@ -144,7 +176,6 @@ val_img_folder = 'train/images'
 test_img_folder = 'test/images'
 example_ann_folder = 'train/labelTxt'
 example_img_folder = 'train/images'
-
 
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
@@ -162,7 +193,7 @@ train_pipeline = [
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
-        type='MultiScaleFlipAug',
+        type='RMultiScaleFlipAug',
         img_scale=(1024, 1024),
         flip=False,
         transforms=[
@@ -175,7 +206,7 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=4,
+    samples_per_gpu=2,
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
@@ -209,4 +240,4 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/oriented_rcnn_gwd_assigner'
+work_dir = '/data1/xyh/checkpoints/ga/ga_fa'
