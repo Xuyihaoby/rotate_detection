@@ -284,6 +284,8 @@ class GuidedAnchorHead(AnchorHead):
                 # position is true
                 inside_flags = (
                     torch.stack(inside_flags_list, 0).sum(dim=0) > 0)
+                # 这里的inside_flags先按列拼接在一起，之后再用列求和大于零的方式
+                # 这里的inside与其说是判断每个anchor是否有效不如说是判断每个点是否有效
                 multi_level_flags.append(inside_flags)
             inside_flag_list.append(multi_level_flags)
         return approxs_list, inside_flag_list
@@ -308,6 +310,7 @@ class GuidedAnchorHead(AnchorHead):
         Returns:
             tuple: square approxs of each image, guided anchors of each image,
                 loc masks of each image
+            squares_list/guided anchors len=B, len([0])==lvl;
         """
         num_imgs = len(img_metas)
         num_levels = len(featmap_sizes)
@@ -355,6 +358,7 @@ class GuidedAnchorHead(AnchorHead):
         Returns:
             tuple: guided anchors, location masks
         """
+        # 注意这里传入的loc pred的维度并不是4，而是3;上层函数已经是具体到具体图片的具体层级的
         # calculate location filtering mask
         loc_pred = loc_pred.sigmoid().detach()
         if use_loc_filter:
@@ -589,6 +593,7 @@ class GuidedAnchorHead(AnchorHead):
              gt_bboxes_ignore_list,
              img_metas,
              unmap_outputs=unmap_outputs)
+        # 前三个项每个元素的size都与square一样
         # no valid anchors
         if any([bbox_anchors is None for bbox_anchors in all_bbox_anchors]):
             return None
@@ -656,6 +661,11 @@ class GuidedAnchorHead(AnchorHead):
         # get loc targets
         loc_targets, loc_weights, loc_avg_factor = self.ga_loc_targets(
             gt_bboxes, featmap_sizes)
+        #  - positive regions: target 1, weight 1
+        #  - ignore regions: target 0, weight 0
+        #  - negative regions: target 0, weight 0.1
+        # 作者的判断逻辑就是提前设定忽略和真值的比率，之后将gt bbox映射回五个特征图的某一个
+        # 然后得到每个特征点的weight，除此之外，还将gt映射到相邻的特征图，计算比例区域然后将其也设为ignore
 
         # get sampled approxes
         approxs_list, inside_flag_list = self.get_sampled_approxs(
@@ -663,11 +673,16 @@ class GuidedAnchorHead(AnchorHead):
         # get squares and guided anchors
         squares_list, guided_anchors_list, _ = self.get_anchors(
             featmap_sizes, shape_preds, loc_preds, img_metas, device=device)
+        # 得到方形anchor以及根据suqare,shape和预测的loc得到的bbox，如果是训练阶段那么bbox每个像素点的bbox都有
+        # 如果是测试阶段，就只有大于阈值的点有guided anchor
 
         # get shape targets
         shape_targets = self.ga_shape_targets(approxs_list, inside_flag_list,
                                               squares_list, gt_bboxes,
                                               img_metas)
+        # bbox_anchors_list, bbox_gts_list, bbox_weights_list,
+        # num_total_pos, num_total_neg
+        # 得到approx anchor和gt的target  没有编码 在分配的时候每一个点的base_num 分配的时候只能上一个
         if shape_targets is None:
             return None
         (bbox_anchors_list, bbox_gts_list, anchor_weights_list, anchor_fg_num,
@@ -686,6 +701,8 @@ class GuidedAnchorHead(AnchorHead):
             gt_bboxes_ignore_list=gt_bboxes_ignore,
             gt_labels_list=gt_labels,
             label_channels=label_channels)
+        # 根据square anchor以及pred得到guided anchor与gt bbox进行相关计算
+        # 得到target，没有编码
         if cls_reg_targets is None:
             return None
         (labels_list, label_weights_list, bbox_targets_list, bbox_weights_list,
@@ -715,6 +732,7 @@ class GuidedAnchorHead(AnchorHead):
             bbox_targets_list,
             bbox_weights_list,
             num_total_samples=num_total_samples)
+        # guided anchor与gt分配的target与预测的bbox
 
         # get anchor location loss
         losses_loc = []
@@ -736,6 +754,7 @@ class GuidedAnchorHead(AnchorHead):
                 anchor_weights_list[i],
                 anchor_total_num=anchor_total_num)
             losses_shape.append(loss_shape)
+        # gt和approx anchor的分配和shape pred进行预测
 
         return dict(
             loss_cls=losses_cls,
