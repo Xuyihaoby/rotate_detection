@@ -30,6 +30,8 @@ Supported methods（rotate）:
 - [x] RRetinanet(obb)
 - [x] RHTC(hbb proposal&hbb+obb)
 - [x] Oriented RCNN（obb/obb+hbb）
+- [ ] RoITrans（1st hbb+obb 2nd obb）
+- [ ] Double head
 
 Some other methods are also supported in [projects using MMDetection](./docs/projects.md).
 

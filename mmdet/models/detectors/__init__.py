@@ -33,6 +33,7 @@ from .rfaster_rcnn_srpn_dota import RFasterRCNNSRPN  # HSP的ablation study
 from .rcascade_rcnn import (RCascadeRCNN, OrientedCasRCNN)
 from .rretinanet import RRetinaNet
 from .rhtc import RHybridTaskCascade
+from .RoItransformer import RoItransformer
 
 
 __all__ = [
@@ -45,5 +46,6 @@ __all__ = [
     'RFasterRCNN', 'RCascadeRCNN', 'OrientedCasRCNN',
     'OientedRCNN', 'FeatureAttenNetAllLvlSingleMaskDOTA', 'RFasterRCNNSRPN',
     'RRetinaNet',
-    'RHybridTaskCascade'
+    'RHybridTaskCascade',
+    'RoItransformer'
 ]

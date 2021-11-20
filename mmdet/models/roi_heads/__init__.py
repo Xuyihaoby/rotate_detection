@@ -22,6 +22,8 @@ from .rstandard_roi_head_wo_hor import RStandardRoIHeadWOHor
 from .rcascade_roi_head import (RCascadeRoIHead, orientcasroihead)
 from .rhtc_roi_head import RHybridTaskCascadeRoIHead
 from .oriented_roi_head import OrientedRoIHead
+from .roi_trans_head import RoItranshead
+from .rdouble_roi_head import RDoubleHeadRoIHead
 
 
 __all__ = [
@@ -34,5 +36,7 @@ __all__ = [
     'CoarseMaskHead', 'DynamicRoIHead', 'TridentRoIHead', 'RStandardRoIHead',
     'HSPRoIHead', 'RCascadeRoIHead', 'orientcasroihead',
     'RHybridTaskCascadeRoIHead',
-    'OrientedRoIHead'
+    'OrientedRoIHead',
+    'RoItranshead',
+    'RDoubleHeadRoIHead'
 ]

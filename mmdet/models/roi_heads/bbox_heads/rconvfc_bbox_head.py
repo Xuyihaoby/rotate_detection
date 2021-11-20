@@ -496,6 +496,54 @@ class RConvFCBBoxHead(BBoxHead):
 
         return bboxes_list
 
+    @force_fp32(apply_to=('bbox_pred', ))
+    def regress_by_h2rclass(self, rois, label, bbox_pred, img_meta):
+        assert rois.size(1) == 4 or rois.size(1) == 5, repr(rois.shape)
+        if not self.reg_class_agnostic:
+            label = label * 4
+            inds = torch.stack((label, label + 1, label + 2, label + 3), 1)
+            bbox_pred = torch.gather(bbox_pred, 1, inds)
+        assert bbox_pred.size(1) == 5
+
+        # 这里其实将正负样本都进行了相应的解码处理
+        if rois.size(1) == 4:
+            new_rois = self.bbox_coder_r.decode(
+                rois, bbox_pred, max_shape=img_meta['img_shape'])
+        else:
+            bboxes = self.bbox_coder_r.decode(
+                rois[:, 1:], bbox_pred, max_shape=img_meta['img_shape'])
+            new_rois = torch.cat((rois[:, [0]], bboxes), dim=1)
+
+        return new_rois
+
+    @force_fp32(apply_to=('bbox_preds',))
+    def refine_rbboxes(self, rois, labels, bbox_preds, pos_is_gts, img_metas):
+        img_ids = rois[:, 0].long().unique(sorted=True)
+        assert img_ids.numel() <= len(img_metas)
+        bboxes_list = []
+        for i in range(len(img_metas)):
+            inds = torch.nonzero(
+                rois[:, 0] == i, as_tuple=False).squeeze(dim=1)
+            num_rois = inds.numel()
+
+            bboxes_ = rois[inds, 1:]
+            label_ = labels[inds]
+            bbox_pred_ = bbox_preds[inds]
+            img_meta_ = img_metas[i]
+            pos_is_gts_ = pos_is_gts[i]  # 正样本中有些是gt
+
+            bboxes = self.regress_by_h2rclass(bboxes_, label_, bbox_pred_,
+                                           img_meta_)
+
+            # filter gt bboxes
+            pos_keep = 1 - pos_is_gts_
+            keep_inds = pos_is_gts_.new_ones(num_rois)
+            keep_inds[:len(pos_is_gts_)] = pos_keep
+
+            bboxes_list.append(bboxes[keep_inds.type(torch.bool)])
+
+        return bboxes_list
+
 
 @HEADS.register_module()
 class RShared2FCBBoxHead(RConvFCBBoxHead):

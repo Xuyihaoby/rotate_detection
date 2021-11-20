@@ -139,13 +139,10 @@ class RCascadeRoIHead(BaseRoIHead, RBBoxTestMixin, MaskTestMixin):
 
     def _bbox_forward(self, stage, x, rois, roi_format='CV_LEFT'):
         """Box head forward function used in both training and testing."""
-        _rois = rois.clone()
-        if roi_format == 'CV_LEFT':
-            _rois[:, -1] = -_rois[:, -1]
         bbox_roi_extractor = self.bbox_roi_extractor[stage]
         bbox_head = self.bbox_head[stage]
         bbox_feats = bbox_roi_extractor(x[:bbox_roi_extractor.num_inputs],
-                                        _rois)
+                                        rois)
 
 
         # do not support caffe_c4 model anymore
@@ -751,3 +748,22 @@ class orientcasroihead(RCascadeRoIHead):
             assert not self.with_mask, 'not yet complete'
 
         return ensenmble_results
+
+    def _bbox_forward(self, stage, x, rois, roi_format='CV_LEFT'):
+        """Box head forward function used in both training and testing."""
+        _rois = rois.clone()
+        if roi_format == 'CV_LEFT':
+            _rois[:, -1] = -_rois[:, -1]
+        bbox_roi_extractor = self.bbox_roi_extractor[stage]
+        bbox_head = self.bbox_head[stage]
+        bbox_feats = bbox_roi_extractor(x[:bbox_roi_extractor.num_inputs],
+                                        _rois)
+
+
+        # do not support caffe_c4 model anymore
+        cls_score, bbox_pred = bbox_head(bbox_feats)
+
+        bbox_results = dict(
+            cls_score=cls_score, bbox_pred=bbox_pred,\
+            bbox_feats=bbox_feats)
+        return bbox_results
