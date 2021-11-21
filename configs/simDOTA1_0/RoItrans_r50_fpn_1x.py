@@ -235,7 +235,7 @@ data = dict(
         img_prefix=data_root + test_img_folder,
         pipeline=test_pipeline,
         test_mode=True))
-evaluation = dict(interval=24, metric='bbox')
+optimizer = dict(type='SGD', lr=0.05, momentum=0.9, weight_decay=0.0001)
 
 checkpoint_config = dict(interval=4)
 
@@ -252,3 +252,10 @@ load_from = None
 resume_from = None
 workflow = [('train', 1)]
 work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/RoItrans'
+
+# mAP: 0.7187121705490287
+# ap of each class: plane:0.886007966322705, baseball-diamond:0.7646188790427143, bridge:0.5037118522965092,
+# ground-track-field:0.7095302814280035, small-vehicle:0.7349415948454071, large-vehicle:0.7736080458984241,
+# ship:0.8757630697845552, tennis-court:0.9088864658579803, basketball-court:0.8082766284194625,
+# storage-tank:0.7844311760321827, soccer-ball-field:0.6066697473000469, roundabout:0.5975944797935868,
+# harbor:0.6892803244913571, swimming-pool:0.620841115709222, helicopter:0.5165209310132737

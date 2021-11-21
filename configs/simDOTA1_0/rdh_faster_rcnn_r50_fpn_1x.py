@@ -26,7 +26,6 @@ model = dict(
                 type='CrossEntropyLoss', use_sigmoid=False, loss_weight=2.0),
             loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=2.0))))
 
-optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
 dataset_type = 'DOTADatasetV1'
 data_root = '/data1/public_dataset/DOTA/DOTA1_0/simple/'
 trainsplit_ann_folder = 'train/labelTxt'
@@ -39,8 +38,9 @@ test_img_folder = 'test/images'
 example_ann_folder = 'train/labelTxt'
 example_img_folder = 'train/images'
 
+optimizer = dict(type='SGD', lr=0.005, momentum=0.9, weight_decay=0.0001)
 data = dict(
-    samples_per_gpu=4,
+    samples_per_gpu=2,
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
@@ -55,4 +55,4 @@ data = dict(
         ann_file=data_root + test_img_folder,
         img_prefix=data_root + test_img_folder,
         test_mode=True))
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/rdouble_head/rdh_faster_rcnn_r50_fpn_1x'
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/rdh_faster_rcnn_r50_fpn_1x'

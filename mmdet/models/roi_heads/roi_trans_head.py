@@ -353,8 +353,6 @@ class RoItranshead(BaseRoIHead, RBBoxTestMixin, MaskTestMixin):
             bbox_pred = self.bbox_head[1].bbox_pred_split(
                 bbox_pred, num_proposals_per_img)
         ms_scores_r.append(cls_score)
-        import pdb
-        pdb.set_trace()
         # rotate
         cls_score_r = [
             sum([score_r[i] for score_r in ms_scores_r]) / float(len(ms_scores_r))
