@@ -23,7 +23,7 @@ from .rcascade_roi_head import (RCascadeRoIHead, orientcasroihead)
 from .rhtc_roi_head import RHybridTaskCascadeRoIHead
 from .oriented_roi_head import OrientedRoIHead
 from .roi_trans_head import RoItranshead
-from .rdouble_roi_head import RDoubleHeadRoIHead
+from .rdouble_roi_head import RDoubleHeadRoIHead, DoubleOrientedRoIHead
 
 
 __all__ = [
@@ -38,5 +38,6 @@ __all__ = [
     'RHybridTaskCascadeRoIHead',
     'OrientedRoIHead',
     'RoItranshead',
-    'RDoubleHeadRoIHead'
+    'RDoubleHeadRoIHead', 'DoubleOrientedRoIHead'
+
 ]

@@ -529,3 +529,87 @@ class RDoubleConvFCBBoxHead(BBoxHead):
         return bboxes_list
 
 
+@HEADS.register_module()
+class RDoubleOrient2BBoxHead(RDoubleConvFCBBoxHead):
+    def __init__(self, **kwargs):
+        super(RDoubleOrient2BBoxHead, self).__init__(**kwargs)
+
+    def _get_target_single(self, pos_hor_bboxes, neg_hor_bboxes, pos_bboxes, neg_bboxes, pos_hor_gt_bboxes,
+                           pos_gt_labels, pos_gt_bboxes, cfg):
+        num_pos = pos_bboxes.size(0)
+        num_neg = neg_bboxes.size(0)
+        num_samples = num_pos + num_neg
+
+        labels = pos_bboxes.new_full((num_samples,),
+                                     self.num_classes,
+                                     dtype=torch.long)
+        label_weights = pos_bboxes.new_zeros(num_samples)
+        # horizon
+        hor_bbox_targets = pos_hor_bboxes.new_zeros(num_samples, 4)
+        hor_bbox_weights = pos_hor_bboxes.new_zeros(num_samples, 4)
+        # rotate
+        bbox_targets = pos_bboxes.new_zeros(num_samples, 5)
+        bbox_weights = pos_bboxes.new_zeros(num_samples, 5)
+        # import pdb
+        # pdb.set_trace()
+        if num_pos > 0:
+            labels[:num_pos] = pos_gt_labels
+            pos_weight = 1.0 if cfg.pos_weight <= 0 else cfg.pos_weight
+            label_weights[:num_pos] = pos_weight
+            if not self.reg_decoded_bbox:
+                pos_hor_bbox_targets = self.bbox_coder.encode(
+                    pos_hor_bboxes, pos_hor_gt_bboxes)
+                pos_bbox_targets = self.bbox_coder_r.encode(pos_bboxes, pos_gt_bboxes)
+                # [N1, 5]
+            else:
+                pos_hor_bbox_targets = pos_hor_gt_bboxes
+            hor_bbox_targets[:num_pos, :] = pos_hor_bbox_targets
+            hor_bbox_weights[:num_pos, :] = 1
+            bbox_targets[:num_pos, :] = pos_bbox_targets
+            bbox_weights[:num_pos, :] = 1
+        if num_neg > 0:
+            label_weights[-num_neg:] = 1.0
+
+        return labels, label_weights, hor_bbox_targets, hor_bbox_weights, bbox_targets, bbox_weights
+
+    def get_targets(self,
+                    sampling_results,
+                    gt_bboxes,
+                    gt_labels,
+                    rcnn_train_cfg,
+                    concat=True):
+        pos_hor_bboxes_list = [res.pos_hor_bboxes for res in sampling_results]
+        # list( len = batchsize ) each is [N, 4]
+        neg_hor_bboxes_list = [res.neg_hor_bboxes for res in sampling_results]
+        # list( len = batchsize ) each is [N, 4]
+        pos_bboxes_list = [res.pos_bboxes for res in sampling_results]
+        # list( len = batchsize ) each is [N, 5]
+        neg_bboxes_list = [res.neg_bboxes for res in sampling_results]
+        # list( len = batchsize ) each is [N, 5]
+        pos_hor_gt_bboxes_list = [res.pos_hor_gt_bboxes for res in sampling_results]
+        # list( len = batchsize ) each is [N, 4]
+        pos_gt_labels_list = [res.pos_gt_labels for res in sampling_results]
+        pos_gt_bboxes_list = [gt_bboxes[i][res.pos_assigned_gt_inds, :] for i, res in enumerate(sampling_results)]
+        # list( len = batchsize ) each is [N, 5]
+        labels, label_weights, hor_bbox_targets, hor_bbox_weights, bbox_targets, bbox_weights = multi_apply(
+            self._get_target_single,
+            pos_hor_bboxes_list,
+            neg_hor_bboxes_list,
+            pos_bboxes_list,
+            neg_bboxes_list,
+            pos_hor_gt_bboxes_list,
+            pos_gt_labels_list,
+            pos_gt_bboxes_list,
+            cfg=rcnn_train_cfg)
+        # labels >>> [[num_samples],..(batchsize)]
+        if concat:
+            # 将list里的tensor合并
+            labels = torch.cat(labels, 0)
+            label_weights = torch.cat(label_weights, 0)
+            # horizon
+            hor_bbox_targets = torch.cat(hor_bbox_targets, 0)
+            hor_bbox_weights = torch.cat(hor_bbox_weights, 0)
+            # rotate
+            bbox_targets = torch.cat(bbox_targets, 0)
+            bbox_weights = torch.cat(bbox_weights, 0)
+        return labels, label_weights, hor_bbox_targets, hor_bbox_weights, bbox_targets, bbox_weights

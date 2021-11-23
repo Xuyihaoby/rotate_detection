@@ -31,7 +31,7 @@ Supported methods（rotate）:
 - [x] RHTC(hbb proposal&hbb+obb)
 - [x] Oriented RCNN（obb/obb+hbb）
 - [x] RoITrans（1st hbb+obb 2nd obb）
-- [ ] Double head（obb+hbb）
+- [x] Double head（obb+hbb rf&oriented）
 - [ ] ReDet
 - [ ] s2anet
 

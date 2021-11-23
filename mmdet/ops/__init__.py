@@ -8,6 +8,7 @@ from .rbbox_geo import rbbox_iou_iof
 from .nms import batched_rnms, rnms
 from .orn import ORConv2d, RotationInvariantPooling, rotation_invariant_encoding
 from .roi_align_rotated import RoIAlignRotated
+from .riroi_align import RiRoIAlign
 # yapf: enable
 
 __all__ = [
@@ -16,5 +17,6 @@ __all__ = [
     "rbbox_iou_iof",
     'RotationInvariantPooling', 'rotation_invariant_encoding',
     'ORConv2d',
-    'RoIAlignRotated'
+    'RoIAlignRotated',
+    'RiRoIAlign'
 ]
