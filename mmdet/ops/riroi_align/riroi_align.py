@@ -1,5 +1,6 @@
 from torch.nn.modules.module import Module
 from torch.autograd import Function
+from torch.nn.modules.utils import _pair
 
 from .riroi_align_cuda import forward, backward
 
@@ -69,11 +70,11 @@ class RiRoIAlign(Module):
     def __init__(self, output_size, spatial_scale, sampling_ratio=0, nOrientation=8):
         super(RiRoIAlign, self).__init__()
 
-        self.out_size = output_size
+        self.output_size = _pair(output_size)
         self.spatial_scale = float(spatial_scale)
-        self.sample_num = int(sampling_ratio)
+        self.sampling_ratio = int(sampling_ratio)
         self.nOrientation = int(nOrientation)
 
     def forward(self, features, rois):
-        return RiRoIAlignFunction.apply(features, rois, self.out_size,
-                                        self.spatial_scale, self.sample_num, self.nOrientation)
+        return RiRoIAlignFunction.apply(features, rois, self.output_size,
+                                        self.spatial_scale, self.sampling_ratio, self.nOrientation)
