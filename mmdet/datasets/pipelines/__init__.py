@@ -12,7 +12,7 @@ from .transforms import (Albu, CutOut, Expand, MinIoURandomCrop, Normalize,
                          Pad, PhotoMetricDistortion, RandomCenterCropPad,
                          RandomCrop, RandomFlip, Resize, SegRescale, MixUp, Mosaic)
 
-from .rtransforms import (RResize, RRandomFlip, RMixUp, RMosaic)
+from .rtransforms import (RResize, RRandomFlip, RMixUp, RMosaic, Grid)
 from .rloading import RLoadAnnotations
 from .randomrotate import Randomrotate
 from .rtest_time_aug import RMultiScaleFlipAug
@@ -28,5 +28,5 @@ __all__ = [
     'Rotate', 'ColorTransform', 'EqualizeTransform', 'BrightnessTransform',
     'ContrastTransform', 'Translate', 'MixUp', 'Mosaic',
     'RResize', 'RRandomFlip', 'RLoadAnnotations', 'Randomrotate', 'RMixUp',
-    'RMosaic', 'RMultiScaleFlipAug'
+    'RMosaic', 'RMultiScaleFlipAug', 'Grid'
 ]

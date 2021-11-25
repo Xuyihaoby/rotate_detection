@@ -1,10 +1,10 @@
 model = dict(
-    type='ReDet',
+    type='RFasterRCNN',
     obb=True,
     submission=False,
-    pretrained='/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/pretrained/re_resnet50_c8_batch256-25b16846.pth',
+    pretrained='torchvision://resnet50',
     backbone=dict(
-        type='ReResNet',
+        type='ResNet',
         depth=50,
         num_stages=4,
         out_indices=(0, 1, 2, 3),
@@ -13,7 +13,7 @@ model = dict(
         norm_eval=True,
         style='pytorch'),
     neck=dict(
-        type='ReFPN',
+        type='FPN',
         in_channels=[256, 512, 1024, 2048],
         out_channels=256,
         num_outs=5),
@@ -32,25 +32,15 @@ model = dict(
             target_stds=[1.0, 1.0, 1.0, 1.0]),
         loss_cls=dict(
             type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0),
-        loss_bbox=dict(type='SmoothL1Loss', loss_weight=1.0)),
+        loss_bbox=dict(type='L1Loss', loss_weight=1.0)),
     roi_head=dict(
-        type='RoItranshead',
-        num_stages=2,
-        stage_loss_weights=[1, 1],
-        bbox_roi_extractor=[
-            dict(
-                type='SingleRoIExtractor',
-                roi_layer=dict(type='RoIAlign', output_size=7, sampling_ratio=0),
-                out_channels=256,
-                featmap_strides=[4, 8, 16, 32]),
-            dict(
-                type='SingleRRoIExtractor',
-                roi_layer=dict(type='RiRoIAlign', output_size=7, sampling_ratio=0),
-                out_channels=256,
-                featmap_strides=[4, 8, 16, 32]),
-        ],
-        bbox_head=
-        [dict(
+        type='RStandardRoIHead',
+        bbox_roi_extractor=dict(
+            type='SingleRoIExtractor',
+            roi_layer=dict(type='RoIAlign', output_size=7, sampling_ratio=0),
+            out_channels=256,
+            featmap_strides=[4, 8, 16, 32]),
+        bbox_head=dict(
             type='RShared2FCBBoxHead',
             in_channels=256,
             fc_out_channels=1024,
@@ -64,25 +54,10 @@ model = dict(
                 type='DeltaXYWHBThetaBoxCoder',
                 target_means=[0., 0., 0., 0., 0.],
                 target_stds=[0.1, 0.1, 0.2, 0.2, 0.2]),
-            reg_class_agnostic=True,
+            reg_class_agnostic=False,
             loss_cls=dict(
                 type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0),
-            loss_bbox=dict(type='SmoothL1Loss', loss_weight=1.0)),
-            dict(
-                type='Shared2FCOBBoxHead',
-                in_channels=256,
-                fc_out_channels=1024,
-                roi_feat_size=7,
-                num_classes=15,
-                bbox_coder_r=dict(
-                    type='DeltaRXYWHThetaBBoxCoder',
-                    target_means=[0., 0., 0., 0., 0.],
-                    target_stds=[0.05, 0.05, 0.1, 0.1, 0.1]),
-                reg_class_agnostic=False,
-                loss_cls=dict(
-                    type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0),
-                loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.0))]
-    ),
+            loss_bbox=dict(type='SmoothL1Loss', loss_weight=1.0))),
     # model training and testing settings
     train_cfg=dict(
         rpn=dict(
@@ -93,7 +68,7 @@ model = dict(
                 min_pos_iou=0.3,
                 match_low_quality=True,
                 ignore_iof_thr=-1,
-                gpu_assign_thr=200),
+                gpu_assign_thr=180),
             sampler=dict(
                 type='RandomSampler',
                 num=256,
@@ -110,8 +85,7 @@ model = dict(
             max_num=1000,
             nms_thr=0.7,
             min_bbox_size=0),
-        rcnn=[
-            dict(
+        rcnn=dict(
             assigner=dict(
                 type='MaxIoUAssigner',
                 pos_iou_thr=0.5,
@@ -126,25 +100,7 @@ model = dict(
                 neg_pos_ub=-1,
                 add_gt_as_proposals=True),
             pos_weight=-1,
-            debug=False),
-            dict(
-                assigner=dict(
-                    type='MaxIoUAssigner',
-                    pos_iou_thr=0.5,
-                    neg_iou_thr=0.5,
-                    min_pos_iou=0.5,
-                    match_low_quality=False,
-                    ignore_iof_thr=-1,
-                    iou_calculator=dict(type='RBboxOverlaps2D')),
-                sampler=dict(
-                    type='RRandomSampler',
-                    num=512,
-                    pos_fraction=0.25,
-                    neg_pos_ub=-1,
-                    add_gt_as_proposals=True),
-                pos_weight=-1,
-                debug=False)]
-    ),
+            debug=False)),
     test_cfg=dict(
         rpn=dict(
             nms_across_levels=False,
@@ -165,7 +121,7 @@ model = dict(
     ))
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.005, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
@@ -193,6 +149,7 @@ img_norm_cfg = dict(
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='RLoadAnnotations', with_bbox=True, with_mask=True),
+    dict(type='Grid',  d1=10, d2=20),
     dict(type='RResize', img_scale=(1024, 1024)),
     dict(type='RRandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
@@ -204,7 +161,7 @@ train_pipeline = [
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
-        type='MultiScaleFlipAug',
+        type='RMultiScaleFlipAug',
         img_scale=(1024, 1024),
         flip=False,
         transforms=[
@@ -217,7 +174,7 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=2,
+    samples_per_gpu=4,
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
@@ -237,7 +194,7 @@ data = dict(
         test_mode=True))
 evaluation = dict(interval=24, metric='bbox')
 
-checkpoint_config = dict(interval=4)
+checkpoint_config = dict(interval=2)
 
 log_config = dict(
     interval=10,
@@ -251,4 +208,4 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/ReDet'
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/faster_rcnn_r50_fpn_grid_1x'
