@@ -6,6 +6,7 @@ import random
 import copy
 import math
 from PIL import Image
+import cv2
 from mmdet.core.visualization import imshow_det_bboxes
 from mmdet.core.visualization import imshow_det_rbboxes
 import time
@@ -787,6 +788,7 @@ class RMosaic:
         return repr_str
 
 
+@PIPELINES.register_module()
 class Grid(object):
     def __init__(self, d1, d2, rotate=1, ratio=0.5, mode=0, prob=1.):
         self.d1 = d1
@@ -802,9 +804,10 @@ class Grid(object):
     def __call__(self, results):
         if np.random.rand() > self.prob:
             return results
+        results_ = copy.deepcopy(results)
         img = results['img'].copy()
-        h = img.size(1)
-        w = img.size(2)
+        h = img.shape[0]
+        w = img.shape[1]
 
         # 1.5 * h, 1.5 * w works fine with the squared images
         # But with rectangular input, the mask might not be able to recover back to the input image shape
@@ -813,6 +816,7 @@ class Grid(object):
         hh = math.ceil((math.sqrt(h * h + w * w)))
 
         d = np.random.randint(self.d1, self.d2)
+        # 如果将grid看成是一个长方形遮掉一小部分，那么d就是这个长方形的长
         # d = self.d
 
         # maybe use ceil? but i guess no big difference
@@ -842,8 +846,33 @@ class Grid(object):
         if self.mode == 1:
             mask = 1 - mask
 
-        mask = mask.expand_as(img)
-        img = img * mask
-        results['img'] = img
+        # filter gt
+        # mask = mask.expand_as(img)
+        mask_bbox = cv2.connectedComponentsWithStats(1-mask)[2]
+        mask_bbox = mask_bbox[:, :-1]
+        mask_bbox[:, 2] += mask_bbox[:, 0]
+        mask_bbox[:, 3] += mask_bbox[:, 1]
+        mask_bbox = mask_bbox[1:, :]
+        from mmdet.core.bbox import bbox_overlaps
+        import torch
+        iof = bbox_overlaps(torch.from_numpy(results['hor_gt_bboxes']), torch.from_numpy(mask_bbox), mode='iof')
+        max_value = np.array(iof.max(1)[0])
+        keep = max_value < 0.3
 
-        return results
+        results_['hor_gt_bboxes'] = results['hor_gt_bboxes'][keep]
+        results_['gt_bboxes'] = results['gt_bboxes'][keep]
+        results_['gt_labels'] = results['gt_labels'][keep]
+        print(results_['ann_info']['polygons'].shape)
+        results_['ann_info']['polygons'] = results['ann_info']['polygons'][keep]
+        print(results_['ann_info']['polygons'].shape)
+        mask = mask[..., None]
+        img = img * mask
+        results_['img'] = img.copy()
+
+        return results_
+
+    def response(self):
+        return 'Grid'
+
+    def __repr__(self):
+        return self.__class__.__name__
