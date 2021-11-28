@@ -862,9 +862,9 @@ class Grid(object):
         results_['hor_gt_bboxes'] = results['hor_gt_bboxes'][keep]
         results_['gt_bboxes'] = results['gt_bboxes'][keep]
         results_['gt_labels'] = results['gt_labels'][keep]
-        print(results_['ann_info']['polygons'].shape)
+        # print(results_['ann_info']['polygons'].shape)
         results_['ann_info']['polygons'] = results['ann_info']['polygons'][keep]
-        print(results_['ann_info']['polygons'].shape)
+        # print(results_['ann_info']['polygons'].shape)
         mask = mask[..., None]
         img = img * mask
         results_['img'] = img.copy()
