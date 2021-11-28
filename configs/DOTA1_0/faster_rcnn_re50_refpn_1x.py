@@ -165,7 +165,7 @@ model = dict(
     ))
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.005, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.0025, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
@@ -217,7 +217,7 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=2,
+    samples_per_gpu=1,
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
@@ -251,11 +251,4 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/ReDet'
-
-# mAP: 0.7325137065850915
-# ap of each class: plane:0.8944118597229104, baseball-diamond:0.774022323240397, bridge:0.533929539540274,
-# ground-track-field:0.7082189455561725, small-vehicle:0.7351813594260178, large-vehicle:0.7740329903938206,
-# ship:0.8722187229844929, tennis-court:0.9088174982911826, basketball-court:0.8564764528217818,
-# storage-tank:0.850865907030283, soccer-ball-field:0.6009268441757687, roundabout:0.5926384832110645,
-# harbor:0.6777502117813557, swimming-pool:0.6682779007836886, helicopter:0.5399365598171627
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/ReDet'

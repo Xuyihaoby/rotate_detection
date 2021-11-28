@@ -32,8 +32,10 @@ Supported methods（rotate）:
 - [x] Oriented RCNN（obb/obb+hbb）
 - [x] RoITrans（1st hbb+obb 2nd obb）
 - [x] Double head（obb+hbb rf&oriented）
-- [ ] ReDet
+- [x] ReDet
 - [ ] s2anet
+- [ ] RFCOS
+- [ ] centernet
 
 Some other methods are also supported in [projects using MMDetection](./docs/projects.md).
 

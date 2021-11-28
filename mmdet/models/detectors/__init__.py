@@ -34,6 +34,7 @@ from .rcascade_rcnn import (RCascadeRCNN, OrientedCasRCNN)
 from .rretinanet import RRetinaNet
 from .rhtc import RHybridTaskCascade
 from .RoItransformer import RoItransformer, ReDet
+from .s2anet import S2ANet
 
 
 __all__ = [
@@ -47,5 +48,6 @@ __all__ = [
     'OientedRCNN', 'FeatureAttenNetAllLvlSingleMaskDOTA', 'RFasterRCNNSRPN',
     'RRetinaNet',
     'RHybridTaskCascade',
-    'RoItransformer', 'ReDet'
+    'RoItransformer', 'ReDet',
+    'S2ANet'
 ]
