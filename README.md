@@ -33,7 +33,7 @@ Supported methods（rotate）:
 - [x] RoITrans（1st hbb+obb 2nd obb）
 - [x] Double head（obb+hbb rf&oriented）
 - [x] ReDet
-- [ ] s2anet
+- [x] s2anet
 - [ ] RFCOS
 - [ ] centernet
 
