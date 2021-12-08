@@ -188,7 +188,14 @@ if __name__ == '__main__':
                 sources=[],
                 sources_cuda=['src/riroi_align_cuda.cpp',
                               'src/riroi_align_kernel.cu',
-                              ])
+                              ]),
+            make_cuda_ext(
+                name='feature_refine_cuda',
+                module='mmdet.ops.fr',
+                sources=[],
+                sources_cuda=[
+                    'src/feature_refine_cuda.cpp', 'src/feature_refine_kernel.cu'
+                ])
         ],
         cmdclass={'build_ext': BuildExtension},
         zip_safe=False)
