@@ -35,6 +35,7 @@ from .rretinanet import RRetinaNet
 from .rhtc import RHybridTaskCascade
 from .RoItransformer import RoItransformer, ReDet
 from .s2anet import S2ANet
+from .r3det import R3Det
 
 
 __all__ = [

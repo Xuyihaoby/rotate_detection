@@ -9,6 +9,7 @@ from .nms import batched_rnms, rnms
 from .orn import ORConv2d, RotationInvariantPooling, rotation_invariant_encoding
 from .roi_align_rotated import RoIAlignRotated
 from .riroi_align import RiRoIAlign
+from .fr import FeatureRefineModule
 # yapf: enable
 
 __all__ = [
@@ -18,5 +19,6 @@ __all__ = [
     'RotationInvariantPooling', 'rotation_invariant_encoding',
     'ORConv2d',
     'RoIAlignRotated',
-    'RiRoIAlign'
+    'RiRoIAlign',
+    'FeatureRefineModule'
 ]

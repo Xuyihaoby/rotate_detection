@@ -390,3 +390,67 @@ class RRetinaHead(AnchorHead):
         else:
             return mlvl_bboxes, mlvl_scores
 
+    @force_fp32(apply_to=('cls_scores', 'bbox_preds'))
+    def filter_bboxes(self,
+                      cls_scores,
+                      bbox_preds):
+        """
+                Filter predicted bounding boxes at each position of the feature maps.
+                Only one bounding boxes with highest score will be left at each position.
+                This filter will be used in R3Det prior to the first feature refinement stage.
+
+                Args:
+                    cls_scores (list[Tensor]): Box scores for each scale level
+                        Has shape (N, num_anchors * num_classes, H, W)
+                    bbox_preds (list[Tensor]): Box energies / deltas for each scale
+                        level with shape (N, num_anchors * 5, H, W)
+
+                Returns:
+                    list[list[Tensor]]: best or refined rbboxes of each level of each image.
+        """
+        num_levels = len(cls_scores)
+        assert num_levels == len(bbox_preds)
+
+        num_imgs = cls_scores[0].size(0)
+
+        for i in range(num_levels):
+            assert num_imgs == cls_scores[i].size(0) == bbox_preds[i].size(0)
+
+        device = cls_scores[0].device
+        featmap_sizes = [cls_scores[i].shape[-2:] for i in range(num_levels)]
+        mlvl_anchors = self.anchor_generator.grid_anchors(
+            featmap_sizes, device=device)
+
+        bboxes_list = [[] for _ in range(num_imgs)]  # list(indexed by images) of list(indexed by levels)
+
+        for lvl in range(num_levels):
+            cls_score = cls_scores[lvl]
+            bbox_pred = bbox_preds[lvl]
+
+            anchors = mlvl_anchors[lvl]
+
+            cls_score = cls_score.permute(0, 2, 3, 1)  # (N, H, W, A*C)
+            cls_score = cls_score.reshape(num_imgs, -1, self.num_anchors, self.cls_out_channels)  # (N, H*W, A, C)
+
+            cls_score, _ = cls_score.max(dim=-1, keepdim=True)  # (N, H*W, A, 1)
+            best_ind = cls_score.argmax(dim=-2, keepdim=True)  # (N, H*W, 1, 1)
+            best_ind = best_ind.expand(-1, -1, -1, 5)  # (N, H*W, 1, 5)
+
+            bbox_pred = bbox_pred.permute(0, 2, 3, 1)  # (N, H, W, A*5)
+            bbox_pred = bbox_pred.reshape(num_imgs, -1, self.num_anchors, 5)  # (N, H*W, A, 5)
+
+            best_pred = bbox_pred.gather(dim=-2, index=best_ind).squeeze(dim=-2)  # (N, H*W, 5)
+
+            # anchors shape (H*W*A, 5)
+            anchors = anchors.reshape(-1, self.num_anchors, 5)  # (H*W, A, 5)
+
+            for img_id in range(num_imgs):
+                best_ind_i = best_ind[img_id]  # (H*W, 1, 5)
+                best_pred_i = best_pred[img_id]  # (H*W, 5)
+                best_anchor_i = anchors.gather(dim=-2, index=best_ind_i).squeeze(dim=-2)  # (H*W, 5)
+                best_bbox_i = self.bbox_coder.decode(best_anchor_i, best_pred_i)
+                bboxes_list[img_id].append(best_bbox_i.detach())
+
+        return bboxes_list
+
+

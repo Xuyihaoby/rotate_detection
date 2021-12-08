@@ -35,6 +35,7 @@ from .rpn_head_only_single_mask_dot import RPNHeadOnlySingleMaskDot
 from .rretina_head import RRetinaHead
 from .rretina_head_atss import RRetinaHeadATSS
 from .orpn_head import ORPNHead
+from .rretina_refine_head import RRetinaRefineHead
 
 __all__ = [
     'AnchorFreeHead', 'AnchorHead', 'GuidedAnchorHead', 'FeatureAdaption',
@@ -49,5 +50,6 @@ __all__ = [
     'RRetinaHead',
     'RRPNHeadATSS',
     'RRetinaHeadATSS',
-    'ORPNHead'
+    'ORPNHead',
+    'RRetinaRefineHead'
 ]
