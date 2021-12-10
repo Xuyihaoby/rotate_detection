@@ -34,6 +34,8 @@ Supported methods（rotate）:
 - [x] Double head（obb+hbb rf&oriented）
 - [x] ReDet
 - [x] s2anet
+- [x] GWD
+- [x] KLD
 - [ ] RFCOS
 - [ ] centernet
 

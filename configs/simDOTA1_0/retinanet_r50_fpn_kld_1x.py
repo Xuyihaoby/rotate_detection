@@ -150,3 +150,10 @@ load_from = None
 resume_from = None
 workflow = [('train', 1)]
 work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/retinanet_kld'
+
+# mAP: 0.6823755449444515
+# ap of each class: plane:0.8768209863271501, baseball-diamond:0.755919032404847, bridge:0.36674862373928346,
+# ground-track-field:0.6577155560848454, small-vehicle:0.7828006792880707, large-vehicle:0.6723873545544876,
+# ship:0.8346944737718727, tennis-court:0.9079146238209406, basketball-court:0.8115112964305647,
+# storage-tank:0.7513142064639624, soccer-ball-field:0.576767322363274, roundabout:0.6265509264336082,
+# harbor:0.5492510741521768, swimming-pool:0.6443536005404431, helicopter:0.4208834177912452
