@@ -66,7 +66,8 @@ class ORPNHead(RPNTestMixin, AnchorHead):
         # TODO: reshape, self.reg_decoded_bbox
         # 每一层有多少anchors，同样会预测多少bbox
         if self.reg_decoded_bbox:
-            raise NotImplementedError
+            anchors = anchors.reshape(-1, 4)
+            bbox_pred = self.bbox_coder.decode(anchors, bbox_pred)
         loss_bbox = self.loss_bbox(
             bbox_pred,
             bbox_targets,
@@ -176,7 +177,7 @@ class ORPNHead(RPNTestMixin, AnchorHead):
                 pos_bbox_targets = self.bbox_coder.encode(
                     sampling_result.pos_bboxes, gt_bboxes[sampling_result.pos_assigned_gt_inds])
             else:
-                raise NotImplementedError
+                pos_bbox_targets = gt_bboxes[sampling_result.pos_assigned_gt_inds]
             bbox_targets[pos_inds, :] = pos_bbox_targets
             bbox_weights[pos_inds, :] = 1.0
             if gt_labels is None:
