@@ -301,7 +301,7 @@ class OrientedBBoxHead(BBoxHead):
                     # `GIouLoss`, `DIouLoss`) is applied directly on
                     # the decoded bounding boxes, it decodes the
                     # already encoded coordinates to absolute format.
-                    assert NotImplementedError
+                    bbox_pred = self.bbox_coder_r.decode(rois[:, 1:], bbox_pred)
                 if self.reg_class_agnostic:
                     pos_bbox_pred = bbox_pred.view(
                         bbox_pred.size(0), 5)[pos_inds.type(torch.bool)]
