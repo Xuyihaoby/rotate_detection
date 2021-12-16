@@ -121,6 +121,8 @@ def multi_gpu_test(model, data_loader, tmpdir=None, gpu_collect=False):
             # xyh has do some modify
             if isinstance(result, dict) == False:
                 batch_size = len(result)
+            elif len(result.keys()) == 1:
+                batch_size = len(result)
             else:
                 batch_size = int(len(result) / 2)
             # batch_size = len(result)
