@@ -1,6 +1,6 @@
 _base_ = ['../_base_/swa.py']
 model = dict(
-    type='OientedRCNN',
+    type='OrientedRCNN',
     obb=True,
     submission=False,
     pretrained='torchvision://resnet50',

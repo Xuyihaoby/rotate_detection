@@ -1,5 +1,5 @@
 model = dict(
-    type='OientedRCNN',
+    type='OrientedRCNN',
     obb=True,
     submission=False,
     pretrained='torchvision://resnet50',

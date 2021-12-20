@@ -14,7 +14,7 @@ from mmdet.core.visualization import imshow_det_rbboxes, imshow_det_bboxes
 
 
 @DETECTORS.register_module()
-class OientedRCNN(RFasterRCNN):
+class OrientedRCNN(RFasterRCNN):
 
     def __init__(self,
                  backbone,
@@ -26,7 +26,7 @@ class OientedRCNN(RFasterRCNN):
                  pretrained=None,
                  obb=False,
                  submission=False):
-        super(OientedRCNN, self).__init__(backbone=backbone,
+        super(OrientedRCNN, self).__init__(backbone=backbone,
                                           neck=neck,
                                           rpn_head=rpn_head,
                                           roi_head=roi_head,
