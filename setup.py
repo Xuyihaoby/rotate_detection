@@ -195,7 +195,33 @@ if __name__ == '__main__':
                 sources=[],
                 sources_cuda=[
                     'src/feature_refine_cuda.cpp', 'src/feature_refine_kernel.cu'
-                ])
+                ]),
+            make_cuda_ext(
+                name='box_iou_rotated_ext',
+                module='mmdet.ops.box_iou_rotated',
+                sources=[
+                    'src/box_iou_rotated_cpu.cpp',
+                    'src/box_iou_rotated_ext.cpp'
+                ],
+                sources_cuda=['src/box_iou_rotated_cuda.cu']),
+            make_cuda_ext(
+                name='ml_nms_rotated_cuda',
+                module='mmdet.ops.ml_nms_rotated',
+                sources=['src/nms_rotated_cpu.cpp'],
+                sources_cuda=['src/nms_rotated_cuda.cu']),
+            make_cuda_ext(
+                name='nms_rotated_ext',
+                module='mmdet.ops.nms_rotated',
+                sources=['src/nms_rotated_cpu.cpp', 'src/nms_rotated_ext.cpp'],
+                sources_cuda=[
+                    'src/nms_rotated_cuda.cu',
+                    'src/poly_nms_cuda.cu',
+                ]),
+            make_cuda_ext(
+                name='convex_ext',
+                module='mmdet.ops.convex',
+                sources=['src/convex_cpu.cpp', 'src/convex_ext.cpp'],
+                sources_cuda=['src/convex_cuda.cu'])
         ],
         cmdclass={'build_ext': BuildExtension},
         zip_safe=False)
