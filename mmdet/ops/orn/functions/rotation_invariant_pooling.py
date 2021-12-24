@@ -8,12 +8,7 @@ class RotationInvariantPooling(nn.Module):
     super(RotationInvariantPooling, self).__init__()
     self.nInputPlane = nInputPlane
     self.nOrientation = nOrientation
-    
-    hiddent_dim = int(nInputPlane / nOrientation)
-    self.conv = nn.Sequential(
-      nn.Conv2d(hiddent_dim, nInputPlane, 1, 1),
-      nn.BatchNorm2d(nInputPlane),
-    )
+
 
   def forward(self, x):
     # x: [N, c, 1, w]
