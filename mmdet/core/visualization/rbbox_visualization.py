@@ -30,7 +30,8 @@ def imshow_det_rbboxes(img,
                        show=True,
                        win_name='',
                        wait_time=0,
-                       out_file=None):
+                       out_file=None,
+                       version='v1'):
     """Draw bboxes and class labels (with scores) on an image.
 
     Args:
@@ -69,31 +70,38 @@ def imshow_det_rbboxes(img,
     text_color_in = color_val(text_color)
 
     for bbox, label in zip(bboxes, labels):
-        # bbox_color_in = (int(bbox_color[0] + label * 15),) * 3
-        # text_color_in = (int(text_color[0] + label * 15),) * 3
-        # import pdb
-        # pdb.set_trace()
         if len(bbox) > 5:
             xc, yc, w, h, ag, p = bbox.tolist()
         elif len(bbox) == 5:
             xc, yc, w, h, ag = bbox.tolist()
-        wx, wy = w / 2 * math.cos(ag), w / 2 * math.sin(ag)
-        hx, hy = -h / 2 * math.sin(ag), h / 2 * math.cos(ag)
-        p1 = (xc - wx - hx, yc - wy - hy)
-        p2 = (xc + wx - hx, yc + wy - hy)
-        p3 = (xc + wx + hx, yc + wy + hy)
-        p4 = (xc - wx + hx, yc - wy + hy)
-        ps = np.int0(np.array([p1, p2, p3, p4]))
+        if version == 'v1':
+            wx, wy = w / 2 * math.cos(ag), w / 2 * math.sin(ag)
+            hx, hy = -h / 2 * math.sin(ag), h / 2 * math.cos(ag)
+            p1 = (xc - wx - hx, yc - wy - hy)
+            p2 = (xc + wx - hx, yc + wy - hy)
+            p3 = (xc + wx + hx, yc + wy + hy)
+            p4 = (xc - wx + hx, yc - wy + hy)
+            ps = np.int0(np.array([p1, p2, p3, p4]))
+        elif version == 'v3':
+            try:
+                vector1 = np.array([w / 2 * math.cos(ag), -w / 2 * math.sin(ag)])
+                vector2 = np.array([-h / 2 * math.sin(ag), -h / 2 * math.cos(ag)])
+                center = np.array((xc, yc))
+                p1 = center + vector1 + vector2
+                p2 = center + vector1 - vector2
+                p3 = center - vector1 - vector2
+                p4 = center - vector1 + vector2
+                ps = np.int0(np.array([p1, p2, p3, p4]))
+            except:
+                import pdb
+                pdb.set_trace()
         cv2.drawContours(img, [ps], -1, bbox_color_in, thickness=thickness)
         label_text = class_names[
             label] if class_names is not None else 'cls {}'.format(label)
         if len(bbox) > 5:
             label_text += '|{:.02f}'.format(bbox[-1])
-        # import pdb
-        # pdb.set_trace()
         cv2.putText(img, label_text, (int(p1[0]), int(p1[1])),
                     cv2.FONT_HERSHEY_COMPLEX, font_scale, text_color_in)
-
     if show:
         imshow(img, win_name, wait_time)
     if out_file is not None:

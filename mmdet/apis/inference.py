@@ -124,7 +124,10 @@ def inference_detector(model, img):
 
     # forward the model
     with torch.no_grad():
-        result = model(return_loss=False, rescale=True, **data)[0]
+        try:
+            result = model(return_loss=False, rescale=True, **data)[0]
+        except:
+            result = model(return_loss=False, rescale=True, **data)['rbb'][0]
     return result
 
 
@@ -170,7 +173,8 @@ def show_result_pyplot(model,
                        fig_size=(15, 10),
                        title='result',
                        block=True,
-                       wait_time=0):
+                       wait_time=0,
+                       version='v1'):
     """Visualize the detection results on the image.
 
     Args:
@@ -202,4 +206,5 @@ def show_result_pyplot(model,
         # bbox_color=(0, 0, 0),
         text_color='green',
         # text_color=(0, 0, 0),
-        out_file=name)
+        out_file=name,
+        version=version)

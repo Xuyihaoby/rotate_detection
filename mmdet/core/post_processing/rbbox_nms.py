@@ -1,6 +1,8 @@
 import torch
 # from mmcv.ops.nms import batched_nms
-from mmdet.ops import batched_rnms
+from mmcv.ops import nms_rotated
+
+from mmdet.ops import batched_rnms, ml_nms_rotated, obb_batched_nms
 from mmdet.core.bbox.iou_calculators import bbox_overlaps
 
 dota_v1_cats = ('plane', 'baseball-diamond', 'bridge', 'ground-track-field', 'small-vehicle',
@@ -73,10 +75,27 @@ def multiclass_nms_r(multi_bboxes,
         else:
             return bboxes, labels
 
+    nms_version = nms_cfg.get('version', 'v1')
+
     # updated by xyh
     if isinstance(nms_cfg['iou_threshold'], float):
-        dets, keep = batched_rnms(bboxes, scores, labels, nms_cfg, class_agnostic=class_agnostic)
-
+        if nms_version == 'v1':
+            dets, keep = batched_rnms(bboxes, scores, labels, nms_cfg, class_agnostic=class_agnostic)
+        elif nms_version == 'v3':
+            dets, keep = obb_batched_nms(bboxes, scores, labels, nms_cfg.iou_threshold)
+        elif nms_version == 'v2':
+            labels = labels.to(bboxes)
+            keep = ml_nms_rotated(bboxes, scores, labels, nms_cfg.iou_threshold)
+            bboxes = bboxes[keep]
+            scores = scores[keep]
+            labels = labels[keep]
+            if keep.size(0) > max_num:
+                _, inds = scores.sort(descending=True)
+                inds = inds[:max_num]
+                bboxes = bboxes[inds]
+                scores = scores[inds]
+                labels = labels[inds]
+            return torch.cat([bboxes, scores[:, None]], 1), labels
         if max_num > 0:
             dets = dets[:max_num]
             keep = keep[:max_num]

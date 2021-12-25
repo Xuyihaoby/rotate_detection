@@ -7,6 +7,7 @@ import copy
 import math
 from PIL import Image
 import cv2
+from mmdet.core import norm_angle
 from mmdet.core.visualization import imshow_det_bboxes
 from mmdet.core.visualization import imshow_det_rbboxes
 import time
@@ -118,7 +119,7 @@ class RRandomFlip(object):
         flip_ratio (float, optional): The flipping probability.
     """
 
-    def __init__(self, flip_ratio=None, direction='horizontal'):
+    def __init__(self, flip_ratio=None, direction='horizontal', version='v1'):
         if isinstance(flip_ratio, list):
             assert mmcv.is_list_of(flip_ratio, float)
             for ratio_item in flip_ratio:
@@ -131,6 +132,7 @@ class RRandomFlip(object):
             raise ValueError('flip_ratios must be None, float, '
                              'or list of float')
         self.flip_ratio = flip_ratio
+        self.version = version
 
         valid_directions = ['horizontal', 'vertical']
         if isinstance(direction, str):
@@ -161,13 +163,20 @@ class RRandomFlip(object):
                 flipped[:, 0] = img_shape[1] - bboxes[:, 0] - 1
             elif direction == 'vertical':
                 flipped[:, 1] = img_shape[0] - bboxes[:, 1] - 1
+            elif direction == 'diagonal':
+                flipped[:, 0] = img_shape[1] - bboxes[:, 0] - 1
+                flipped[:, 1] = img_shape[0] - bboxes[:, 1] - 1
+                return flipped.reshape(orig_shape)
             else:
                 raise ValueError(
                     'Invalid flipping direction "{}"'.format(direction))
-            rotated_flag = (bboxes[:, 4] != -np.pi / 2)
-            flipped[rotated_flag, 4] = -np.pi / 2 - bboxes[rotated_flag, 4]
-            flipped[rotated_flag, 2] = bboxes[rotated_flag, 3],
-            flipped[rotated_flag, 3] = bboxes[rotated_flag, 2]
+            if self.version == 'v1':
+                rotated_flag = (bboxes[:, 4] != -np.pi / 2)
+                flipped[rotated_flag, 4] = -np.pi / 2 - bboxes[rotated_flag, 4]
+                flipped[rotated_flag, 2] = bboxes[rotated_flag, 3],
+                flipped[rotated_flag, 3] = bboxes[rotated_flag, 2]
+            else:
+                flipped[:, 4] = norm_angle(np.pi - bboxes[:, 4], self.version)
             return flipped.reshape(orig_shape)
         elif bboxes.shape[-1] % 4 == 0:
             flipped = bboxes.copy()
@@ -260,15 +269,15 @@ class RRandomFlip(object):
                         results[key], direction=direction)
 
         # imshow_det_rbboxes(results['img'], results['gt_bboxes'], results['gt_labels'], show=False, \
-        #                    out_file='/home/lzy/xyh/Netmodel/s2anet/imgaes/' + str(int(time.time() % 1000)) + '.png')
-        #
+        #                    out_file='/data1/xyh/checkpoints//vis/images/' + str(int(time.time() % 1000)) + '.png')
+
         # imshow_det_bboxes(results['img'], results['hor_gt_bboxes'], results['gt_labels'], show=False, \
-        #                   out_file='/home/lzy/xyh/Netmodel/s2anet/imgaesh/' + str(int(time.time() % 1000)) + '.png')
+        #                   out_file='/data1/xyh/checkpoints//vis/himages/' + str(int(time.time() % 1000)) + '.png')
         # if results['rotate']:
         #     imshow_det_rbboxes(results['img'], results['gt_bboxes'], results['gt_labels'], show=False, \
         #                        out_file='/home/lzy/xyh/Netmodel/s2anet/imgaes/' + str(int(time.time() % 1000)) + '.png')
         # imshow_det_bboxes(results['img'] / 255, results['hor_gt_bboxes'], results['gt_labels'], show=False, \
-        #                   out_file='/home/lzy/xyh/Netmodel/s2anet/imgaesh/' + str(int(time.time() % 1000)) + '.png')
+        #                   out_file='/data1/xyh/checkpoints//vis/himages/' + str(int(time.time() % 1000)) + '.png')
         return results
 
     def __repr__(self):

@@ -13,6 +13,7 @@ from mmdet.core import reval_map, rdets2points, heval_map
 from ..models.utils import transXyxyxyxy2Xyxy
 from tqdm import trange
 
+from mmdet.core.bbox import poly2obb_np, obb2poly_np
 
 @DATASETS.register_module()
 class DOTADatasetV1(CustomDataset):
@@ -26,10 +27,12 @@ class DOTADatasetV1(CustomDataset):
                'roundabout', 'harbor',
                'swimming-pool', 'helicopter')
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self,  version='v1', *args, **kwargs):
         self.difficulty_thresh = kwargs.pop('difficulty_thresh', 100)
         # set the default threshold to a big value. we take all gts as not difficult by default
+        self.version = version
         super(DOTADatasetV1, self).__init__(*args, **kwargs)
+
 
     def load_annotations(self, ann_folder):
         """
@@ -77,27 +80,20 @@ class DOTADatasetV1(CustomDataset):
                         # update by xyh at 2021.06.20
                         if bbox_info[9] == 2:
                             continue
-                        bbox = bbox_info[:8]
-                        bbox = [*map(lambda x: float(x), bbox)]
 
-                        # transform
-                        x1, y1, x2, y2 = transXyxyxyxy2Xyxy(boxes=bbox, with_label_last=False, is_single=True)
+                        polys = np.array(bbox_info[:8], dtype=np.float32)
 
-                        bboxps = np.array(bbox).reshape(
-                            (4, 2)).astype(np.float32)
-                        rbbox = cv2.minAreaRect(bboxps)
-                        x, y, w, h, a = rbbox[0][0], rbbox[0][1], rbbox[1][0], rbbox[1][1], rbbox[2]
-                        if w == 0 or h == 0:
+                        xs = polys[0::2]
+                        ys = polys[1::2]
+                        x1 = np.min(xs, axis=-1)
+                        y1 = np.min(ys, axis=-1)
+                        x2 = np.max(xs, axis=-1)
+                        y2 = np.max(ys, axis=-1)
+
+                        try:
+                            x, y, w, h, a = poly2obb_np(polys, version=self.version)
+                        except:
                             continue
-                        while not 0 > a >= -90:
-                            if a >= 0:
-                                a -= 90
-                                w, h = h, w
-                            else:
-                                a += 90
-                                w, h = h, w
-                        a = a / 180 * np.pi
-                        assert 0 > a >= -np.pi / 2
 
                         cls_name = bbox_info[8]
                         difficulty = int(bbox_info[9])
@@ -106,12 +102,12 @@ class DOTADatasetV1(CustomDataset):
                         if difficulty >= self.difficulty_thresh:
                             gt_bboxes_ignore.append([x, y, w, h, a])
                             gt_labels_ignore.append(label)
-                            gt_polygons_ignore.append(bbox)
+                            gt_polygons_ignore.append(polys)
                             hor_gt_boxes_ignore.append([x1, y1, x2, y2])
                         elif difficulty <= 1:
                             gt_bboxes.append([x, y, w, h, a])
                             gt_labels.append(label)
-                            gt_polygons.append(bbox)
+                            gt_polygons.append(polys)
                             hor_gt_boxes.append([x1, y1, x2, y2])
 
                 if gt_bboxes:
@@ -230,7 +226,7 @@ class DOTADatasetV1(CustomDataset):
             result = results[idx]
             for label in range(len(result)):
                 if result[label].shape[1] == 6:
-                    bboxes = rdets2points(result[label])
+                    bboxes = obb2poly_np(result[label], version=self.version)
                     resstr = '{:s} {:.12f} {:.1f} {:.1f} {:.1f} {:.1f} {:.1f} {:.1f} {:.1f} {:.1f}\n'
                 elif result[label].shape[1] == 5:
                     bboxes = result[label]

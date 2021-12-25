@@ -2,6 +2,7 @@ import torch
 from .builder import ANCHOR_GENERATORS
 from . import AnchorGenerator
 from torch.nn.modules.utils import _pair
+import numpy as np
 
 
 # adapted from https://github.com/SJTU-Thinklab-Det/r3det-on-mmdetection
@@ -60,11 +61,11 @@ class RAnchorGenerator(AnchorGenerator):
                  scales_per_octave=None,
                  centers=None,
                  center_offset=0.,
-                 format='opencv'):
-        self.format = format
+                 version='v1'):
+        self.format = version
         if angles is None:
             angles = [0.]
-        elif self.format == 'opencv':
+        elif self.format == 'v1':
             angles = self._checkOpencvformat(angles)
         self.angles = torch.Tensor(angles)
         super(RAnchorGenerator, self).__init__(
@@ -147,8 +148,8 @@ class RAnchorGenerator(AnchorGenerator):
                     angle -= 90
                 else:
                     angle += 90
-            angle = angle / 180 * 3.14
-            assert 0 > angle >= -3.14 / 2
+            angle = angle / 180 * np.pi
+            assert 0 > angle >= -np.pi / 2
             new_angles.append(angle)
         return new_angles
 
