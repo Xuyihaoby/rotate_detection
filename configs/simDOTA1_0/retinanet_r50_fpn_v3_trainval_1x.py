@@ -1,4 +1,4 @@
-angle_version = 'v2'
+angle_version = 'v3'
 model = dict(
     type='RRetinaNet',
     pretrained='torchvision://resnet50',
@@ -76,17 +76,16 @@ lr_config = dict(
 total_epochs = 12
 
 dataset_type = 'DOTADatasetV1'
-data_root = '/data1/public_dataset/DOTA/DOTA1_0/simple/'
-trainsplit_ann_folder = 'train/labelTxt'
-trainsplit_img_folder = 'train/images'
+data_root = '/data1/public_dataset/DOTA1_0/simple/'
+trainsplit_ann_folder = 'trainval200/labelTxt'
+trainsplit_img_folder = 'trainval200/images'
 valsplit_ann_folder = 'train/labelTxt'
 valsplit_img_folder = 'train/images'
 val_ann_folder = 'train/labelTxt'
 val_img_folder = 'train/images'
-test_img_folder = 'test/images'
+test_img_folder = 'test200/images'
 example_ann_folder = 'train/labelTxt'
 example_img_folder = 'train/images'
-
 
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
@@ -94,7 +93,7 @@ train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='RLoadAnnotations', with_bbox=True, with_mask=False),
     dict(type='RResize', img_scale=(1024, 1024)),
-    dict(type='RRandomFlip', flip_ratio=0.5, version=angle_version),
+    dict(type='RRandomFlip',direction=['horizontal', 'vertical'] , flip_ratio=[0.5, 0.5], version=angle_version),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
     dict(type='DefaultFormatBundle'),
@@ -153,10 +152,18 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/retinanet_v2'
-# mAP: 0.674778712124341
-# ap of each class: plane:0.895824638538312, baseball-diamond:0.7769449380171273, bridge:0.39501280460024313,
-# ground-track-field:0.6789464035384106, small-vehicle:0.7745224990958771, large-vehicle:0.6259313912149487,
-# ship:0.7700655849477256, tennis-court:0.9085282899242418, basketball-court:0.8220441051609648,
-# storage-tank:0.7509555706504607, soccer-ball-field:0.536376005957688, roundabout:0.6358994315050015,
-# harbor:0.5254034726347552, swimming-pool:0.6479146453031139, helicopter:0.3773109007762444
+work_dir = '/data1/xyh/checkpoints/simDOTA1_0/retinanet_r50_fpn_v3_trainval_hv_1x'
+# mAP: 0.6798302394097013
+# ap of each class: plane:0.8917783271112361, baseball-diamond:0.7666012891716107, bridge:0.40052757374494025,
+# ground-track-field:0.6494352214165632, small-vehicle:0.7706562969835563, large-vehicle:0.6198463647489783,
+# ship:0.775060878344691, tennis-court:0.9087537091988132, basketball-court:0.8225444763237714,
+# storage-tank:0.7937554272820143, soccer-ball-field:0.5616664148936418, roundabout:0.6566290917493661,
+# harbor:0.5293578021859555, swimming-pool:0.6285626714746725, helicopter:0.4222780465157092
+
+# no hv
+# mAP: 0.6769927461906478
+# ap of each class: plane:0.8904782991270477, baseball-diamond:0.7648299464250667, bridge:0.40431737114944766,
+# ground-track-field:0.6813800090878176, small-vehicle:0.7858670002234305, large-vehicle:0.6296262947346367,
+# ship:0.7762870433250084, tennis-court:0.9088856966960805, basketball-court:0.8103978339246883,
+# storage-tank:0.7632657475926624, soccer-ball-field:0.5401797928962792, roundabout:0.6140721691718489,
+# harbor:0.5363291673464557, swimming-pool:0.6126757408906937, helicopter:0.4362990802685528

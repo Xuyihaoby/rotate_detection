@@ -39,6 +39,16 @@ Supported methods（rotate）:
 - [ ] RFCOS
 - [ ] centernet
 
+
+
+Support different coder
+
+$v1:cv2.minAreaRect$
+
+$v2:-\pi/4\rightarrow\pi 3/4$
+
+$v3:-\pi/2\rightarrow\pi/2$
+
 Some other methods are also supported in [projects using MMDetection](./docs/projects.md).
 
 ## Installation

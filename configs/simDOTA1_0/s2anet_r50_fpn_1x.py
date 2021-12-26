@@ -169,3 +169,21 @@ resume_from = None
 workflow = [('train', 1)]
 work_dir = '/data1/xyh/checkpoints/simDOTA1_0/s2anet'
 find_unused_parameters = True
+
+# v1 效果并不理想  模型很难收敛
+
+# v2 trainval
+# mAP: 0.7382775215183324
+# ap of each class: plane:0.89038423089455, baseball-diamond:0.7582319738018943, bridge:0.5045432001312088,
+# ground-track-field:0.6999758641526934, small-vehicle:0.7883868004779108, large-vehicle:0.787176883097705,
+# ship:0.8727824260779914, tennis-court:0.908886924593731, basketball-court:0.8638513481542439,
+# storage-tank:0.8540411230639922, soccer-ball-field:0.6053434070578328, roundabout:0.6497738120385073,
+# harbor:0.6601179198128161, swimming-pool:0.6904430767927894, helicopter:0.5402238326271207
+
+# v3(暂定) trainval
+# mAP: 0.7254360082693196
+# ap of each class: plane:0.8836741904469156, baseball-diamond:0.7716109366074186, bridge:0.49499055413558524,
+# ground-track-field:0.6999695768603162, small-vehicle:0.7896228508230324, large-vehicle:0.7641033251037898,
+# ship:0.8672270227664178, tennis-court:0.9088174982911826, basketball-court:0.841371109972764,
+# storage-tank:0.8468725906619877, soccer-ball-field:0.5772056008288525, roundabout:0.6342487282424635,
+# harbor:0.6374483222372335, swimming-pool:0.6659200319782498, helicopter:0.498457785083586

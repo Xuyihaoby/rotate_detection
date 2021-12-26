@@ -76,17 +76,16 @@ lr_config = dict(
 total_epochs = 12
 
 dataset_type = 'DOTADatasetV1'
-data_root = '/data1/public_dataset/DOTA/DOTA1_0/simple/'
-trainsplit_ann_folder = 'train/labelTxt'
-trainsplit_img_folder = 'train/images'
+data_root = '/data1/public_dataset/DOTA1_0/simple/'
+trainsplit_ann_folder = 'trainval200/labelTxt'
+trainsplit_img_folder = 'trainval200/images'
 valsplit_ann_folder = 'train/labelTxt'
 valsplit_img_folder = 'train/images'
 val_ann_folder = 'train/labelTxt'
 val_img_folder = 'train/images'
-test_img_folder = 'test/images'
+test_img_folder = 'test200/images'
 example_ann_folder = 'train/labelTxt'
 example_img_folder = 'train/images'
-
 
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
@@ -153,10 +152,5 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/retinanet_v2'
-# mAP: 0.674778712124341
-# ap of each class: plane:0.895824638538312, baseball-diamond:0.7769449380171273, bridge:0.39501280460024313,
-# ground-track-field:0.6789464035384106, small-vehicle:0.7745224990958771, large-vehicle:0.6259313912149487,
-# ship:0.7700655849477256, tennis-court:0.9085282899242418, basketball-court:0.8220441051609648,
-# storage-tank:0.7509555706504607, soccer-ball-field:0.536376005957688, roundabout:0.6358994315050015,
-# harbor:0.5254034726347552, swimming-pool:0.6479146453031139, helicopter:0.3773109007762444
+work_dir = '/data1/xyh/checkpoints/simDOTA1_0/retinanet_r50_fpn_v2_trainval_1x'
+
