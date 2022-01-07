@@ -17,6 +17,7 @@ from .dotav1 import DOTADatasetV1
 from .dotav2 import DOTADatasetV2
 from .rsai import RSAI
 from .ssdd import SSDD
+from .HRSC2016 import HRSC
 
 __all__ = [
     'CustomDataset', 'XMLDataset', 'CocoDataset', 'DeepFashionDataset',
@@ -26,5 +27,6 @@ __all__ = [
     'ClassBalancedDataset', 'WIDERFaceDataset', 'DATASETS', 'PIPELINES',
     'build_dataset', 'replace_ImageToTensor', 'get_loading_pipeline',
     'KittiTinyDataset', 'MultiImageMixDataset',
-    'DOTADatasetV1', 'DOTADatasetV2', 'RSAI', 'SSDD'
+    'DOTADatasetV1', 'DOTADatasetV2', 'RSAI', 'SSDD',
+    'HRSC'
 ]
