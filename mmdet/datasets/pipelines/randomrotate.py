@@ -6,6 +6,7 @@ import copy
 from mmdet.core import BitmapMasks
 import pycocotools.mask as maskUtils
 from functools import partial
+from mmdet.core.bbox.rtransforms import poly2obb_np
 
 
 def poly2bbox(polys):
@@ -65,7 +66,8 @@ class Randomrotate(object):
                  rotate_values=[0, 45, 90, 135, 180, 225, 270, 315],
                  rotate_mode='range',
                  small_filter=4,
-                 with_masks=False):
+                 with_masks=False,
+                 version='v1'):
         self.CLASSES = CLASSES
         self.scale = scale
         self.border_value = border_value
@@ -76,6 +78,7 @@ class Randomrotate(object):
         self.rotate_mode = rotate_mode
         self.small_filter = small_filter
         self.with_masks = with_masks
+        self.version = version
 
     def _poly2mask(self, mask_ann, img_h, img_w):
         """Private function to convert masks represented with polygon to
@@ -171,14 +174,20 @@ class Randomrotate(object):
             val_inds = []
 
             for ind, polygon in enumerate(rotfourpoint):
-                bboxps = np.array(polygon).reshape((4, 2)).astype(np.float32)
-                rbbox = cv.minAreaRect(bboxps)
-                xbox, ybox, wbox, hbox, abox = rbbox[0][0], rbbox[0][1], rbbox[1][0], rbbox[1][1], rbbox[2]
+                rbbox = poly2obb_np(polygon, version=self.version)
+                if rbbox is None:
+                    continue
+                # bboxps = np.array(polygon).reshape((4, 2)).astype(np.float32)
+                # rbbox = cv.minAreaRect(bboxps)
+
                 # filter some unusual bboxes
+                # xbox, ybox, wbox, hbox, abox = rbbox[0][0], rbbox[0][1], rbbox[1][0], rbbox[1][1], rbbox[2]
+                xbox, ybox, wbox, hbox, abox = rbbox[0], rbbox[1], rbbox[2], rbbox[3], rbbox[4]
                 if wbox <= 0 or hbox <= 0 or xbox < 0 or ybox < 0 or xbox > results['img'].shape[1] or ybox > results['img'].shape[0]:
                     continue
 
-                abox, wbox, hbox = self._checkCVformat(abox, wbox, hbox)
+                if self.version == 'v1':
+                    abox, wbox, hbox = self._checkCVformat(abox, wbox, hbox)
 
                 gt_bboxes.append([xbox, ybox, wbox, hbox, abox])
                 val_inds.append(ind)
