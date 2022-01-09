@@ -83,7 +83,7 @@ class RRetinaNet(BaseDetector):
             return bbox_list
         bbox_results = {}
 
-        bbox_results['rbb'] = [
+        bbox_results = [
             rbbox2result(det_bboxes, det_labels, self.bbox_head.num_classes)
             for det_bboxes, det_labels in bbox_list
         ]
