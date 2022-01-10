@@ -36,6 +36,8 @@ from .rhtc import RHybridTaskCascade
 from .RoItransformer import RoItransformer, ReDet
 from .s2anet import S2ANet
 from .r3det import R3Det
+from .rsingle_stage import RSingleStageDetector
+from .RRepPointDetector import RReppointsDetector
 
 
 __all__ = [
@@ -50,5 +52,7 @@ __all__ = [
     'RRetinaNet',
     'RHybridTaskCascade',
     'RoItransformer', 'ReDet',
-    'S2ANet'
+    'S2ANet',
+    'RSingleStageDetector',
+    'RReppointsDetector'
 ]
