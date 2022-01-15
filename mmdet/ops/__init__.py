@@ -14,6 +14,7 @@ from .fr import FeatureRefineModule
 from .nms_rotated import obb_batched_nms, obb_nms, poly_nms
 from .box_iou_rotated import obb_overlaps
 from .ml_nms_rotated import ml_nms_rotated
+from .convex import convex_sort
 # yapf: enable
 
 __all__ = [
@@ -28,6 +29,7 @@ __all__ = [
     'obb_overlaps',
     'obb_batched_nms',
     'obb_nms',
-    'poly_nms'
+    'poly_nms',
+    'convex_sort'
 
 ]
