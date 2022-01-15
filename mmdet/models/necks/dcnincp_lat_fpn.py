@@ -9,7 +9,7 @@ from mmcv.cnn import ConvModule
 from ..builder import NECKS
 
 
-@NECKS.register_module
+@NECKS.register_module()
 class DcnIncpLatFPN(nn.Module):
 
     def __init__(self,

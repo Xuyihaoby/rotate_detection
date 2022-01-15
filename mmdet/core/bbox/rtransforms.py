@@ -531,3 +531,95 @@ def cal_line_length(point1, point2):
     return math.sqrt(
         math.pow(point1[0] - point2[0], 2) +
         math.pow(point1[1] - point2[1], 2))
+
+
+def obb2poly(rbboxes, version='v1'):
+    """Convert oriented bounding boxes to polygons.
+    Args:
+        obbs (torch.Tensor): [x_ctr,y_ctr,w,h,angle]
+        version (Str): angle representations.
+    Returns:
+        polys (torch.Tensor): [x0,y0,x1,y1,x2,y2,x3,y3]
+    """
+    if version == 'v1':
+        results = obb2poly_v1(rbboxes)
+    elif version == 'v2':
+        results = obb2poly_v2(rbboxes)
+    elif version == 'v3':
+        results = obb2poly_v3(rbboxes)
+    else:
+        raise NotImplementedError
+    return results
+
+
+def obb2poly_v1(rboxes):
+    """Convert oriented bounding boxes to polygons.
+    Args:
+        obbs (torch.Tensor): [x_ctr,y_ctr,w,h,angle]
+    Returns:
+        polys (torch.Tensor): [x0,y0,x1,y1,x2,y2,x3,y3]
+    """
+    x = rboxes[:, 0]
+    y = rboxes[:, 1]
+    w = rboxes[:, 2]
+    h = rboxes[:, 3]
+    a = rboxes[:, 4]
+    cosa = torch.cos(a)
+    sina = torch.sin(a)
+    wx, wy = w / 2 * cosa, w / 2 * sina
+    hx, hy = -h / 2 * sina, h / 2 * cosa
+    p1x, p1y = x - wx - hx, y - wy - hy
+    p2x, p2y = x + wx - hx, y + wy - hy
+    p3x, p3y = x + wx + hx, y + wy + hy
+    p4x, p4y = x - wx + hx, y - wy + hy
+    return torch.stack([p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y], dim=-1)
+
+
+def obb2poly_v2(rboxes):
+    """Convert oriented bounding boxes to polygons.
+    Args:
+        obbs (torch.Tensor): [x_ctr,y_ctr,w,h,angle]
+    Returns:
+        polys (torch.Tensor): [x0,y0,x1,y1,x2,y2,x3,y3]
+    """
+    N = rboxes.shape[0]
+    x_ctr, y_ctr, width, height, angle = rboxes.select(1, 0), rboxes.select(
+        1, 1), rboxes.select(1, 2), rboxes.select(1, 3), rboxes.select(1, 4)
+    tl_x, tl_y, br_x, br_y = \
+        -width * 0.5, -height * 0.5, \
+        width * 0.5, height * 0.5
+    rects = torch.stack([tl_x, br_x, br_x, tl_x, tl_y, tl_y, br_y, br_y],
+                        dim=0).reshape(2, 4, N).permute(2, 0, 1)
+    sin, cos = torch.sin(angle), torch.cos(angle)
+    M = torch.stack([cos, -sin, sin, cos], dim=0).reshape(2, 2,
+                                                          N).permute(2, 0, 1)
+    polys = M.matmul(rects).permute(2, 1, 0).reshape(-1, N).transpose(1, 0)
+    polys[:, ::2] += x_ctr.unsqueeze(1)
+    polys[:, 1::2] += y_ctr.unsqueeze(1)
+    return polys.contiguous()
+
+
+def obb2poly_v3(rboxes):
+    """Convert oriented bounding boxes to polygons.
+    Args:
+        obbs (torch.Tensor): [x_ctr,y_ctr,w,h,angle]
+    Returns:
+        polys (torch.Tensor): [x0,y0,x1,y1,x2,y2,x3,y3]
+    """
+    N = rboxes.shape[0]
+    x_ctr, y_ctr, width, height, angle = rboxes.select(1, 0), rboxes.select(
+        1, 1), rboxes.select(1, 2), rboxes.select(1, 3), rboxes.select(1, 4)
+    tl_x, tl_y, br_x, br_y = \
+        -width * 0.5, -height * 0.5, \
+        width * 0.5, height * 0.5
+    rects = torch.stack([tl_x, br_x, br_x, tl_x, tl_y, tl_y, br_y, br_y],
+                        dim=0).reshape(2, 4, N).permute(2, 0, 1)
+    sin, cos = torch.sin(angle), torch.cos(angle)
+    # M.shape=[N,2,2]
+    M = torch.stack([cos, -sin, sin, cos], dim=0).reshape(2, 2,
+                                                          N).permute(2, 0, 1)
+    # polys:[N,8]
+    polys = M.matmul(rects).permute(2, 1, 0).reshape(-1, N).transpose(1, 0)
+    polys[:, ::2] += x_ctr.unsqueeze(1)
+    polys[:, 1::2] += y_ctr.unsqueeze(1)
+    return polys.contiguous()

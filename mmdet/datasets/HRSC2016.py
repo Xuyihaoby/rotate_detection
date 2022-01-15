@@ -21,7 +21,7 @@ from tqdm import trange
 import math
 
 
-@DATASETS.register_module
+@DATASETS.register_module()
 class HRSC(XMLDataset):
     CLASSES = ('ship',)
 
