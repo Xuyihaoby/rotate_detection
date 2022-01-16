@@ -221,7 +221,11 @@ if __name__ == '__main__':
                 name='convex_ext',
                 module='mmdet.ops.convex',
                 sources=['src/convex_cpu.cpp', 'src/convex_ext.cpp'],
-                sources_cuda=['src/convex_cuda.cu'])
+                sources_cuda=['src/convex_cuda.cu']),
+            make_cuda_ext(
+                name='sort_vertices_cuda',
+                module='mmdet.ops.box_iou_rotated_diff',
+                sources=['src/sort_vert.cpp', 'src/sort_vert_kernel.cu', ])
         ],
         cmdclass={'build_ext': BuildExtension},
         zip_safe=False)

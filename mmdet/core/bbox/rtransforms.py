@@ -221,6 +221,7 @@ def rbbox2roi(bbox_list):
     rois = torch.cat(rois_list, dim=0)
     return rois
 
+
 def CV_L_Rad2LT_RB_TORCH(coordinates):
     assert coordinates.shape[-1] == 5
     devices = coordinates.device
@@ -250,7 +251,8 @@ def CV_L_Rad2LE_DEF_TORCH(coordinates):
     new_coordinates = coordinates.clone()
     x, y, w, h, theta = coordinates.split((1, 1, 1, 1, 1), dim=-1)
     inds = (w > h) * (theta < 0)
-    new_coordinates[inds.squeeze(1), 2], new_coordinates[inds.squeeze(1), 3] = new_coordinates[inds.squeeze(1), 3], new_coordinates[inds.squeeze(1), 2]
+    new_coordinates[inds.squeeze(1), 2], new_coordinates[inds.squeeze(1), 3] = new_coordinates[inds.squeeze(1), 3], \
+                                                                               new_coordinates[inds.squeeze(1), 2]
     new_coordinates[inds.squeeze(1), 4] = new_coordinates[inds.squeeze(1), 4] + np.pi / 2
     return new_coordinates
 
@@ -274,6 +276,7 @@ def poly2obb_np(polys, version='v1'):
     else:
         raise NotImplementedError
     return results
+
 
 def poly2obb_np_v1(poly):
     """Convert polygons to oriented bounding boxes.
@@ -348,11 +351,11 @@ def poly2obb_np_v3(poly):
         return
 
     a = -a / 180 * np.pi
-    if cv2.__version__ >='4.5.1':
+    if cv2.__version__ >= '4.5.1':
         if w < h:
             w, h = h, w
             a += np.pi / 2
-    elif cv2.__version__ <'4.5.1':
+    elif cv2.__version__ < '4.5.1':
         if w < h:
             w, h = h, w
             a -= np.pi / 2
@@ -364,6 +367,7 @@ def poly2obb_np_v3(poly):
             a += np.pi
     assert np.pi / 2 > a >= -np.pi / 2
     return x, y, w, h, a
+
 
 def norm_angle(angle, angle_range):
     """Limit the range of angles.
@@ -381,6 +385,7 @@ def norm_angle(angle, angle_range):
         return (angle + np.pi / 2) % np.pi - np.pi / 2
     else:
         print('Not yet implemented.')
+
 
 def obb2poly_np(rbboxes, version='v1'):
     """Convert oriented bounding boxes to polygons.
@@ -400,6 +405,7 @@ def obb2poly_np(rbboxes, version='v1'):
     else:
         raise NotImplementedError
     return results
+
 
 def obb2poly_np_v1(rbboxes):
     """Convert oriented bounding boxes to polygons.
@@ -474,6 +480,7 @@ def obb2poly_np_v3(obboxes):
     point4 = center - vector1 + vector2
     return np.concatenate([point1, point2, point3, point4, score], axis=-1)
 
+
 def get_best_begin_point(coordinates):
     """Get the best begin points of polygons.
 
@@ -485,6 +492,7 @@ def get_best_begin_point(coordinates):
     coordinates = list(map(get_best_begin_point_single, coordinates.tolist()))
     coordinates = np.array(coordinates)
     return coordinates
+
 
 def get_best_begin_point_single(coordinate):
     """Get the best begin point of the single polygon.
@@ -518,6 +526,7 @@ def get_best_begin_point_single(coordinate):
         pass
     return np.hstack(
         (np.array(combine[force_flag]).reshape(8), np.array(score)))
+
 
 def cal_line_length(point1, point2):
     """Calculate the length of line.
@@ -623,3 +632,263 @@ def obb2poly_v3(rboxes):
     polys[:, ::2] += x_ctr.unsqueeze(1)
     polys[:, 1::2] += y_ctr.unsqueeze(1)
     return polys.contiguous()
+
+
+# https://github.com/lilanxiao/Rotated_IoU
+def enclosing_box(corners1: torch.Tensor, corners2: torch.Tensor, enclosing_type: str = "smallest"):
+    if enclosing_type == "aligned":
+        return enclosing_box_aligned(corners1, corners2)
+    elif enclosing_type == "pca":
+        return enclosing_box_pca(corners1, corners2)
+    elif enclosing_type == "smallest":
+        return smallest_bounding_box(torch.cat([corners1, corners2], dim=-2))
+    else:
+        ValueError("Unknow type enclosing. Supported: aligned, pca, smallest")
+
+
+def enclosing_box_aligned(corners1: torch.Tensor, corners2: torch.Tensor):
+    """calculate the smallest enclosing box (axis-aligned)
+    Args:
+        corners1 (torch.Tensor): (B, N, 4, 2)
+        corners2 (torch.Tensor): (B, N, 4, 2)
+
+    Returns:
+        w (torch.Tensor): (B, N)
+        h (torch.Tensor): (B, N)
+    """
+    x1_max = torch.max(corners1[..., 0], dim=2)[0]  # (B, N)
+    x1_min = torch.min(corners1[..., 0], dim=2)[0]  # (B, N)
+    y1_max = torch.max(corners1[..., 1], dim=2)[0]
+    y1_min = torch.min(corners1[..., 1], dim=2)[0]
+
+    x2_max = torch.max(corners2[..., 0], dim=2)[0]  # (B, N)
+    x2_min = torch.min(corners2[..., 0], dim=2)[0]  # (B, N)
+    y2_max = torch.max(corners2[..., 1], dim=2)[0]
+    y2_min = torch.min(corners2[..., 1], dim=2)[0]
+
+    x_max = torch.max(x1_max, x2_max)
+    x_min = torch.min(x1_min, x2_min)
+    y_max = torch.max(y1_max, y2_max)
+    y_min = torch.min(y1_min, y2_min)
+
+    w = x_max - x_min  # (B, N)
+    h = y_max - y_min
+    return w, h
+
+
+def enclosing_box_pca(corners1: torch.Tensor, corners2: torch.Tensor):
+    """calculate the rotated smallest enclosing box using PCA
+    Args:
+        corners1 (torch.Tensor): (B, N, 4, 2)
+        corners2 (torch.Tensor): (B, N, 4, 2)
+
+    Returns:
+        w (torch.Tensor): (B, N)
+        h (torch.Tensor): (B, N)
+    """
+    B = corners1.size()[0]
+    c = torch.cat([corners1, corners2], dim=2)  # (B, N, 8, 2)
+    c = c - torch.mean(c, dim=2, keepdim=True)  # normalization
+    c = c.view([-1, 8, 2])  # (B*N, 8, 2)
+    ct = c.transpose(1, 2)  # (B*N, 2, 8)
+    ctc = torch.bmm(ct, c)  # (B*N, 2, 2)
+    # NOTE: the build in symeig is slow!
+    # _, v = ctc.symeig(eigenvectors=True)
+    # v1 = v[:, 0, :].unsqueeze(1)
+    # v2 = v[:, 1, :].unsqueeze(1)
+    v1, v2 = eigenvector_22(ctc)
+    v1 = v1.unsqueeze(1)  # (B*N, 1, 2), eigen value
+    v2 = v2.unsqueeze(1)
+    p1 = torch.sum(c * v1, dim=-1)  # (B*N, 8), first principle component
+    p2 = torch.sum(c * v2, dim=-1)  # (B*N, 8), second principle component
+    w = p1.max(dim=-1)[0] - p1.min(dim=-1)[0]  # (B*N, ),  width of rotated enclosing box
+    h = p2.max(dim=-1)[0] - p2.min(dim=-1)[0]  # (B*N, ),  height of rotated enclosing box
+    return w.view([B, -1]), h.view([B, -1])
+
+
+def eigenvector_22(x: torch.Tensor):
+    """return eigenvector of 2x2 symmetric matrix using closed form
+
+    https://math.stackexchange.com/questions/8672/eigenvalues-and-eigenvectors-of-2-times-2-matrix
+
+    The calculation is done by using double precision
+    Args:
+        x (torch.Tensor): (..., 2, 2), symmetric, semi-definite
+
+    Return:
+        v1 (torch.Tensor): (..., 2)
+        v2 (torch.Tensor): (..., 2)
+    """
+    # NOTE: must use doule precision here! with float the back-prop is very unstable
+    a = x[..., 0, 0].double()
+    c = x[..., 0, 1].double()
+    b = x[..., 1, 1].double()  # (..., )
+    delta = torch.sqrt(a * a + 4 * c * c - 2 * a * b + b * b)
+    v1 = (a - b - delta) / 2. / c
+    v1 = torch.stack([v1, torch.ones_like(v1, dtype=torch.double, device=v1.device)], dim=-1)  # (..., 2)
+    v2 = (a - b + delta) / 2. / c
+    v2 = torch.stack([v2, torch.ones_like(v2, dtype=torch.double, device=v2.device)], dim=-1)  # (..., 2)
+    n1 = torch.sum(v1 * v1, keepdim=True, dim=-1).sqrt()
+    n2 = torch.sum(v2 * v2, keepdim=True, dim=-1).sqrt()
+    v1 = v1 / n1
+    v2 = v2 / n2
+    return v1.float(), v2.float()
+
+
+def smallest_bounding_box(corners: torch.Tensor, verbose=False):
+    """return width and length of the smallest bouding box which encloses two boxes.
+    Args:
+        lines (torch.Tensor): (..., 24, 2, 2)
+        verbose (bool, optional): If True, return area and index. Defaults to False.
+    Returns:
+        (torch.Tensor): width (..., 24)
+        (torch.Tensor): height (..., 24)
+        (torch.Tensor): area (..., )
+        (torch.Tensor): index of candiatae (..., )
+    """
+    lines, points, _, _ = gather_lines_points(corners)
+    proj = point_line_projection_range(lines, points)  # (..., 24)
+    dist = point_line_distance_range(lines, points)  # (..., 24)
+    area = proj * dist
+    # remove area with 0 when the two points of the line have the same coordinates
+    zero_mask = (area == 0).type(corners.dtype)
+    fake = torch.ones_like(zero_mask, dtype=corners.dtype, device=corners.device) * 1e8 * zero_mask
+    area += fake  # add large value to zero_mask
+    area_min, idx = torch.min(area, dim=-1, keepdim=True)  # (..., 1)
+    w = torch.gather(proj, dim=-1, index=idx)
+    h = torch.gather(dist, dim=-1, index=idx)  # (..., 1)
+    w = w.squeeze(-1).float()
+    h = h.squeeze(-1).float()
+    area_min = area_min.squeeze(-1).float()
+    if verbose:
+        return w, h, area_min, idx.squeeze(-1)
+    else:
+        return w, h
+
+
+'''
+find the smallest bounding box which enclosing two rectangles. It can be used to calculate the GIoU or DIoU
+loss for rotated object detection.
+Observation: a side of a minimum-area enclosing box must be collinear with a side of the convex polygon.
+https://en.wikipedia.org/wiki/Minimum_bounding_box_algorithms
+Since two rectangles have 8 points, brutal force method should be enough. That is, calculate the enclosing box
+area for every possible side of the polygon and take the mininum. Their should be 8x7/2 = 28 combinations and 4
+of them are impossible (4 diagonal of two boxes). So the function brutally searches in the 24 candidates.
+The index of box corners follows the following convention:
+  0---1        4---5
+  |   |        |   |
+  3---2        7---6
+author: Lanxiao Li
+2020.08
+'''
+
+
+def generate_table():
+    """generate candidates of hull polygon edges and the the other 6 points
+    Returns:
+        lines: (24, 2)
+        points: (24, 6)
+    """
+    skip = [[0, 2], [1, 3], [5, 7], [4, 6]]  # impossible hull edge
+    line = []
+    points = []
+
+    def all_except_two(o1, o2):
+        a = []
+        for i in range(8):
+            if i != o1 and i != o2:
+                a.append(i)
+        return a
+
+    for i in range(8):
+        for j in range(i + 1, 8):
+            if [i, j] not in skip:
+                line.append([i, j])
+                points.append(all_except_two(i, j))
+    return line, points
+
+
+LINES, POINTS = generate_table()
+LINES = np.array(LINES).astype(np.int)
+POINTS = np.array(POINTS).astype(np.int)
+
+def gather_lines_points(corners: torch.Tensor):
+    """get hull edge candidates and the rest points using the index
+    Args:
+        corners (torch.Tensor): (..., 8, 2)
+
+    Return:
+        lines (torch.Tensor): (..., 24, 2, 2)
+        points (torch.Tensor): (..., 24, 6, 2)
+        idx_lines (torch.Tensor): Long (..., 24, 2, 2)
+        idx_points (torch.Tensor): Long (..., 24, 6, 2)
+    """
+    dim = corners.dim()
+    idx_lines = torch.LongTensor(LINES).to(corners.device).unsqueeze(-1)  # (24, 2, 1)
+    idx_points = torch.LongTensor(POINTS).to(corners.device).unsqueeze(-1)  # (24, 6, 1)
+    idx_lines = idx_lines.repeat(1, 1, 2)  # (24, 2, 2)
+    idx_points = idx_points.repeat(1, 1, 2)  # (24, 6, 2)
+    if dim > 2:
+        for _ in range(dim - 2):
+            idx_lines = torch.unsqueeze(idx_lines, 0)
+            idx_points = torch.unsqueeze(idx_points, 0)
+        idx_points = idx_points.repeat(*corners.size()[:-2], 1, 1, 1)  # (..., 24, 2, 2)
+        idx_lines = idx_lines.repeat(*corners.size()[:-2], 1, 1, 1)  # (..., 24, 6, 2)
+    corners_ext = corners.unsqueeze(-3).repeat(*([1] * (dim - 2)), 24, 1, 1)  # (..., 24, 8, 2)
+    lines = torch.gather(corners_ext, dim=-2, index=idx_lines)  # (..., 24, 2, 2)
+    points = torch.gather(corners_ext, dim=-2, index=idx_points)  # (..., 24, 6, 2)
+
+    return lines, points, idx_lines, idx_points
+
+
+def point_line_distance_range(lines: torch.Tensor, points: torch.Tensor):
+    """calculate the maximal distance between the points in the direction perpendicular to the line
+    methode: point-line-distance
+    Args:
+        lines (torch.Tensor): (..., 24, 2, 2)
+        points (torch.Tensor): (..., 24, 6, 2)
+
+    Return:
+        torch.Tensor: (..., 24)
+    """
+    x1 = lines[..., 0:1, 0]  # (..., 24, 1)
+    y1 = lines[..., 0:1, 1]  # (..., 24, 1)
+    x2 = lines[..., 1:2, 0]  # (..., 24, 1)
+    y2 = lines[..., 1:2, 1]  # (..., 24, 1)
+    x = points[..., 0]  # (..., 24, 6)
+    y = points[..., 1]  # (..., 24, 6)
+    den = (y2 - y1) * x - (x2 - x1) * y + x2 * y1 - y2 * x1
+    # NOTE: the backward pass of torch.sqrt(x) generates NaN if x==0
+    num = torch.sqrt((y2 - y1).square() + (x2 - x1).square() + 1e-14)
+    d = den / num  # (..., 24, 6)
+    d_max = d.max(dim=-1)[0]  # (..., 24)
+    d_min = d.min(dim=-1)[0]  # (..., 24)
+    d1 = d_max - d_min  # suppose points on different side
+    d2 = torch.max(d.abs(), dim=-1)[0]  # or, all points are on the same side
+    # NOTE: if x1 = x2 and y1 = y2, this will return 0
+    return torch.max(d1, d2)
+
+
+def point_line_projection_range(lines: torch.Tensor, points: torch.Tensor):
+    """calculate the maximal distance between the points in the direction parallel to the line
+    methode: point-line projection
+    Args:
+        lines (torch.Tensor): (..., 24, 2, 2)
+        points (torch.Tensor): (..., 24, 6, 2)
+
+    Return:
+        torch.Tensor: (..., 24)
+    """
+    x1 = lines[..., 0:1, 0]  # (..., 24, 1)
+    y1 = lines[..., 0:1, 1]  # (..., 24, 1)
+    x2 = lines[..., 1:2, 0]  # (..., 24, 1)
+    y2 = lines[..., 1:2, 1]  # (..., 24, 1)
+    k = (y2 - y1) / (x2 - x1 + 1e-8)  # (..., 24, 1)
+    vec = torch.cat([torch.ones_like(k, dtype=k.dtype, device=k.device), k], dim=-1)  # (..., 24, 2)
+    vec = vec.unsqueeze(-2)  # (..., 24, 1, 2)
+    points_ext = torch.cat([lines, points], dim=-2)  # (..., 24, 8), consider all 8 points
+    den = torch.sum(points_ext * vec, dim=-1)  # (..., 24, 8)
+    proj = den / torch.norm(vec, dim=-1, keepdim=False)  # (..., 24, 8)
+    proj_max = proj.max(dim=-1)[0]  # (..., 24)
+    proj_min = proj.min(dim=-1)[0]  # (..., 24)
+    return proj_max - proj_min

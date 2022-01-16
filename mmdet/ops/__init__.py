@@ -15,6 +15,7 @@ from .nms_rotated import obb_batched_nms, obb_nms, poly_nms
 from .box_iou_rotated import obb_overlaps
 from .ml_nms_rotated import ml_nms_rotated
 from .convex import convex_sort
+from .box_iou_rotated_diff import box_iou_rotated_differentiable
 # yapf: enable
 
 __all__ = [
@@ -30,6 +31,6 @@ __all__ = [
     'obb_batched_nms',
     'obb_nms',
     'poly_nms',
-    'convex_sort'
-
+    'convex_sort',
+    'box_iou_rotated_differentiable'
 ]
