@@ -1,4 +1,5 @@
 from mmdet.ops import rbbox_iou_iof, obb_overlaps
+from mmdet.ops.iou import convex_overlaps
 from mmcv.ops import box_iou_rotated
 from .builder import IOU_CALCULATORS
 

@@ -17,3 +17,7 @@ def convex_iou(pred, target):
     convex_ious = convex_ious.reshape(ex_num, gt_num)
     return convex_ious
 
+def convex_overlaps(gt_rbboxes, points):
+    overlaps = convex_iou(points, gt_rbboxes)
+    overlaps = overlaps.transpose(1, 0)
+    return overlaps
