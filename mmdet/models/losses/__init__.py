@@ -16,6 +16,7 @@ from .utils import reduce_loss, weight_reduce_loss, weighted_loss
 from .varifocal_loss import VarifocalLoss
 from .gaussian_distance_loss import GDLoss
 from .rotated_iou_loss import RotatedIoULoss, RotatedGIoULoss
+from .convex_iou_loss import ConvexGIoULoss,ConvexIoULoss
 
 __all__ = [
     'accuracy', 'Accuracy', 'cross_entropy', 'binary_cross_entropy',
@@ -29,5 +30,7 @@ __all__ = [
     'VarifocalLoss',
     'GDLoss',
     'RotatedIoULoss',
-    'RotatedGIoULoss'
+    'RotatedGIoULoss',
+    'ConvexIoULoss',
+    'ConvexGIoULoss'
 ]
