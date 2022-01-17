@@ -36,6 +36,7 @@ Supported methods（rotate）:
 - [x] s2anet
 - [x] GWD
 - [x] KLD
+- [x] r3det
 - [ ] RFCOS
 - [ ] centernet
 

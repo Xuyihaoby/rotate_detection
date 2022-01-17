@@ -82,7 +82,7 @@ class ConvexGIoULossFuction(Function):
         if reduction == 'sum':
             loss = loss.sum()
         elif reduction == 'mean':
-            loss = loss.mean()
+            loss = loss.sum()/avg_factor
         else:
             loss = loss
 
