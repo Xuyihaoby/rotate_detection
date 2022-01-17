@@ -225,7 +225,15 @@ if __name__ == '__main__':
             make_cuda_ext(
                 name='sort_vertices_cuda',
                 module='mmdet.ops.box_iou_rotated_diff',
-                sources=['src/sort_vert.cpp', 'src/sort_vert_kernel.cu', ])
+                sources=['src/sort_vert.cpp', 'src/sort_vert_kernel.cu', ]),
+            make_cuda_ext(
+                name='convex_giou_cuda',
+                module='mmdet.ops.iou',
+                sources=['src/convex_giou_cuda.cpp', 'src/convex_giou_kernel.cu']),
+            make_cuda_ext(
+                name='convex_iou_cuda',
+                module='mmdet.ops.iou',
+                sources=['src/convex_iou_cuda.cpp', 'src/convex_iou_kernel.cu'])
         ],
         cmdclass={'build_ext': BuildExtension},
         zip_safe=False)
