@@ -2,7 +2,7 @@ from mmdet.ops import rbbox_iou_iof, obb_overlaps
 from mmdet.ops.iou import convex_overlaps
 from mmcv.ops import box_iou_rotated
 from .builder import IOU_CALCULATORS
-
+from mmdet.core.bbox.rtransforms import obb2poly
 
 @IOU_CALCULATORS.register_module()
 class RBboxOverlaps2D(object):
@@ -123,3 +123,40 @@ def rbbox_overlaps_v3(bboxes1, bboxes2, mode='iou', is_aligned=False):
         return bboxes1.new(rows, 1) if is_aligned else bboxes1.new(rows, cols)
 
     return obb_overlaps(bboxes1, bboxes2, mode, is_aligned)
+
+@IOU_CALCULATORS.register_module()
+class ConvexOverlaps2D(object):
+    """2D Overlaps (e.g. IoUs, GIoUs) Calculator."""
+
+    def __init__(self, version='v1'):
+        self.version = version
+
+    def __call__(self, bboxes1, bboxes2, mode='iou', is_aligned=False):
+        """Calculate IoU between 2D bboxes.
+
+        Args:
+            bboxes1 (Tensor): bboxes have shape (m, 4) in <x1, y1, x2, y2>
+                format, or shape (m, 5) in <x1, y1, x2, y2, score> format.
+            bboxes2 (Tensor): bboxes have shape (m, 4) in <x1, y1, x2, y2>
+                format, shape (m, 5) in <x1, y1, x2, y2, score> format, or be
+                empty. If ``is_aligned `` is ``True``, then m and n must be
+                equal.
+            mode (str): "iou" (intersection over union), "iof" (intersection
+                over foreground), or "giou" (generalized intersection over
+                union).
+            is_aligned (bool, optional): If True, then m and n must be equal.
+                Default False.
+
+        Returns:
+            Tensor: shape (m, n) if ``is_aligned `` is False else shape (m,)
+        """
+        if bboxes1.size(-1) == 5:
+            bboxes1 = obb2poly(bboxes1, version=self.version)
+        assert bboxes1.size(-1) in [0, 8]
+        assert bboxes2.size(-1) in [0, 18]
+        return convex_overlaps(bboxes1, bboxes2)
+
+    def __repr__(self):
+        """str: a string describing the module"""
+        repr_str = self.__class__.__name__ + '()'
+        return repr_str

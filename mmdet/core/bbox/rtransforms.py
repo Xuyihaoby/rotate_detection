@@ -634,6 +634,129 @@ def obb2poly_v3(rboxes):
     return polys.contiguous()
 
 
+def poly2obb(polys, version='v1'):
+    """Convert polygons to oriented bounding boxes.
+
+    (r3det version)
+    Args:
+        polys (torch.Tensor): [x0,y0,x1,y1,x2,y2,x3,y3]
+        version (Str): angle representations.
+    Returns:
+        obbs (torch.Tensor): [x_ctr,y_ctr,w,h,angle]
+    """
+    if version == 'v1':
+        results = poly2obb_v1(polys)
+    elif version == 'v2':
+        results = poly2obb_v2(polys)
+    elif version == 'v3':
+        results = poly2obb_v3(polys)
+    else:
+        raise NotImplementedError
+    return results
+
+
+def dist_torch(point1, point2):
+    """Calculate the distance between two points.
+
+    Args:
+        point1 (torch.Tensor): shape(n, 2).
+        point2 (torch.Tensor): shape(n, 2).
+    Returns:
+        distance (torch.Tensor): shape(n, 1).
+    """
+    return torch.norm(point1 - point2, dim=-1)
+
+
+def poly2obb_v1(polys):
+    """Convert polygons to oriented bounding boxes.
+
+    (r3det version)
+    Args:
+        polys (torch.Tensor): [x0,y0,x1,y1,x2,y2,x3,y3]
+    Returns:
+        obbs (torch.Tensor): [x_ctr,y_ctr,w,h,angle]
+    """
+    points = torch.reshape(polys, [-1, 4, 2])
+    cxs = torch.unsqueeze(torch.sum(points[:, :, 0], axis=1), axis=1) / 4.
+    cys = torch.unsqueeze(torch.sum(points[:, :, 1], axis=1), axis=1) / 4.
+    _ws = torch.unsqueeze(dist_torch(points[:, 0], points[:, 1]), axis=1)
+    _hs = torch.unsqueeze(dist_torch(points[:, 1], points[:, 2]), axis=1)
+    _thetas = torch.unsqueeze(
+        torch.atan2(-(points[:, 1, 0] - points[:, 0, 0]),
+                    points[:, 1, 1] - points[:, 0, 1]),
+        axis=1)
+    odd = torch.eq(torch.remainder((_thetas / (-np.pi * 0.5)).floor_(), 2), 0)
+    ws = torch.where(odd, _hs, _ws)
+    hs = torch.where(odd, _ws, _hs)
+    thetas = torch.remainder(_thetas, -np.pi * 0.5)
+    rbboxes = torch.cat([cxs, cys, ws, hs, thetas], axis=1)
+    return rbboxes
+
+
+def poly2obb_v2(polys):
+    """Convert polygons to oriented bounding boxes.
+
+    Args:
+        polys (torch.Tensor): [x0,y0,x1,y1,x2,y2,x3,y3]
+    Returns:
+        obbs (torch.Tensor): [x_ctr,y_ctr,w,h,angle]
+    """
+    polys = torch.reshape(polys, [-1, 8])
+    pt1, pt2, pt3, pt4 = polys[..., :8].chunk(4, 1)
+    edge1 = torch.sqrt(
+        torch.pow(pt1[..., 0] - pt2[..., 0], 2) +
+        torch.pow(pt1[..., 1] - pt2[..., 1], 2))
+    edge2 = torch.sqrt(
+        torch.pow(pt2[..., 0] - pt3[..., 0], 2) +
+        torch.pow(pt2[..., 1] - pt3[..., 1], 2))
+    angles1 = torch.atan2((pt2[..., 1] - pt1[..., 1]),
+                          (pt2[..., 0] - pt1[..., 0]))
+    angles2 = torch.atan2((pt4[..., 1] - pt1[..., 1]),
+                          (pt4[..., 0] - pt1[..., 0]))
+    angles = polys.new_zeros(polys.shape[0])
+    angles[edge1 > edge2] = angles1[edge1 > edge2]
+    angles[edge1 <= edge2] = angles2[edge1 <= edge2]
+    angles = norm_angle(angles, 'v2')
+    x_ctr = (pt1[..., 0] + pt3[..., 0]) / 2.0
+    y_ctr = (pt1[..., 1] + pt3[..., 1]) / 2.0
+    edges = torch.stack([edge1, edge2], dim=1)
+    width, _ = torch.max(edges, 1)
+    height, _ = torch.min(edges, 1)
+    return torch.stack([x_ctr, y_ctr, width, height, angles], 1)
+
+
+def poly2obb_v3(polys):
+    """Convert polygons to oriented bounding boxes.
+
+    Args:
+        polys (torch.Tensor): [x0,y0,x1,y1,x2,y2,x3,y3]
+    Returns:
+        obbs (torch.Tensor): [x_ctr,y_ctr,w,h,angle]
+    """
+    polys = torch.reshape(polys, [-1, 8])
+    pt1, pt2, pt3, pt4 = polys[..., :8].chunk(4, 1)
+    edge1 = torch.sqrt(
+        torch.pow(pt1[..., 0] - pt2[..., 0], 2) +
+        torch.pow(pt1[..., 1] - pt2[..., 1], 2))
+    edge2 = torch.sqrt(
+        torch.pow(pt2[..., 0] - pt3[..., 0], 2) +
+        torch.pow(pt2[..., 1] - pt3[..., 1], 2))
+    angles1 = torch.atan2((pt2[..., 1] - pt1[..., 1]),
+                          (pt2[..., 0] - pt1[..., 0]))
+    angles2 = torch.atan2((pt4[..., 1] - pt1[..., 1]),
+                          (pt4[..., 0] - pt1[..., 0]))
+    angles = polys.new_zeros(polys.shape[0])
+    angles[edge1 > edge2] = angles1[edge1 > edge2]
+    angles[edge1 <= edge2] = angles2[edge1 <= edge2]
+    angles = norm_angle(angles, 'v3')
+    x_ctr = (pt1[..., 0] + pt3[..., 0]) / 2.0
+    y_ctr = (pt1[..., 1] + pt3[..., 1]) / 2.0
+    edges = torch.stack([edge1, edge2], dim=1)
+    width, _ = torch.max(edges, 1)
+    height, _ = torch.min(edges, 1)
+    return torch.stack([x_ctr, y_ctr, width, height, angles], 1)
+
+
 # https://github.com/lilanxiao/Rotated_IoU
 def enclosing_box(corners1: torch.Tensor, corners2: torch.Tensor, enclosing_type: str = "smallest"):
     if enclosing_type == "aligned":
@@ -811,6 +934,7 @@ def generate_table():
 LINES, POINTS = generate_table()
 LINES = np.array(LINES).astype(np.int)
 POINTS = np.array(POINTS).astype(np.int)
+
 
 def gather_lines_points(corners: torch.Tensor):
     """get hull edge candidates and the rest points using the index

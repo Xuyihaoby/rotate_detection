@@ -233,7 +233,11 @@ if __name__ == '__main__':
             make_cuda_ext(
                 name='convex_iou_cuda',
                 module='mmdet.ops.iou',
-                sources=['src/convex_iou_cuda.cpp', 'src/convex_iou_kernel.cu'])
+                sources=['src/convex_iou_cuda.cpp', 'src/convex_iou_kernel.cu']),
+            make_cuda_ext(
+                name='minarearect',
+                module='mmdet.ops.minarearect',
+                sources=['src/minarearect_cuda.cpp', 'src/minarearect_kernel.cu']),
         ],
         cmdclass={'build_ext': BuildExtension},
         zip_safe=False)

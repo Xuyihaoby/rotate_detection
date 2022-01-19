@@ -11,10 +11,12 @@ from .region_assigner import RegionAssigner
 
 from .ratss_assigner import RATSSAssigner
 from .gwd_assigner import gwd_loss, MaxIoUGWDAssigner
+from .rpoint_assigner import RPointAssigner
 
 __all__ = [
     'BaseAssigner', 'MaxIoUAssigner', 'ApproxMaxIoUAssigner', 'AssignResult',
     'PointAssigner', 'ATSSAssigner', 'CenterRegionAssigner', 'GridAssigner',
     'HungarianAssigner', 'RegionAssigner',
-    'RATSSAssigner', 'MaxIoUGWDAssigner'
+    'RATSSAssigner', 'MaxIoUGWDAssigner',
+    'RPointAssigner'
 ]
