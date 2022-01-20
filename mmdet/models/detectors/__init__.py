@@ -38,6 +38,7 @@ from .s2anet import S2ANet
 from .r3det import R3Det
 from .rsingle_stage import RSingleStageDetector
 from .RRepPointDetector import RReppointsDetector
+from .rfcos import RFCOS
 
 
 __all__ = [
@@ -54,5 +55,6 @@ __all__ = [
     'RoItransformer', 'ReDet',
     'S2ANet',
     'RSingleStageDetector',
-    'RReppointsDetector'
+    'RReppointsDetector',
+    'RFCOS'
 ]

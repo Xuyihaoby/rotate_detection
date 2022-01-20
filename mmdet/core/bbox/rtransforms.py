@@ -1016,3 +1016,34 @@ def point_line_projection_range(lines: torch.Tensor, points: torch.Tensor):
     proj_max = proj.max(dim=-1)[0]  # (..., 24)
     proj_min = proj.min(dim=-1)[0]  # (..., 24)
     return proj_max - proj_min
+
+
+def distance2rbbox(points, distance, version='v1'):
+    """Decode distance prediction to bounding box.
+
+    Args:
+        points (Tensor): Shape (n, 2), [x, y].
+        distance (Tensor): Distance from the given point to 5
+            boundaries (left, top, right, bottom, radian).
+        max_shape (tuple): Shape of the image.
+
+    Returns:
+        Tensor: Decoded bboxes.
+    """
+    distance, theta = distance.split([4, 1], dim=1)
+    wh = distance[:, :2] + distance[:, 2:]
+
+    if version == 'v1':
+        theta = torch.where(theta >= 0, theta - torch.tensor(np.pi / 2), theta)
+        theta = torch.where(theta < torch.tensor(-np.pi / 2), theta + torch.tensor(np.pi / 2), theta)
+        Cos, Sin = torch.cos(theta), torch.sin(theta)
+        Matrix = torch.cat([Cos, -Sin, Sin, Cos], dim=1).reshape(-1, 2, 2)
+    else:
+        Cos, Sin = torch.cos(theta), torch.sin(theta)
+        Matrix = torch.cat([Cos, Sin, -Sin, Cos], dim=1).reshape(-1, 2, 2)
+    offset_t = (distance[:, 2:] - distance[:, :2]) / 2
+    offset_t = offset_t.unsqueeze(2)
+
+    offset = torch.bmm(Matrix, offset_t).squeeze(2)
+    ctr = points + offset
+    return torch.cat([ctr, wh, theta], dim=1)
