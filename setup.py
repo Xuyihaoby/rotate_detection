@@ -238,6 +238,10 @@ if __name__ == '__main__':
                 name='minarearect',
                 module='mmdet.ops.minarearect',
                 sources=['src/minarearect_cuda.cpp', 'src/minarearect_kernel.cu']),
+            make_cuda_ext(
+                name='chamfer_2d',
+                module='mmdet.ops.chamfer_2d',
+                sources=['src/chamfer_cuda.cpp', 'src/chamfer_2d.cu']),
         ],
         cmdclass={'build_ext': BuildExtension},
         zip_safe=False)

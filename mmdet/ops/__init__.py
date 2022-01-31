@@ -18,6 +18,7 @@ from .convex import convex_sort
 from .box_iou_rotated_diff import box_iou_rotated_differentiable
 from .iou import convex_giou, convex_iou, convex_overlaps
 from .minarearect import minaerarect
+from .chamfer_2d import Chamfer2D, ChamferDistance2D
 # yapf: enable
 
 __all__ = [
@@ -38,5 +39,7 @@ __all__ = [
     'convex_giou',
     'convex_iou',
     'convex_overlaps',
-    'minarearect'
+    'minarearect',
+    'ChamferDistance2D',
+    'Chamfer2D'
 ]
