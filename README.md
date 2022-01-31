@@ -39,6 +39,7 @@ Supported methods（rotate）:
 - [x] r3det
 - [x] rreppoints(vanilla)
 - [x] RFCOS
+- [x] rdetr(not converge)
 - [ ] centernet
 
 

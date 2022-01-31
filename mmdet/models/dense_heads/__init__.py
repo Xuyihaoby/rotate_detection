@@ -40,6 +40,7 @@ from .s2a_head import S2ANetHead
 from .rreppoints_head import RRepPointsHead
 from .rfcos_head import RFCOSHead
 from .centernet_head import CenterNetHead
+from .rtransformer_head import RTransformerHead
 
 __all__ = [
     'AnchorFreeHead', 'AnchorHead', 'GuidedAnchorHead', 'FeatureAdaption',
@@ -59,5 +60,6 @@ __all__ = [
     'S2ANetHead',
     'RRepPointsHead',
     'RFCOSHead',
-    'CenterNetHead'
+    'CenterNetHead',
+    'RTransformerHead'
 ]

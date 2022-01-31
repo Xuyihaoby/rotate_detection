@@ -111,21 +111,30 @@ class HungarianAssigner(BaseAssigner):
         img_h, img_w, _ = img_meta['img_shape']
         factor = torch.Tensor([img_w, img_h, img_w,
                                img_h]).unsqueeze(0).to(gt_bboxes.device)
-
         # 2. compute the weighted costs
         # classification and bboxcost.
         cls_cost = self.cls_cost(cls_pred, gt_labels)
         # regression L1 cost
-        normalize_gt_bboxes = gt_bboxes / factor
+        if gt_bboxes.size(-1) == 5:
+            normalize_gt_bboxes = gt_bboxes[:, :-1] / factor
+            normalize_gt_bboxes = torch.cat((normalize_gt_bboxes, gt_bboxes[:, [-1]]), dim=-1)
+        elif gt_bboxes.size(-1) == 4:
+            normalize_gt_bboxes = gt_bboxes / factor
         reg_cost = self.reg_cost(bbox_pred, normalize_gt_bboxes)
+
         # regression iou cost, defaultly giou is used in official DETR.
-        bboxes = bbox_cxcywh_to_xyxy(bbox_pred) * factor
+        if gt_bboxes.size(-1) == 5:
+            bboxes = bbox_pred[:, :-1] * factor
+            bboxes = torch.cat((bboxes, bbox_pred[:, [-1]]), dim=-1)
+        elif gt_bboxes.size(-1) == 4:
+            bboxes = bbox_cxcywh_to_xyxy(bbox_pred) * factor
         iou_cost = self.iou_cost(bboxes, gt_bboxes)
         # weighted sum of above three costs
         cost = cls_cost + reg_cost + iou_cost
 
         # 3. do Hungarian matching on CPU using linear_sum_assignment
         cost = cost.detach().cpu()
+        # 居然在这个地方才将cost detach掉
         if linear_sum_assignment is None:
             raise ImportError('Please run "pip install scipy" '
                               'to install scipy first.')

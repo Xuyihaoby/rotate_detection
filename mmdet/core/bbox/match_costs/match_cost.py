@@ -1,6 +1,7 @@
 import torch
 
 from mmdet.core.bbox.iou_calculators import bbox_overlaps
+from mmdet.core.bbox.iou_calculators import rbbox_overlaps
 from mmdet.core.bbox.transforms import bbox_cxcywh_to_xyxy, bbox_xyxy_to_cxcywh
 from .builder import MATCH_COST
 
@@ -26,7 +27,7 @@ class BBoxL1Cost(object):
 
     def __init__(self, weight=1., box_format='xyxy'):
         self.weight = weight
-        assert box_format in ['xyxy', 'xywh']
+        assert box_format in ['xyxy', 'xywh', 'xywhtheta']
         self.box_format = box_format
 
     def __call__(self, bbox_pred, gt_bboxes):
@@ -177,8 +178,12 @@ class IoUCost(object):
             torch.Tensor: iou_cost value with weight
         """
         # overlaps: [num_bboxes, num_gt]
-        overlaps = bbox_overlaps(
-            bboxes, gt_bboxes, mode=self.iou_mode, is_aligned=False)
+        if bboxes.size(-1) == 5:
+            overlaps = rbbox_overlaps(
+                bboxes, gt_bboxes, is_aligned=False)
+        elif bboxes.size(-1) == 4:
+            overlaps = bbox_overlaps(
+                bboxes, gt_bboxes, mode=self.iou_mode, is_aligned=False)
         # The 1 is a constant that doesn't change the matching, so ommitted.
         iou_cost = -overlaps
         return iou_cost * self.weight

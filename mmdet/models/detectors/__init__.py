@@ -40,6 +40,7 @@ from .rsingle_stage import RSingleStageDetector
 from .RRepPointDetector import RReppointsDetector
 from .rfcos import RFCOS
 from .centernet import CenterNet
+from .rdetr import RDETR
 
 
 __all__ = [
@@ -58,5 +59,6 @@ __all__ = [
     'RSingleStageDetector',
     'RReppointsDetector',
     'RFCOS',
-    'CenterNet'
+    'CenterNet',
+    'RDETR'
 ]
