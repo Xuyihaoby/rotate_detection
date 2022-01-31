@@ -39,6 +39,7 @@ from .rretina_refine_head import RRetinaRefineHead
 from .s2a_head import S2ANetHead
 from .rreppoints_head import RRepPointsHead
 from .rfcos_head import RFCOSHead
+from .centernet_head import CenterNetHead
 
 __all__ = [
     'AnchorFreeHead', 'AnchorHead', 'GuidedAnchorHead', 'FeatureAdaption',
@@ -57,5 +58,6 @@ __all__ = [
     'RRetinaRefineHead',
     'S2ANetHead',
     'RRepPointsHead',
-    'RFCOSHead'
+    'RFCOSHead',
+    'CenterNetHead'
 ]
