@@ -242,6 +242,11 @@ if __name__ == '__main__':
                 name='chamfer_2d',
                 module='mmdet.ops.chamfer_2d',
                 sources=['src/chamfer_cuda.cpp', 'src/chamfer_2d.cu']),
+            make_cuda_ext(
+                name='point_justify',
+                module='mmdet.ops.point_justify',
+                sources=['src/points_justify.cpp', 'src/points_justify_kernel.cu']
+            ),
         ],
         cmdclass={'build_ext': BuildExtension},
         zip_safe=False)
