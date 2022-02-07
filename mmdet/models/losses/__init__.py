@@ -17,6 +17,7 @@ from .varifocal_loss import VarifocalLoss
 from .gaussian_distance_loss import GDLoss
 from .rotated_iou_loss import RotatedIoULoss, RotatedGIoULoss
 from .convex_iou_loss import ConvexGIoULoss
+from .spatial_border_loss import SpatialBorderLoss
 
 __all__ = [
     'accuracy', 'Accuracy', 'cross_entropy', 'binary_cross_entropy',
@@ -31,5 +32,6 @@ __all__ = [
     'GDLoss',
     'RotatedIoULoss',
     'RotatedGIoULoss',
-    'ConvexGIoULoss'
+    'ConvexGIoULoss',
+    'SpatialBorderLoss'
 ]

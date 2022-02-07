@@ -18,7 +18,7 @@ model = dict(
         add_extra_convs='on_input',
         num_outs=5),
     bbox_head=dict(
-        type='RRepPointsHead',
+        type='OrientedReppointsHead',
         num_classes=15,
         in_channels=256,
         feat_channels=256,
@@ -27,16 +27,19 @@ model = dict(
         num_points=9,
         gradient_mul=0.3,
         point_strides=[8, 16, 32, 64, 128],
-        point_base_scale=4,
+        point_base_scale=2,
         loss_cls=dict(
             type='FocalLoss',
             use_sigmoid=True,
             gamma=2.0,
             alpha=0.25,
             loss_weight=1.0),
-        loss_bbox_init=dict(type='ConvexGIoULoss', loss_weight=0.5),
+        loss_bbox_init=dict(type='ConvexGIoULoss', loss_weight=0.375),
         loss_bbox_refine=dict(type='ConvexGIoULoss', loss_weight=1.0),
-        transform_method='direct'),
+        loss_spatial_init=dict(type='SpatialBorderLoss', loss_weight=0.05),
+        loss_spatial_refine=dict(type='SpatialBorderLoss', loss_weight=0.1),
+        transform_method='direct',
+        top_ratio=0.4),
     # model training and testing settings
     train_cfg=dict(
         init=dict(
@@ -47,9 +50,10 @@ model = dict(
         refine=dict(
             assigner=dict(
                 type='MaxIoUAssigner',
-                pos_iou_thr=0.5,
-                neg_iou_thr=0.4,
+                pos_iou_thr=0.1,
+                neg_iou_thr=0.1,
                 min_pos_iou=0,
+                match_low_quality=True,
                 ignore_iof_thr=-1,
                 iou_calculator=dict(type='ConvexOverlaps2D')),
             allowed_border=-1,
@@ -60,7 +64,7 @@ model = dict(
         min_bbox_size=0,
         score_thr=0.05,
         nms=dict(type='rnms', iou_threshold=0.1),
-        max_per_img=1000))
+        max_per_img=2000))
 
 # optimizer
 optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
@@ -147,11 +151,12 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/data1/xyh/checkpoints/rreppoint/rreppoint'
+work_dir = '/data1/xyh/checkpoints/orientedreppoint'
 
-# mAP: 0.6029221399282415
-# ap of each class: plane:0.8819266680661432, baseball-diamond:0.7238464666311806, bridge:0.32893691657804663,
-# ground-track-field:0.365532134609223, small-vehicle:0.6909498204551833, large-vehicle:0.515259493409674,
-# ship:0.7247332020513517, tennis-court:0.8681391019906041, basketball-court:0.5720441878933643,
-# storage-tank:0.8258359480364655, soccer-ball-field:0.5281822729397356, roundabout:0.6103338533441663,
-# harbor:0.5102272201033338, swimming-pool:0.5697717987309132, helicopter:0.3281130140842371
+# mAP: 0.6653409247994138
+# ap of each class: plane:0.8677409193401069, baseball-diamond:0.6288406313019621, bridge:0.4433816196888301,
+# ground-track-field:0.6314024173893618, small-vehicle:0.7762574646971234, large-vehicle:0.7286353459273686,
+# ship:0.7786875382574292, tennis-court:0.9084775793921223, basketball-court:0.7470596635462433,
+# storage-tank:0.8119754111268995, soccer-ball-field:0.4105944496293934, roundabout:0.5572620515212556,
+# harbor:0.6385845212231773, swimming-pool:0.6264853784548363, helicopter:0.42472888049509583
+

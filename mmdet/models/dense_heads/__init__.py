@@ -41,6 +41,7 @@ from .rreppoints_head import RRepPointsHead
 from .rfcos_head import RFCOSHead
 from .centernet_head import CenterNetHead
 from .rtransformer_head import RTransformerHead
+from .orientedreppoints_head import OrientedReppointsHead
 
 __all__ = [
     'AnchorFreeHead', 'AnchorHead', 'GuidedAnchorHead', 'FeatureAdaption',
@@ -61,5 +62,6 @@ __all__ = [
     'RRepPointsHead',
     'RFCOSHead',
     'CenterNetHead',
-    'RTransformerHead'
+    'RTransformerHead',
+    'OrientedReppointsHead'
 ]

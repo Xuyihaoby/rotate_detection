@@ -37,9 +37,9 @@ Supported methods（rotate）:
 - [x] GWD
 - [x] KLD
 - [x] r3det
-- [x] rreppoints(vanilla)
+- [x] rreppoints(vanilla, OrientedReppoints)
 - [x] RFCOS
-- [x] rdetr(not converge)
+- [x] RDETR(not converge)
 - [ ] centernet
 
 

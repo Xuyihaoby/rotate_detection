@@ -17,6 +17,34 @@ def images_to_levels(target, num_levels):
     return level_targets
 
 
+def levels_to_images(mlvl_tensor):
+    """Concat multi-level feature maps by image.
+    [feature_level0, feature_level1...] -> [feature_image0, feature_image1...]
+    Convert the shape of each element in mlvl_tensor from (N, C, H, W) to
+    (N, H*W , C), then split the element to N elements with shape (H*W, C), and
+    concat elements in same image of all level along first dimension.
+    Args:
+        mlvl_tensor (list[torch.Tensor]): list of Tensor which collect from
+            corresponding level. Each element is of shape (N, C, H, W)
+    Returns:
+        list[torch.Tensor]: A list that contains N tensors and each tensor is
+            of shape (num_elements, C)
+    """
+    batch_size = mlvl_tensor[0].size(0)
+    batch_list = [[] for _ in range(batch_size)]
+    if mlvl_tensor[0].dim() == 4:
+        channels = mlvl_tensor[0].size(1)
+    else:
+        channels = mlvl_tensor[0].size(-1)
+    for t in mlvl_tensor:
+        if t.dim() == 4:
+            t = t.permute(0, 2, 3, 1)
+            t = t.view(batch_size, -1, channels).contiguous()
+        for img in range(batch_size):
+            batch_list[img].append(t[img])
+    return [torch.cat(item, 0) for item in batch_list]
+
+
 def anchor_inside_flags(flat_anchors,
                         valid_flags,
                         img_shape,
@@ -37,10 +65,10 @@ def anchor_inside_flags(flat_anchors,
     img_h, img_w = img_shape[:2]
     if allowed_border >= 0:
         inside_flags = valid_flags & \
-            (flat_anchors[:, 0] >= -allowed_border) & \
-            (flat_anchors[:, 1] >= -allowed_border) & \
-            (flat_anchors[:, 2] < img_w + allowed_border) & \
-            (flat_anchors[:, 3] < img_h + allowed_border)
+                       (flat_anchors[:, 0] >= -allowed_border) & \
+                       (flat_anchors[:, 1] >= -allowed_border) & \
+                       (flat_anchors[:, 2] < img_w + allowed_border) & \
+                       (flat_anchors[:, 3] < img_h + allowed_border)
     else:
         inside_flags = valid_flags
     return inside_flags
