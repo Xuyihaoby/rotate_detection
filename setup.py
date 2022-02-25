@@ -45,6 +45,30 @@ def make_cuda_ext(name, module, sources, sources_cuda=[]):
         define_macros=define_macros,
         extra_compile_args=extra_compile_args)
 
+def _make_cuda_ext(name, module, sources, sources_cuda=[]):
+    define_macros = []
+    extra_compile_args = {'cxx': []}
+
+    if torch.cuda.is_available() or os.getenv('FORCE_CUDA', '0') == '1':
+        define_macros += [('WITH_CUDA', None)]
+        extension = CUDAExtension
+        extra_compile_args['nvcc'] = [
+            '-D__CUDA_NO_HALF_OPERATORS__',
+            '-D__CUDA_NO_HALF_CONVERSIONS__',
+            '-D__CUDA_NO_HALF2_OPERATORS__',
+        ]
+        sources += sources_cuda
+    else:
+        print(f'Compiling {name} without CUDA')
+        extension = CppExtension
+
+    return extension(
+        name=f'{module}.{name}',
+        sources=[os.path.join(*module.split('.'), p) for p in sources],
+        define_macros=define_macros,
+        libraries=["cusolver", "cublas"],
+        extra_compile_args=extra_compile_args)
+
 
 def parse_requirements(fname='requirements.txt', with_version=True):
     """Parse the package dependencies listed in a requirements file but strips
@@ -246,6 +270,11 @@ if __name__ == '__main__':
                 name='point_justify',
                 module='mmdet.ops.point_justify',
                 sources=['src/points_justify.cpp', 'src/points_justify_kernel.cu']
+            ),
+            _make_cuda_ext(
+                name='torch_batch_svd_cpu',
+                module='mmdet.ops.batch_svd',
+                sources=['src/torch_batch_svd_cpu.cpp']
             ),
         ],
         cmdclass={'build_ext': BuildExtension},
