@@ -40,6 +40,7 @@ Supported methods（rotate）:
 - [x] rreppoints(vanilla, OrientedReppoints)
 - [x] RFCOS
 - [x] RDETR(not converge)
+- [ ] GRep(vanilla)
 - [ ] centernet
 
 

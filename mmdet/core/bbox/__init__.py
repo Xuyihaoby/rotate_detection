@@ -14,7 +14,10 @@ from .transforms import (bbox2distance, bbox2result, bbox2roi,
                          distance2bbox, roi2bbox)
 
 from .rtransforms import (rbbox2result, rbbox2roi, CV_L_Rad2LT_RB_TORCH, CV_L_Rad2LE_DEF_TORCH, rbbox_mapping_back,
-                          poly2obb_np, norm_angle, obb2poly_np, obb2poly, enclosing_box, poly2obb, distance2rbbox)
+                          poly2obb_np, norm_angle, obb2poly_np, obb2poly, enclosing_box, poly2obb, distance2rbbox,
+                          gt2gaussian, gaussian2bbox)
+
+from .utils import GaussianMixture
 
 __all__ = [
     'bbox_overlaps', 'BboxOverlaps2D', 'BaseAssigner', 'MaxIoUAssigner',
@@ -31,6 +34,9 @@ __all__ = [
     'DeltaXYWHBThetaBoxCoder', 'rbbox2result', 'rbbox2roi', 'CV_L_Rad2LT_RB_TORCH',
     'rbbox_mapping_back', 'CV_L_Rad2LE_DEF_TORCH',
     'poly2obb_np', 'norm_angle', 'obb2poly_np', 'obb2poly',
-    'enclosing_box', 'poly2obb', 'distance2rbbox'
+    'enclosing_box', 'poly2obb', 'distance2rbbox',
+
+    'GaussianMixture',
+    'gt2gaussian', 'gaussian2bbox'
 
 ]
