@@ -44,6 +44,8 @@ from .rtransformer_head import RTransformerHead
 from .orientedreppoints_head import OrientedReppointsHead
 from .grephead import GRepHead
 from .rretina_head_kfiou import RRetinaHeadKFIoU
+from .cfa_head import CFAHead
+
 
 __all__ = [
     'AnchorFreeHead', 'AnchorHead', 'GuidedAnchorHead', 'FeatureAdaption',
@@ -67,5 +69,6 @@ __all__ = [
     'RTransformerHead',
     'OrientedReppointsHead',
     'GRepHead',
-    'RRetinaHeadKFIoU'
+    'RRetinaHeadKFIoU',
+    'CFAHead'
 ]

@@ -37,7 +37,7 @@ Supported methods（rotate）:
 - [x] GWD
 - [x] KLD
 - [x] r3det
-- [x] rreppoints(vanilla, OrientedReppoints)
+- [x] rreppoints(vanilla, OrientedReppoints, cfa)
 - [x] RFCOS
 - [x] RDETR(not converge)
 - [x] GRep(vanilla)
