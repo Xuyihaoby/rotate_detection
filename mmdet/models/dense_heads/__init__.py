@@ -45,6 +45,7 @@ from .orientedreppoints_head import OrientedReppointsHead
 from .grephead import GRepHead
 from .rretina_head_kfiou import RRetinaHeadKFIoU
 from .cfa_head import CFAHead
+from .cfa_head_dw import CFAHeaddw
 
 
 __all__ = [
