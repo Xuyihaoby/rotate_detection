@@ -194,6 +194,7 @@ class RRetinaHeadATSS(AnchorHead):
     def _get_targets_single(self,
                             flat_anchors,
                             valid_flags,
+                            num_level_anchors,
                             gt_bboxes,
                             gt_bboxes_ignore,
                             gt_labels,
@@ -208,8 +209,11 @@ class RRetinaHeadATSS(AnchorHead):
             return (None,) * 7
         # assign gt and sample anchors
         anchors = flat_anchors[inside_flags, :]
+
+        num_level_anchors_inside = self.get_num_level_anchors_inside(
+            num_level_anchors, inside_flags)
         assign_result = self.assigner.assign(
-            anchors, gt_bboxes, gt_bboxes_ignore,
+            anchors, num_level_anchors_inside, gt_bboxes, gt_bboxes_ignore,
             None if self.sampling else gt_labels)
         sampling_result = self.sampler.sample(assign_result, anchors,
                                               gt_bboxes)
@@ -278,6 +282,8 @@ class RRetinaHeadATSS(AnchorHead):
         # anchor number of multi levels
         # e.t.c [147456, 36864, 9216, 2304, 576]
         num_level_anchors = [anchors.size(0) for anchors in anchor_list[0]]
+        num_level_anchors_list = [num_level_anchors] * num_imgs
+
         # concat all level anchors to a single tensor
         concat_anchor_list = []
         concat_valid_flag_list = []
@@ -297,6 +303,7 @@ class RRetinaHeadATSS(AnchorHead):
             self._get_targets_single,
             concat_anchor_list,
             concat_valid_flag_list,
+            num_level_anchors_list,
             gt_bboxes_list,
             gt_bboxes_ignore_list,
             gt_labels_list,
@@ -376,7 +383,7 @@ class RRetinaHeadATSS(AnchorHead):
             mlvl_scores.append(scores)
         mlvl_bboxes = torch.cat(mlvl_bboxes)
         if rescale:
-            mlvl_bboxes[:, :5] /= mlvl_bboxes.new_tensor(scale_factor)
+            mlvl_bboxes[:, :4] /= mlvl_bboxes.new_tensor(scale_factor)
         mlvl_scores = torch.cat(mlvl_scores)
         if self.use_sigmoid_cls:
             padding = mlvl_scores.new_zeros(mlvl_scores.shape[0], 1)
@@ -389,4 +396,11 @@ class RRetinaHeadATSS(AnchorHead):
             return det_bboxes, det_labels
         else:
             return mlvl_bboxes, mlvl_scores
+
+    def get_num_level_anchors_inside(self, num_level_anchors, inside_flags):
+        split_inside_flags = torch.split(inside_flags, num_level_anchors)
+        num_level_anchors_inside = [
+            int(flags.sum()) for flags in split_inside_flags
+        ]
+        return num_level_anchors_inside
 
