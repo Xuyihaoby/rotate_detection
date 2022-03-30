@@ -5,6 +5,8 @@ from ..iou_calculators import build_iou_calculator
 from .assign_result import AssignResult
 from .base_assigner import BaseAssigner
 
+from mmdet.core.bbox.rtransforms import obb2poly
+
 
 @BBOX_ASSIGNERS.register_module()
 class RATSSAssigner(BaseAssigner):
@@ -76,13 +78,14 @@ class RATSSAssigner(BaseAssigner):
                 gt_bboxes_ignore = gt_bboxes_ignore.cpu()
             if gt_labels is not None:
                 gt_labels = gt_labels.cpu()
-
         INF = 100000000
-        bboxes = bboxes[:, :4]
+        if bboxes.shape[-1] != 18:
+            bboxes = bboxes[:, :5]
         num_gt, num_bboxes = gt_bboxes.size(0), bboxes.size(0)
 
         # compute iou between all bbox and gt
-        overlaps = self.iou_calculator(bboxes, gt_bboxes)
+        overlaps = self.iou_calculator(gt_bboxes, bboxes)
+        overlaps = overlaps.transpose(0, 1)
 
         # assign 0 by default
         assigned_gt_inds = overlaps.new_full((num_bboxes, ),
@@ -109,15 +112,29 @@ class RATSSAssigner(BaseAssigner):
             return AssignResult(
                 num_gt, assigned_gt_inds, max_overlaps, labels=assigned_labels)
 
+        from mmdet.core.bbox.rtransforms import poly2obb
+
+        if gt_bboxes.shape[-1] != 5:
+            rbbox = poly2obb(gt_bboxes)
+        else:
+            rbbox = gt_bboxes
+
         # compute center distance between all bbox and gt
-        gt_cx = (gt_bboxes[:, 0] + gt_bboxes[:, 2]) / 2.0
-        gt_cy = (gt_bboxes[:, 1] + gt_bboxes[:, 3]) / 2.0
+        gt_cx = rbbox[:, 0]
+        gt_cy = rbbox[:, 1]
         gt_points = torch.stack((gt_cx, gt_cy), dim=1)
 
-        bboxes_cx = (bboxes[:, 0] + bboxes[:, 2]) / 2.0
-        bboxes_cy = (bboxes[:, 1] + bboxes[:, 3]) / 2.0
+        if gt_bboxes.shape[-1] != 5:
+            bboxes_cx_sum , bboxes_cy_sum = 0, 0
+            for idx in range(bboxes.shape[-1]//2):
+                bboxes_cx_sum += bboxes[:, 2 * idx]
+                bboxes_cy_sum += bboxes[:, 2 * idx + 1]
+            bboxes_cx = bboxes_cx_sum / (bboxes.shape[-1]//2)
+            bboxes_cy = bboxes_cy_sum / (bboxes.shape[-1]//2)
+        else:
+            bboxes_cx = bboxes[:, 0]
+            bboxes_cy = bboxes[:, 1]
         bboxes_points = torch.stack((bboxes_cx, bboxes_cy), dim=1)
-
         distances = (bboxes_points[:, None, :] -
                      gt_points[None, :, :]).pow(2).sum(-1).sqrt()
         # distances.shape = [num_bboxes, 7]
@@ -155,6 +172,7 @@ class RATSSAssigner(BaseAssigner):
         overlaps_thr_per_gt = overlaps_mean_per_gt + overlaps_std_per_gt
 
         is_pos = candidate_overlaps >= overlaps_thr_per_gt[None, :]
+        # shape (k*num_lvl, numgt)
 
         # limit the positive sample's center in gt
         for gt_idx in range(num_gt):
@@ -167,10 +185,35 @@ class RATSSAssigner(BaseAssigner):
 
         # calculate the left, top, right, bottom distance between positive
         # bbox center and gt side
-        l_ = ep_bboxes_cx[candidate_idxs].view(-1, num_gt) - gt_bboxes[:, 0]
-        t_ = ep_bboxes_cy[candidate_idxs].view(-1, num_gt) - gt_bboxes[:, 1]
-        r_ = gt_bboxes[:, 2] - ep_bboxes_cx[candidate_idxs].view(-1, num_gt)
-        b_ = gt_bboxes[:, 3] - ep_bboxes_cy[candidate_idxs].view(-1, num_gt)
+        gt_ctr, gt_wh, gt_thetas = torch.split(rbbox, [2, 2, 1], dim=1)
+        Cos, Sin = torch.cos(gt_thetas), torch.sin(gt_thetas)
+        Matrix = torch.cat([Cos, Sin, -Sin, Cos], dim=-1).reshape(-1, 2, 2)
+
+        if gt_bboxes.shape[-1] == 5:
+            gt_poly = obb2poly(gt_bboxes)
+            gt_poly = gt_poly[None]
+        else:
+            gt_poly = gt_bboxes
+        candidate_pts = torch.stack((ep_bboxes_cx[candidate_idxs].view(-1, num_gt),
+                                     ep_bboxes_cy[candidate_idxs].view(-1, num_gt)),
+                                    dim=-1).repeat(1,1,4)
+        gt_bboxes_offset = (gt_poly - candidate_pts).reshape(candidate_pts.shape[0],
+                                                               candidate_pts.shape[1],
+                                                               4, 2).transpose(-1, -2)
+        corr_gt_bboxes = Matrix @ gt_bboxes_offset + candidate_pts.reshape(-1, num_gt, 4, 2).transpose(-1, -2)
+
+        xmin = corr_gt_bboxes[:, :, 0, :].min(dim=2, keepdim=True)[0]
+        xmax = corr_gt_bboxes[:, :, 0, :].max(dim=2, keepdim=True)[0]
+        ymin = corr_gt_bboxes[:, :, 1, :].min(dim=2, keepdim=True)[0]
+        ymax = corr_gt_bboxes[:, :, 1, :].max(dim=2, keepdim=True)[0]
+
+        modified_gt_bboxes = torch.cat((xmin, ymin, xmax, ymax), dim=2)
+
+        l_ = ep_bboxes_cx[candidate_idxs].view(-1, num_gt) - modified_gt_bboxes[:, :, 0]
+        # l_ = ep_bboxes_cx[candidate_idxs].view(-1, num_gt) - gt_bboxes[:, 0]
+        t_ = ep_bboxes_cy[candidate_idxs].view(-1, num_gt) - modified_gt_bboxes[:, :, 1]
+        r_ = modified_gt_bboxes[:, :, 2] - ep_bboxes_cx[candidate_idxs].view(-1, num_gt)
+        b_ = modified_gt_bboxes[:, :, 3] - ep_bboxes_cy[candidate_idxs].view(-1, num_gt)
         is_in_gts = torch.stack([l_, t_, r_, b_], dim=1).min(dim=1)[0] > 0.01
         is_pos = is_pos & is_in_gts
 
