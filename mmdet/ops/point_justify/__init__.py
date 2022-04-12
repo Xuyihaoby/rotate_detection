@@ -1,3 +1,3 @@
-from .point_justify import pointsJf
+from .point_justify import pointsJf, pointsJfAlign
 
-__all__ = ['pointsJf']
+__all__ = ['pointsJf', 'pointsJfAlign']

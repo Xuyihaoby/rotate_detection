@@ -19,7 +19,7 @@ from .box_iou_rotated_diff import box_iou_rotated_differentiable
 from .iou import convex_giou, convex_iou, convex_overlaps
 from .minarearect import minaerarect
 from .chamfer_2d import Chamfer2D, ChamferDistance2D
-from .point_justify import pointsJf
+from .point_justify import pointsJf, pointsJfAlign
 
 from .batch_svd.svd import svd
 # yapf: enable
@@ -46,5 +46,6 @@ __all__ = [
     'ChamferDistance2D',
     'Chamfer2D',
     'pointsJf',
+    'pointsJfAlign',
     'svd'
 ]
