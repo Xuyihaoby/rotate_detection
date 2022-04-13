@@ -616,8 +616,8 @@ class S2ANetHead(nn.Module):
 
         # concat all level anchors and flags to a single tensor
         concat_anchor_list = []
-        for i in range(len(anchor_list)):
-            concat_anchor_list.append(torch.cat(anchor_list[i]))
+        for i in range(len(refine_anchors_list)):
+            concat_anchor_list.append(torch.cat(refine_anchors_list[i]))
         all_anchor_list = images_to_levels(concat_anchor_list,
                                            num_level_anchors)
         losses_odm_cls, losses_odm_bbox = multi_apply(
