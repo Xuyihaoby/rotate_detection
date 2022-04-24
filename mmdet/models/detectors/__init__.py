@@ -26,6 +26,10 @@ from .vfnet import VFNet
 from .yolact import YOLACT
 from .yolo import YOLOV3
 
+# knowledge distillation
+from .kd_one_stage import KnowledgeDistillationSingleStageDetector
+from .kd_rotate_one_stage import KnowledgeDistillationRotateSingleStageDetector
+
 from .rfaster_rcnn import RFasterRCNN
 from .feature_attention_net_all_lvl_single_mask_dota import FeatureAttenNetAllLvlSingleMaskDOTA
 from .oriented_rcnn import OrientedRCNN  # 中途搁置，用于进行任意方向锚框
