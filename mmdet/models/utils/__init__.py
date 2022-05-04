@@ -6,6 +6,7 @@ from .res_layer import ResLayer
 from .transformer import (FFN, MultiheadAttention, Transformer,
                           TransformerDecoder, TransformerDecoderLayer,
                           TransformerEncoder, TransformerEncoderLayer)
+from .adaptive_mixing_operator import AdaptiveMixing
 
 from .myutils import (Reduce_Sum, one_hot, get_base_name, transQuadrangle2Rotate,
                       transXyxyxyxy2Xyxy, transXyxy2Xyxyxyxy, transRotate2Quadrangle, transXyCtrWh2Xyxy)
@@ -15,7 +16,8 @@ __all__ = [
     'FFN', 'TransformerEncoderLayer', 'TransformerEncoder',
     'TransformerDecoderLayer', 'TransformerDecoder', 'Transformer',
     'build_transformer', 'build_positional_encoding', 'SinePositionalEncoding',
-    'LearnedPositionalEncoding', 'Reduce_Sum', 'one_hot', 'get_base_name', 'transQuadrangle2Rotate',
+    'LearnedPositionalEncoding', 'AdaptiveMixing',
+    'Reduce_Sum', 'one_hot', 'get_base_name', 'transQuadrangle2Rotate',
     'transXyxyxyxy2Xyxy', 'transXyxy2Xyxyxyxy',
     'transRotate2Quadrangle', 'transXyCtrWh2Xyxy'
 

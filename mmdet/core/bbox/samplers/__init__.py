@@ -7,6 +7,7 @@ from .pseudo_sampler import PseudoSampler
 from .random_sampler import RandomSampler
 from .sampling_result import SamplingResult
 from .score_hlr_sampler import ScoreHLRSampler
+from .sampling_3d_operator import sampling_3d
 
 from .rrandom_sampler import RRandomSampler
 

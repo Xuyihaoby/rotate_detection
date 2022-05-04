@@ -25,6 +25,8 @@ from .two_stage import TwoStageDetector
 from .vfnet import VFNet
 from .yolact import YOLACT
 from .yolo import YOLOV3
+from .sparse_rcnn import SparseRCNN
+from .query_based import QueryBased
 
 # knowledge distillation
 from .kd_one_stage import KnowledgeDistillationSingleStageDetector
@@ -52,7 +54,7 @@ __all__ = [
     'FastRCNN', 'FasterRCNN', 'MaskRCNN', 'CascadeRCNN', 'HybridTaskCascade',
     'RetinaNet', 'FCOS', 'GridRCNN', 'MaskScoringRCNN', 'RepPointsDetector',
     'FOVEA', 'FSAF', 'NASFCOS', 'PointRend', 'GFL', 'CornerNet', 'PAA',
-    'YOLOV3', 'YOLACT', 'VFNet', 'DETR', 'TridentFasterRCNN',
+    'YOLOV3', 'YOLACT', 'VFNet', 'DETR', 'TridentFasterRCNN', 'SparseRCNN', 'QueryBased',
 
     'RFasterRCNN', 'RCascadeRCNN', 'OrientedCasRCNN',
     'OrientedRCNN', 'FeatureAttenNetAllLvlSingleMaskDOTA', 'RFasterRCNNSRPN',

@@ -8,6 +8,7 @@ from .nasfcos_fpn import NASFCOS_FPN
 from .pafpn import PAFPN
 from .rfp import RFP
 from .yolo_neck import YOLOV3Neck
+from .identity_fpn import ChannelMapping
 
 from .dcn_lat_fpn import DcnLatFPN
 from .orfpn import ORFPN
@@ -16,7 +17,7 @@ from .ct_resnet_neck import CTResNetNeck
 
 __all__ = [
     'FPN', 'BFP', 'ChannelMapper', 'HRFPN', 'NASFPN', 'FPN_CARAFE', 'PAFPN',
-    'NASFCOS_FPN', 'RFP', 'YOLOV3Neck',
+    'NASFCOS_FPN', 'RFP', 'YOLOV3Neck', 'ChannelMapping',
     'DcnLatFPN',
     'ORFPN', 'ReFPN',
     'CTResNetNeck'

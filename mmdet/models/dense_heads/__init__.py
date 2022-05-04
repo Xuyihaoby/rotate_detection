@@ -26,6 +26,7 @@ from .transformer_head import TransformerHead
 from .vfnet_head import VFNetHead
 from .yolact_head import YOLACTHead, YOLACTProtonet, YOLACTSegmHead
 from .yolo_head import YOLOV3Head
+from .query_generator import InitialQueryGenerator
 
 from .rrpn_head import RRPNHead
 from .rrpn_head_atss import RRPNHeadATSS
@@ -56,7 +57,7 @@ __all__ = [
     'PISARetinaHead', 'PISASSDHead', 'GFLHead', 'CornerHead', 'YOLACTHead',
     'YOLACTSegmHead', 'YOLACTProtonet', 'YOLOV3Head', 'PAAHead',
     'SABLRetinaHead', 'CentripetalHead', 'VFNetHead', 'TransformerHead',
-    'StageCascadeRPNHead', 'CascadeRPNHead',
+    'StageCascadeRPNHead', 'CascadeRPNHead', 'InitialQueryGenerator',
     'RRPNHead', 'RPNHeadSingleMaskDotDOTA', 'R2PNHead', 'RPNHeadOnlySingleMaskDot',
     'RRetinaHead',
     'RRPNHeadATSS',

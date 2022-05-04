@@ -15,6 +15,7 @@ from .roi_extractors import SingleRoIExtractor
 from .shared_heads import ResLayer
 from .standard_roi_head import StandardRoIHead
 from .trident_roi_head import TridentRoIHead
+from .adamixer_decoder import AdaMixerDecoder
 
 from .rstandard_roi_head import RStandardRoIHead
 from .HSP_roi_head import HSPRoIHead
