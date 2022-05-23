@@ -537,10 +537,10 @@ class RFCOSHead(AnchorFreeHead):
         # gt_poly_offset = gt_poly - gt_ctr.repeat(1, 4)
         gt_poly_offset = gt_poly[None].repeat(num_points, 1, 1) - points[:, None, :].repeat(1, num_gts, 4)
         Cos, Sin = torch.cos(gt_thetas), torch.sin(gt_thetas)
-        if self.version == 'v1':
-            Matrix = torch.cat([Cos, Sin, -Sin, Cos], dim=-1).reshape(-1, 2, 2)[None].repeat(num_points, 1, 1, 1)
-        else:
-            Matrix = torch.cat([Cos, -Sin, Sin, Cos], dim=-1).reshape(-1, 2, 2)[None].repeat(num_points, 1, 1, 1)
+        # if self.version == 'v1':
+        Matrix = torch.cat([Cos, Sin, -Sin, Cos], dim=-1).reshape(-1, 2, 2)[None].repeat(num_points, 1, 1, 1)
+        # else:
+        #     Matrix = torch.cat([Cos, -Sin, Sin, Cos], dim=-1).reshape(-1, 2, 2)[None].repeat(num_points, 1, 1, 1)
         modified_poly = Matrix @ gt_poly_offset.reshape(-1, num_gts, 4, 2).transpose(-1, -2) \
                         + points[:, None, :].repeat(1, num_gts, 4).reshape(-1, num_gts, 4, 2).transpose(-1, -2)
 
