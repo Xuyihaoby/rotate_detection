@@ -47,6 +47,7 @@ from .grephead import GRepHead
 from .rretina_head_kfiou import RRetinaHeadKFIoU
 from .cfa_head import CFAHead
 from .cfa_head_dw import CFAHeaddw
+from .rgfl_head import RGFLHeadVanilla
 
 
 __all__ = [
@@ -72,5 +73,6 @@ __all__ = [
     'OrientedReppointsHead',
     'GRepHead',
     'RRetinaHeadKFIoU',
-    'CFAHead'
+    'CFAHead',
+    'RGFLHeadVanilla'
 ]

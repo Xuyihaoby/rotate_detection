@@ -42,6 +42,7 @@ Supported methods（rotate）:
 - [x] RDETR(not converge)
 - [x] GRep(vanilla)
 - [x] KFIoU
+- [x] RGFL(vanilla)
 - [ ] centernet
 
 
