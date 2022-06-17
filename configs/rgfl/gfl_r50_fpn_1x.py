@@ -158,3 +158,17 @@ work_dir = '/data/Aerial/checkpoints/rgfl/vanilla'
 # AP50: 0.7202526755309105
 # AP75: 0.4269751226629144
 # mAP: 0.4132831038814989
+
+# train+val
+# This is your evaluation result for task 1 (VOC metrics):
+#
+# mAP: 0.7393987056938089
+# ap of each class: plane:0.8798230880730392, baseball-diamond:0.7747795681562808, bridge:0.5093275604839567,
+# ground-track-field:0.68756471158486, small-vehicle:0.8028635613875634, large-vehicle:0.7929660004213073,
+# ship:0.8747030132932166, tennis-court:0.9084289723500674, basketball-court:0.8320706842901622,
+# storage-tank:0.8518481686214036, soccer-ball-field:0.6090015845122715, roundabout:0.6405804636974805,
+# harbor:0.6555631120876498, swimming-pool:0.6974283067515513, helicopter:0.5740317896963261
+# COCO style result:
+# AP50: 0.7393987056938089
+# AP75: 0.4331032431999532
+# mAP: 0.42924037096056455
