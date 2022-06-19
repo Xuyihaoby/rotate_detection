@@ -43,6 +43,7 @@ Supported methods（rotate）:
 - [x] GRep(vanilla)
 - [x] KFIoU
 - [x] RGFL(vanilla)
+- [x] radamixer(vanilla)
 - [ ] centernet
 
 
