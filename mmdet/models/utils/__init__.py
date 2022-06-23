@@ -10,6 +10,8 @@ from .adaptive_mixing_operator import AdaptiveMixing
 
 from .myutils import (Reduce_Sum, one_hot, get_base_name, transQuadrangle2Rotate,
                       transXyxyxyxy2Xyxy, transXyxy2Xyxyxyxy, transRotate2Quadrangle, transXyCtrWh2Xyxy)
+from .make_divisible import make_divisible
+from .inverted_residual import InvertedResidual, InvertedResidualV3
 
 __all__ = [
     'ResLayer', 'gaussian_radius', 'gen_gaussian_target', 'MultiheadAttention',
@@ -19,6 +21,7 @@ __all__ = [
     'LearnedPositionalEncoding', 'AdaptiveMixing',
     'Reduce_Sum', 'one_hot', 'get_base_name', 'transQuadrangle2Rotate',
     'transXyxyxyxy2Xyxy', 'transXyxy2Xyxyxyxy',
-    'transRotate2Quadrangle', 'transXyCtrWh2Xyxy'
+    'transRotate2Quadrangle', 'transXyCtrWh2Xyxy', 'make_divisible',
+    'InvertedResidualV3', 'InvertedResidual'
 
 ]

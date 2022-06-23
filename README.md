@@ -21,6 +21,7 @@ Supported backbones:
 - [x] ResNeSt
 - [x] swin
 - [x] reresnet
+- [x] Mobile_net_v2
 
 Supported methods（rotate）:
 
