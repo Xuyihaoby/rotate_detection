@@ -13,6 +13,7 @@ from .ratss_assigner import RATSSAssigner
 from .gwd_assigner import gwd_loss, MaxIoUGWDAssigner
 from .rpoint_assigner import RPointAssigner
 from .atss_kld_assigner import ATSSKldAssigner
+from .ota import OTAAssigner
 
 __all__ = [
     'BaseAssigner', 'MaxIoUAssigner', 'ApproxMaxIoUAssigner', 'AssignResult',
