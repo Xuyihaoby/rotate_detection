@@ -12,6 +12,7 @@ from .oriented_bbox_head import OrientedBBoxHead, Shared2FCOBBoxHead, Shared4Con
 from .rdouble_bbox_head import RDoubleConvFCBBoxHead, RDoubleOrient2BBoxHead
 from .adamixer_decoder_stage import AdaMixerDecoderStage
 from .rvadamixer_decoder_stage import RVAdaMixerDecoderStage
+from .rdii_head import RDIIHead
 
 __all__ = [
     'BBoxHead', 'ConvFCBBoxHead', 'Shared2FCBBoxHead',
@@ -21,5 +22,5 @@ __all__ = [
     'MultiLvlsWithOriginalImageSingleMaskShared4Conv1FCBBoxHead',
     'OrientedBBoxHead', 'Shared2FCOBBoxHead', 'Shared4Conv1FCOBBoxHead', 'Oriented2BBoxHead',
     'RDoubleConvFCBBoxHead', 'RDoubleOrient2BBoxHead', 'AdaMixerDecoderStage',
-    'RVAdaMixerDecoderStage'
+    'RVAdaMixerDecoderStage', 'RDIIHead'
 ]

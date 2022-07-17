@@ -5,7 +5,8 @@ from .positional_encoding import (LearnedPositionalEncoding,
 from .res_layer import ResLayer
 from .transformer import (FFN, MultiheadAttention, Transformer,
                           TransformerDecoder, TransformerDecoderLayer,
-                          TransformerEncoder, TransformerEncoderLayer)
+                          TransformerEncoder, TransformerEncoderLayer,
+                          DynamicConv)
 from .adaptive_mixing_operator import AdaptiveMixing
 
 from .myutils import (Reduce_Sum, one_hot, get_base_name, transQuadrangle2Rotate,
@@ -22,6 +23,7 @@ __all__ = [
     'Reduce_Sum', 'one_hot', 'get_base_name', 'transQuadrangle2Rotate',
     'transXyxyxyxy2Xyxy', 'transXyxy2Xyxyxyxy',
     'transRotate2Quadrangle', 'transXyCtrWh2Xyxy', 'make_divisible',
-    'InvertedResidualV3', 'InvertedResidual'
+    'InvertedResidualV3', 'InvertedResidual',
+    'DynamicConv'
 
 ]

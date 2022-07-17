@@ -50,6 +50,7 @@ from .cfa_head_dw import CFAHeaddw
 from .rgfl_head import RGFLHeadVanilla
 from .rquery_generator import RInitialQueryGenerator
 from .rretina_head_ota import RRetinaHeadOTA
+from .rembedding_rpn_head import REmbeddingRPNHead
 
 
 __all__ = [
@@ -78,5 +79,6 @@ __all__ = [
     'CFAHead',
     'RGFLHeadVanilla',
     'RInitialQueryGenerator',
-    'RRetinaHeadOTA'
+    'RRetinaHeadOTA',
+    'REmbeddingRPNHead'
 ]

@@ -48,6 +48,7 @@ from .rfcos import RFCOS
 from .rgfl import RGFL
 from .centernet import CenterNet
 from .rdetr import RDETR
+from .rsparse_rcnn import RSparseRCNN
 
 
 __all__ = [
@@ -67,5 +68,6 @@ __all__ = [
     'RReppointsDetector',
     'RFCOS',
     'CenterNet',
-    'RDETR', 'RGFL'
+    'RDETR', 'RGFL',
+    'RSparseRCNN'
 ]

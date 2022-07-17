@@ -45,6 +45,7 @@ Supported methods（rotate）:
 - [x] KFIoU
 - [x] RGFL(vanilla)
 - [x] radamixer(vanilla)
+- [x] rsparse_rcnn(vanilla)
 - [ ] centernet
 
 

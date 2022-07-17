@@ -26,6 +26,7 @@ from .oriented_roi_head import OrientedRoIHead
 from .roi_trans_head import RoItranshead
 from .rdouble_roi_head import RDoubleHeadRoIHead, DoubleOrientedRoIHead
 from .rvadamixer_decoder import RVAdaMixerDecoder
+from .rsparse_roi_head import RSparseRoIHead
 
 
 __all__ = [
@@ -41,6 +42,7 @@ __all__ = [
     'OrientedRoIHead',
     'RoItranshead',
     'RDoubleHeadRoIHead', 'DoubleOrientedRoIHead',
-    'RVAdaMixerDecoder'
+    'RVAdaMixerDecoder',
+    'RSparseRoIHead'
 
 ]
