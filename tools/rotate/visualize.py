@@ -15,7 +15,7 @@ def visualGT(cfg, num, dstpath, sp=None):
     img_path = cfg.data.train.img_prefix
     if cfg.data.train.type in ['SSDD']:
         img_path = osp.join(img_path, 'JPEGImages')
-    if sp == None:
+    if sp == 'None':
         imglist = glob.glob(img_path + '/*')
         selectnum = min(num, len(imglist))
         _tovis = random.sample(imglist, selectnum)
