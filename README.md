@@ -22,6 +22,7 @@ Supported backbones:
 - [x] swin
 - [x] reresnet
 - [x] Mobile_net_v2
+- [x] RepVGG(degrade accuracy)
 
 Supported methods（rotate）:
 

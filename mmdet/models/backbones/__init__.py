@@ -13,11 +13,13 @@ from .trident_resnet import TridentResNet
 from .swin import SwinTransformer
 from .re_resnet import ReResNet
 from .mobilenet_v2 import MobileNetV2
+from .repvgg import RepVGG
 
 __all__ = [
     'RegNet', 'ResNet', 'ResNetV1d', 'ResNeXt', 'SSDVGG', 'HRNet', 'Res2Net',
     'HourglassNet', 'DetectoRS_ResNet', 'DetectoRS_ResNeXt', 'Darknet',
     'ResNeSt', 'TridentResNet',
     'SwinTransformer',
-    'ReResNet', 'MobileNetV2'
+    'ReResNet', 'MobileNetV2',
+    'RepVGG'
 ]
