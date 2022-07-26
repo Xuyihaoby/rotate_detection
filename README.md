@@ -23,6 +23,7 @@ Supported backbones:
 - [x] reresnet
 - [x] Mobile_net_v2
 - [x] RepVGG(degrade accuracy)
+- [x] RepLK(note cuda version speed is slower than ori version in downstream, so we use orin conv version and no reparam)
 
 Supported methods（rotate）:
 

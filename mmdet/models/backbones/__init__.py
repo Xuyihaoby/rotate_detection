@@ -14,6 +14,7 @@ from .swin import SwinTransformer
 from .re_resnet import ReResNet
 from .mobilenet_v2 import MobileNetV2
 from .repvgg import RepVGG
+from .replknet import RepLKNet
 
 __all__ = [
     'RegNet', 'ResNet', 'ResNetV1d', 'ResNeXt', 'SSDVGG', 'HRNet', 'Res2Net',
@@ -21,5 +22,5 @@ __all__ = [
     'ResNeSt', 'TridentResNet',
     'SwinTransformer',
     'ReResNet', 'MobileNetV2',
-    'RepVGG'
+    'RepVGG','RepLKNet'
 ]
