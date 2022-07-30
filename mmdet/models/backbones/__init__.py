@@ -15,6 +15,7 @@ from .re_resnet import ReResNet
 from .mobilenet_v2 import MobileNetV2
 from .repvgg import RepVGG
 from .replknet import RepLKNet
+from .convnext import ConvNeXt
 
 __all__ = [
     'RegNet', 'ResNet', 'ResNetV1d', 'ResNeXt', 'SSDVGG', 'HRNet', 'Res2Net',
@@ -22,5 +23,5 @@ __all__ = [
     'ResNeSt', 'TridentResNet',
     'SwinTransformer',
     'ReResNet', 'MobileNetV2',
-    'RepVGG','RepLKNet'
+    'RepVGG','RepLKNet', 'ConvNeXt'
 ]
