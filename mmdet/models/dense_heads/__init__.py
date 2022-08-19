@@ -51,6 +51,7 @@ from .rgfl_head import RGFLHeadVanilla
 from .rquery_generator import RInitialQueryGenerator
 from .rretina_head_ota import RRetinaHeadOTA
 from .rembedding_rpn_head import REmbeddingRPNHead
+from .rretina_head_uncertain import RRetinaHeadUncertain, RRetinaHeadUncertainSep
 
 
 __all__ = [
