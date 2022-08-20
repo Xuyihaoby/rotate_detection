@@ -52,6 +52,7 @@ from .rquery_generator import RInitialQueryGenerator
 from .rretina_head_ota import RRetinaHeadOTA
 from .rembedding_rpn_head import REmbeddingRPNHead
 from .rretina_head_uncertain import RRetinaHeadUncertain, RRetinaHeadUncertainSep
+from .rretina_head_oner import RRetinaHeadOneR
 
 
 __all__ = [
@@ -81,5 +82,7 @@ __all__ = [
     'RGFLHeadVanilla',
     'RInitialQueryGenerator',
     'RRetinaHeadOTA',
-    'REmbeddingRPNHead'
+    'REmbeddingRPNHead',
+    'RRetinaHeadUncertainSep','RRetinaHeadUncertain',
+    'RRetinaHeadOneR'
 ]
