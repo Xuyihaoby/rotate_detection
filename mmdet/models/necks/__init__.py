@@ -14,11 +14,12 @@ from .dcn_lat_fpn import DcnLatFPN
 from .orfpn import ORFPN
 from .re_fpn import ReFPN
 from .ct_resnet_neck import CTResNetNeck
+from .gconv_fpn import GNFPN
 
 __all__ = [
     'FPN', 'BFP', 'ChannelMapper', 'HRFPN', 'NASFPN', 'FPN_CARAFE', 'PAFPN',
     'NASFCOS_FPN', 'RFP', 'YOLOV3Neck', 'ChannelMapping',
     'DcnLatFPN',
     'ORFPN', 'ReFPN',
-    'CTResNetNeck'
+    'CTResNetNeck', 'GNFPN'
 ]
