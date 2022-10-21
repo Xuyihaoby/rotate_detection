@@ -25,11 +25,12 @@ class RResize(Resize):
                  multiscale_mode='range',
                  ratio_range=None,
                  bbox_clip_border=True,
-                 override=False):
+                 override=False,
+                 keep_ratio=False):
         super(RResize, self).__init__(img_scale=img_scale,
                                       multiscale_mode=multiscale_mode,
                                       ratio_range=ratio_range,
-                                      keep_ratio=False,
+                                      keep_ratio=keep_ratio,
                                       bbox_clip_border=bbox_clip_border,
                                       override=override)
 
