@@ -6,3 +6,4 @@ tqdm
 shapely
 timm
 e2cnn
+einops
