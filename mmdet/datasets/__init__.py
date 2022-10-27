@@ -18,6 +18,7 @@ from .dotav2 import DOTADatasetV2
 from .rsai import RSAI
 from .ssdd import SSDD
 from .HRSC2016 import HRSC
+from .DIOR import DIOR
 
 __all__ = [
     'CustomDataset', 'XMLDataset', 'CocoDataset', 'DeepFashionDataset',
@@ -28,5 +29,5 @@ __all__ = [
     'build_dataset', 'replace_ImageToTensor', 'get_loading_pipeline',
     'KittiTinyDataset', 'MultiImageMixDataset',
     'DOTADatasetV1', 'DOTADatasetV2', 'RSAI', 'SSDD',
-    'HRSC'
+    'HRSC', 'DIOR'
 ]
