@@ -107,7 +107,7 @@ if __name__ == '__main__':
     cfg = Config.fromfile(args.config)
 
     os.makedirs(args.dst, exist_ok=True)
-    checkpoint_file = osp.join(cfg.work_dir, 'epoch_12.pth')
+    checkpoint_file = osp.join(cfg.work_dir, 'latest.pth')
 
     if args.mode == 'GT':
         visualGT(cfg, args.num, args.dst, args.img)
