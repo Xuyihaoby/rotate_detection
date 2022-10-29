@@ -5,6 +5,7 @@ import math
 from mmcv.image import imread, imwrite
 from mmcv.visualization.color import color_val
 
+from .color import color_dict
 
 def imshow(img, win_name='', wait_time=0):
     """Show an image.
@@ -95,13 +96,13 @@ def imshow_det_rbboxes(img,
             except:
                 import pdb
                 pdb.set_trace()
-        cv2.drawContours(img, [ps], -1, bbox_color_in, thickness=thickness)
+        cv2.drawContours(img, [ps], -1, color_dict[str(len(class_names))][label], thickness=thickness)
         label_text = class_names[
             label] if class_names is not None else 'cls {}'.format(label)
         if len(bbox) > 5:
             label_text += '|{:.02f}'.format(bbox[-1])
         cv2.putText(img, label_text, (int(p1[0]), int(p1[1])),
-                    cv2.FONT_HERSHEY_COMPLEX, font_scale, text_color_in)
+                    cv2.FONT_HERSHEY_COMPLEX, font_scale, color_dict[str(len(class_names))][label])
     if show:
         imshow(img, win_name, wait_time)
     if out_file is not None:
