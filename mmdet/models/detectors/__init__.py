@@ -46,6 +46,7 @@ from .rsingle_stage import RSingleStageDetector
 from .RRepPointDetector import RReppointsDetector
 from .rfcos import RFCOS
 from .rgfl import RGFL
+from .rpaa import RPAA
 from .centernet import CenterNet
 from .rdetr import RDETR
 from .rsparse_rcnn import RSparseRCNN
@@ -69,5 +70,5 @@ __all__ = [
     'RFCOS',
     'CenterNet',
     'RDETR', 'RGFL',
-    'RSparseRCNN'
+    'RSparseRCNN', 'RPAA'
 ]

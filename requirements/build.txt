@@ -7,3 +7,4 @@ shapely
 timm
 e2cnn
 einops
+sklearn
