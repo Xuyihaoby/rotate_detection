@@ -53,7 +53,7 @@ from .rretina_head_ota import RRetinaHeadOTA
 from .rembedding_rpn_head import REmbeddingRPNHead
 from .rretina_head_uncertain import RRetinaHeadUncertain, RRetinaHeadUncertainSep
 from .rretina_head_oner import RRetinaHeadOneR
-from .rpaa_head import RPAAHeadVanilla
+from .rpaa_head import RPAAHeadVanilla, RPAAHead
 
 
 __all__ = [
@@ -85,5 +85,5 @@ __all__ = [
     'RRetinaHeadOTA',
     'REmbeddingRPNHead',
     'RRetinaHeadUncertainSep','RRetinaHeadUncertain',
-    'RRetinaHeadOneR', 'RPAAHeadVanilla'
+    'RRetinaHeadOneR', 'RPAAHeadVanilla', 'RPAAHead'
 ]

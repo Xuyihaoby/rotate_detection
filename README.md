@@ -50,6 +50,7 @@ Supported methods（rotate）:
 - [x] RGFL(vanilla)
 - [x] radamixer(vanilla)
 - [x] rsparse_rcnn(vanilla)
+- [x] rpaa(vanilla,atss)
 - [ ] centernet
 
 

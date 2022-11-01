@@ -1008,9 +1008,9 @@ class RPAAHead(RRetinaHeadATSS):
         # mlvl_iou_preds = []
         for cls_score, bbox_pred, \
             anchors in zip(
-                cls_scores, bbox_preds,
-                # iou_preds,
-                mlvl_anchors):
+            cls_scores, bbox_preds,
+            # iou_preds,
+            mlvl_anchors):
             assert cls_score.size()[-2:] == bbox_pred.size()[-2:]
 
             scores = cls_score.permute(1, 2, 0).reshape(
@@ -1035,7 +1035,7 @@ class RPAAHead(RRetinaHeadATSS):
 
         mlvl_bboxes = torch.cat(mlvl_bboxes)
         if rescale:
-            mlvl_bboxes /= mlvl_bboxes.new_tensor(scale_factor)
+            mlvl_bboxes[:, :-1] /= mlvl_bboxes.new_tensor(scale_factor)
         mlvl_scores = torch.cat(mlvl_scores)
         # Add a dummy background class to the backend when using sigmoid
         # remind that we set FG labels to [0, num_class-1] since mmdet v2.0
@@ -1044,7 +1044,7 @@ class RPAAHead(RRetinaHeadATSS):
         mlvl_scores = torch.cat([mlvl_scores, padding], dim=1)
         # mlvl_iou_preds = torch.cat(mlvl_iou_preds)
         # mlvl_nms_scores = (mlvl_scores * mlvl_iou_preds[:, None]).sqrt()
-        mlvl_nms_scores = (mlvl_scores )
+        mlvl_nms_scores = (mlvl_scores)
         det_bboxes, det_labels = multiclass_nms_r(
             mlvl_bboxes,
             mlvl_nms_scores,
@@ -1105,7 +1105,7 @@ class RPAAHead(RRetinaHeadATSS):
             det_cls_mask = det_labels == cls
             det_cls_bboxes = det_bboxes[det_cls_mask].view(
                 -1, det_bboxes.size(-1))
-            det_candidate_ious = self.bbox_overlaps(det_cls_bboxes[:, :5],
+            det_candidate_ious = self.bbox_overlap(det_cls_bboxes[:, :5],
                                                candidate_cls_bboxes)
             for det_ind in range(len(det_cls_bboxes)):
                 single_det_ious = det_candidate_ious[det_ind]
