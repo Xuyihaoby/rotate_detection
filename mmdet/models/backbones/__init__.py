@@ -18,6 +18,7 @@ from .replknet import RepLKNet
 from .convnext import ConvNeXt
 from .slak import SLaK
 from .hornet import HorNet
+from .focalnet import FocalNet
 
 __all__ = [
     'RegNet', 'ResNet', 'ResNetV1d', 'ResNeXt', 'SSDVGG', 'HRNet', 'Res2Net',
@@ -26,5 +27,5 @@ __all__ = [
     'SwinTransformer',
     'ReResNet', 'MobileNetV2',
     'RepVGG','RepLKNet', 'ConvNeXt',
-    'SLaK', 'HorNet'
+    'SLaK', 'HorNet', 'FocalNet'
 ]

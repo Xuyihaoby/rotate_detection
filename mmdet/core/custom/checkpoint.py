@@ -355,6 +355,128 @@ def load_checkpoint(model,
     load_state_dict(model, state_dict, strict, logger)
     return checkpoint
 
+def load_focalnet(model,
+                    filename,
+                    map_location='cpu',
+                    strict=False,
+                    logger=None):
+    """Load checkpoint from a file or URI.
+    Args:
+        model (Module): Module to load checkpoint.
+        filename (str): Accept local filepath, URL, ``torchvision://xxx``,
+            ``open-mmlab://xxx``. Please refer to ``docs/model_zoo.md`` for
+            details.
+        map_location (str): Same as :func:`torch.load`.
+        strict (bool): Whether to allow different params for the model and
+            checkpoint.
+        logger (:mod:`logging.Logger` or None): The logger for error message.
+    Returns:
+        dict or OrderedDict: The loaded checkpoint.
+    """
+    checkpoint = _load_checkpoint(filename, map_location)
+
+    # remove visual. from checkpoint key
+    checkpoint = {key.replace('visual.', ''):val for key, val in checkpoint.items()}
+
+    # OrderedDict is a subclass of dict
+    if not isinstance(checkpoint, dict):
+        raise RuntimeError(
+            f'No state_dict found in checkpoint file {filename}')
+    # get state_dict from checkpoint
+    if 'state_dict' in checkpoint:
+        state_dict = checkpoint['state_dict']
+    elif 'model' in checkpoint:
+        state_dict = checkpoint['model']
+    elif 'teacher' in checkpoint:
+        print('teacher model is loaded')
+        state_dict = checkpoint['teacher']
+    else:
+        state_dict = checkpoint
+
+    # strip prefix of state_dict
+    if list(state_dict.keys())[0].startswith('module.'):
+        state_dict = {k[7:]: v for k, v in state_dict.items()}
+
+    focal_layers_keys = [k for k in state_dict.keys() if ("focal_layers" in k and 'bias' not in k)]
+    for table_key in focal_layers_keys:
+        if table_key not in model.state_dict():
+            continue
+        table_pretrained = state_dict[table_key]
+        table_current = model.state_dict()[table_key]
+
+        if len(table_pretrained.shape) != 4:
+            L1 = table_pretrained.shape[1]
+            L2 = table_current.shape[1]
+
+            if L1 != L2:
+                S1 = int(L1 ** 0.5)
+                S2 = int(L2 ** 0.5)
+                table_pretrained_resized = F.interpolate(
+                        table_pretrained.view(1, 1, S1, S1),
+                        size=(S2, S2), mode='bicubic')
+                state_dict[table_key] = table_pretrained_resized.view(1, L2) * L1 / L2
+        else:
+            fsize1 = table_pretrained.shape[2]
+            fsize2 = table_current.shape[2]
+
+            # NOTE: different from interpolation used in self-attention, we use padding or clipping for focal conv
+            if fsize1 < fsize2:
+                table_pretrained_resized = torch.zeros(table_current.shape)
+                table_pretrained_resized[:, :, (fsize2-fsize1)//2:-(fsize2-fsize1)//2, (fsize2-fsize1)//2:-(fsize2-fsize1)//2] = table_pretrained
+                state_dict[table_key] = table_pretrained_resized
+            elif fsize1 > fsize2:
+                table_pretrained_resized = table_pretrained[:, :, (fsize1-fsize2)//2:-(fsize1-fsize2)//2, (fsize1-fsize2)//2:-(fsize1-fsize2)//2]
+                state_dict[table_key] = table_pretrained_resized
+
+    f_layers_keys = [k for k in state_dict.keys() if ("modulation.f" in k)]
+    for table_key in f_layers_keys:
+        if table_key not in model.state_dict():
+            continue
+        table_pretrained = state_dict[table_key]
+        table_current = model.state_dict()[table_key]
+        if table_pretrained.shape != table_current.shape:
+            if len(table_pretrained.shape) == 2:
+                # for linear weights
+                dim = table_pretrained.shape[1]
+                assert table_current.shape[1] == dim
+                L1 = table_pretrained.shape[0]
+                L2 = table_current.shape[0]
+
+                if L1 < L2:
+                    table_pretrained_resized = torch.zeros(table_current.shape)
+                    # copy for linear project
+                    table_pretrained_resized[:2*dim] = table_pretrained[:2*dim]
+                    # copy for global token gating
+                    table_pretrained_resized[-1] = table_pretrained[-1]
+                    # copy for first multiple focal levels
+                    table_pretrained_resized[2*dim:2*dim+(L1-2*dim-1)] = table_pretrained[2*dim:-1]
+                    # reassign pretrained weights
+                    state_dict[table_key] = table_pretrained_resized
+                elif L1 > L2:
+                    raise NotImplementedError
+            elif len(table_pretrained.shape) == 1:
+                # for linear bias
+                L1 = table_pretrained.shape[0]
+                L2 = table_current.shape[0]
+                if L1 < L2:
+                    table_pretrained_resized = torch.zeros(table_current.shape)
+                    # copy for linear project
+                    table_pretrained_resized[:2*dim] = table_pretrained[:2*dim]
+                    # copy for global token gating
+                    table_pretrained_resized[-1] = table_pretrained[-1]
+                    # copy for first multiple focal levels
+                    table_pretrained_resized[2*dim:2*dim+(L1-2*dim-1)] = table_pretrained[2*dim:-1]
+                    # reassign pretrained weights
+                    state_dict[table_key] = table_pretrained_resized
+                elif L1 > L2:
+                    raise NotImplementedError
+
+
+    # load state_dict
+    load_state_dict(model, state_dict, strict, logger)
+
+    return checkpoint
+
 
 def weights_to_cpu(state_dict):
     """Copy a model state_dict to cpu.
