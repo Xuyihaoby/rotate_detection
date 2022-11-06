@@ -13,5 +13,5 @@ The "Roaring 20s" of visual recognition began with the introduction of Vision Tr
 | gfl_retina | convnext_tiny | v2(le135) | R_IoU | 1x      | DOTA-v1.0,train | 1024x1024,512 | 75.03      | 46.58       | 45.04 |
 | retina     | convnext_tiny | v2(le135) | R_IoU | 1x      | DOTA-v1.0,train | 1024x1024,512 | 5.07       | 0.34        | 1.31  |
 
-**note**:If directly regress five parameters and use R_IoU loss, the mode can not converge well!!
+**note**:If directly regress five parameters and use R_IoU loss, the model can not converge well!!
 
