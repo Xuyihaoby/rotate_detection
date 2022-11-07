@@ -234,7 +234,8 @@ class RFasterRCNN(BaseDetector):
                     win_name='',
                     show=False,
                     wait_time=0,
-                    out_file=None):
+                    out_file=None,
+                    version='v1'):
         """Draw `result` over `img`.
 
         Args:
@@ -305,7 +306,8 @@ class RFasterRCNN(BaseDetector):
                 win_name=win_name,
                 show=show,
                 wait_time=wait_time,
-                out_file=out_file)
+                out_file=out_file,
+                version=version)
         elif bboxes.shape[1] == 5:
             imshow_det_bboxes(
                 img,
