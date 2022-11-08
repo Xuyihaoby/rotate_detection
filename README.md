@@ -1,6 +1,6 @@
 ## Introduction
 
-MMDetection is an open source object detection toolbox based on PyTorch.
+Rotate Detection is an open source rotated object detection toolbox based on PyTorch.
 
 ## License
 
@@ -54,17 +54,15 @@ Supported methods（rotate）:
 - [x] rpaa(vanilla,atss)
 - [ ] centernet
 
+## Angle version
 
+$v1(oc):cv2.minAreaRect$
 
-Support different coder
+$v2(le135):-\pi/4\rightarrow\pi 3/4$
 
-$v1:cv2.minAreaRect$
+$v3(le90):-\pi/2\rightarrow\pi/2$
 
-$v2:-\pi/4\rightarrow\pi 3/4$
-
-$v3:-\pi/2\rightarrow\pi/2$
-
-Some other methods are also supported in [projects using MMDetection](./docs/projects.md).
+You can find more details in [About angle definition](./docs/angle/About angle definition.md)
 
 ## Installation
 
@@ -113,29 +111,10 @@ python tools/parse_results.py {configs} {pkl} {nms}
 * type:if you want to merge, merge rotate or horizon [HBB/OBB/ALL]
 * eval: whether to eval result
 
-## Contributing
+## Reference
 
-We appreciate all contributions to improve MMDetection. Please refer to [CONTRIBUTING.md](.github/CONTRIBUTING.md) for the contributing guideline.
+[open-mmlab/mmdetection](https://github.com/open-mmlab/mmdetection)
 
-## Acknowledgement
+[open-mmlab/mmrotate](https://github.com/open-mmlab/mmrotate)
 
-MMDetection is an open source project that is contributed by researchers and engineers from various colleges and companies. We appreciate all the contributors who implement their methods or add new features, as well as users who give valuable feedbacks.
-We wish that the toolbox and benchmark could serve the growing research community by providing a flexible toolkit to reimplement existing methods and develop their own new detectors.
-
-## Citation
-
-If you use this toolbox or benchmark in your research, please cite this project.
-
-```
-@article{mmdetection,
-  title   = {{MMDetection}: Open MMLab Detection Toolbox and Benchmark},
-  author  = {Chen, Kai and Wang, Jiaqi and Pang, Jiangmiao and Cao, Yuhang and
-             Xiong, Yu and Li, Xiaoxiao and Sun, Shuyang and Feng, Wansen and
-             Liu, Ziwei and Xu, Jiarui and Zhang, Zheng and Cheng, Dazhi and
-             Zhu, Chenchen and Cheng, Tianheng and Zhao, Qijie and Li, Buyu and
-             Lu, Xin and Zhu, Rui and Wu, Yue and Dai, Jifeng and Wang, Jingdong
-             and Shi, Jianping and Ouyang, Wanli and Loy, Chen Change and Lin, Dahua},
-  journal= {arXiv preprint arXiv:1906.07155},
-  year={2019}
-}
-```
+[jbwang1997/OBBDetection](https://github.com/jbwang1997/OBBDetection)
