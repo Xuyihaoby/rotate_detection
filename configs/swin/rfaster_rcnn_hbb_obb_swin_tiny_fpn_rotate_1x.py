@@ -153,8 +153,6 @@ valsplit_img_folder = 'train/images'
 val_ann_folder = 'train/labelTxt'
 val_img_folder = 'train/images'
 test_img_folder = 'test/images'
-example_ann_folder = 'train/labelTxt'
-example_img_folder = 'train/images'
 
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
