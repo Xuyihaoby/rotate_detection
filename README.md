@@ -62,7 +62,7 @@ $v2(le135):-\pi/4\rightarrow\pi 3/4$
 
 $v3(le90):-\pi/2\rightarrow\pi/2$
 
-You can find more details in [About angle definition](./docs/angle/About angle definition.md)
+You can find more details in [About angle definition]([rotate_detection/About angle definition.md at main · Xuyihaoby/rotate_detection (github.com)](https://github.com/Xuyihaoby/rotate_detection/blob/main/docs/angle/About angle definition.md#version-v3-le90-in-mmrotate-pi2-pi2))
 
 ## Installation
 

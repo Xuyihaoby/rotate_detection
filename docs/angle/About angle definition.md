@@ -12,11 +12,11 @@ After 4.5.1, the function definition follows the guidelines ablout:
 
 ![](./About angle definition.assets/image-20221108173351845.png)
 
-## version: 'v2', ('le135' in mmrotate)$[-\pi/4, 3\pi/4 )$
+## version: 'v2', ('le135' in mmrotate) $[-\pi/4, 3\pi/4 )$
 
 ![image-20221108215406484](./About angle definition.assets/image-20221108215406484.png)
 
-## version: 'v3', ('le90' in mmrotate)$(-\pi/2, \pi/2]$
+## version: 'v3', ('le90' in mmrotate) $(-\pi/2, \pi/2]$
 
 ![image-20221108191856052](./About angle definition.assets/image-20221108191856052.png)
 
