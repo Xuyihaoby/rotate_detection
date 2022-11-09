@@ -14,5 +14,3 @@ Recent progress in vision Transformers exhibits great success in various tasks d
 | retina | hornet_tiny_gnfpn   | v1(oc) | R_IoU | 1x      | DOTA-v1.0,train | 1024x1024,512 | 67.81      | 36.66       | 38.18 |
 | retina | hornet_tiny_with_gf | v1(oc) | R_IoU | 1x      | DOTA-v1.0,train | 1024x1024,512 | 70.02      | 39.24       | 40.03 |
 
-**note**:If directly regress five parameters and use R_IoU loss, the model can not converge well!!
-
