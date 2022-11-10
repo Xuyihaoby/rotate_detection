@@ -19,14 +19,14 @@ Supported backbones:
 - [x] RegNet
 - [x] Res2Net
 - [x] ResNeSt
-- [x] swin
-- [x] reresnet
-- [x] Mobile_net_v2
-- [x] RepVGG(degrade accuracy)
+- [x] SWIN
+- [x] ReResNet
+- [x] MobileNet_v2
+- [x] RepVGG
 - [x] RepLK(note cuda version speed is slower than ori version in downstream, so we use orin conv version and no reparam)
 - [x] SLaK
 - [x] HorNet
-- [x] focalnet
+- [x] FocalNet
 
 Supported methods（rotate）:
 
