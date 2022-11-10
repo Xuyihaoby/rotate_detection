@@ -2,7 +2,7 @@
 
 ## version: 'v1', ('oc' in mmrotate) $[-\pi/2, 0)$
 
-you must notice that, cv2.minAreaRect() is different between before opencv=4.5.1 and after opencv==4.5.1.
+you must notice that, cv2.minAreaRect() is different between before opencv<4.5.1 and after opencv>=4.5.1.
 
 Before 4.5.1, the function definition follows the guidelines about:
 
