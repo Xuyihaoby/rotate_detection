@@ -8,9 +8,9 @@ We present a simple but powerful architecture of convolutional neural network, w
 
 ## Results and Models
 
-| Method     | Backbone    | Angle     | Loss  | Lr schd | Dataset         | preprocess    | optimizer | $AP_{0.5}$ | $AP_{0.75}$ | $mAP$ |
-| ---------- | ----------- | --------- | ----- | ------- | --------------- | ------------- | :-------: | ---------- | ----------- | ----- |
-| gfl_retina | repvgg_b1g2 | v2(le135) | R_IoU | 1x      | DOTA-v1.0,train | 1024x1024,512 |    SGD    | 70.95      | 40.28       | 40.53 |
-| retina     | repvgg_b1g2 | v2(le135) | R_IoU | 1x      | DOTA-v1.0,train | 1024x1024,512 |    SGD    | 39.08      | 20.01       | 21.21 |
+| Method     | Backbone    | Angle  | Loss  | Lr schd | Dataset         | preprocess    | optimizer | $AP_{0.5}$ | $AP_{0.75}$ | $mAP$ |
+| ---------- | ----------- | ------ | ----- | ------- | --------------- | ------------- | :-------: | ---------- | ----------- | ----- |
+| gfl_retina | repvgg_b1g2 | v1(oc) | R_IoU | 1x      | DOTA-v1.0,train | 1024x1024,512 |    SGD    | 70.95      | 40.28       | 40.53 |
+| retina     | repvgg_b1g2 | v1(oc) | R_IoU | 1x      | DOTA-v1.0,train | 1024x1024,512 |    SGD    | 39.08      | 20.01       | 21.21 |
 
 **note**:If directly regress five parameters and use R_IoU loss, the model can not converge well!!
