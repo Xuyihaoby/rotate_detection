@@ -1034,9 +1034,13 @@ def distance2rbbox(points, distance, version='v1'):
     distance, theta = distance.split([4, 1], dim=1)
     wh = distance[:, :2] + distance[:, 2:]
 
+
     if version == 'v1':
-        theta = torch.where(theta >= 0, theta - torch.tensor(np.pi / 2), theta)
-        theta = torch.where(theta < torch.tensor(-np.pi / 2), theta + torch.tensor(np.pi / 2), theta)
+        theta = torch.where(theta >= 0, theta-torch.tensor(np.pi/2), theta)
+        theta = torch.where(theta < torch.tensor(-np.pi/2), theta+torch.tensor(np.pi/2), theta)
+        Cos, Sin = torch.cos(theta), torch.sin(theta)
+        Matrix = torch.cat([Cos, -Sin, Sin, Cos], dim=1).reshape(-1, 2, 2)
+    elif version == 'v2':
         Cos, Sin = torch.cos(theta), torch.sin(theta)
         Matrix = torch.cat([Cos, -Sin, Sin, Cos], dim=1).reshape(-1, 2, 2)
     else:

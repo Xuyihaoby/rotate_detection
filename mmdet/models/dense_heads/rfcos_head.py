@@ -163,8 +163,10 @@ class RFCOSHead(AnchorFreeHead):
         theta_pred = self.conv_theta(reg_feat)
         if self.scale_theta:
             theta_pred = self.scale_t(theta_pred)
-        return cls_score, bbox_pred, centerness, theta_pred
-
+        if self.training:
+            return cls_score, bbox_pred, centerness, theta_pred
+        else:
+            return cls_score, bbox_pred, centerness, theta_pred, cls_feat, reg_feat
     @force_fp32(apply_to=('cls_scores', 'bbox_preds', 'centernesses', 'theta_preds'))
     def loss(self,
              cls_scores,
@@ -233,7 +235,6 @@ class RFCOSHead(AnchorFreeHead):
         flatten_points = torch.cat(
             [points.repeat(num_imgs, 1) for points in all_level_points])
 
-
         # cat bbox_preds and theta_preds to obb bbox_preds
         flatten_bbox_preds = torch.cat(
             [flatten_bbox_preds, flatten_theta_preds], dim=1)
@@ -254,9 +255,9 @@ class RFCOSHead(AnchorFreeHead):
             pos_bbox_targets = flatten_bbox_targets[pos_inds]
             pos_centerness_targets = self.centerness_target(pos_bbox_targets)  # 越靠近中心，得到的target的值就越大，接近1否则就越小
             pos_points = flatten_points[pos_inds]
-            pos_decoded_bbox_preds = distance2rbbox(pos_points, pos_bbox_preds)
+            pos_decoded_bbox_preds = distance2rbbox(pos_points, pos_bbox_preds, self.version)
             pos_decoded_target_preds = distance2rbbox(pos_points,
-                                                     pos_bbox_targets)
+                                                      pos_bbox_targets, self.version)
             # centerness weighted iou loss
             loss_bbox = self.loss_bbox(
                 pos_decoded_bbox_preds,
@@ -280,6 +281,8 @@ class RFCOSHead(AnchorFreeHead):
                    bbox_preds,
                    centernesses,
                    theta_preds,
+                   cls_feat,
+                   reg_feat,
                    img_metas,
                    cfg=None,
                    rescale=False,
@@ -310,6 +313,8 @@ class RFCOSHead(AnchorFreeHead):
                 (n,) tensor where each item is the predicted class label of the
                 corresponding box.
         """
+        # from mmdet.utils.heatmap import showHeatmap
+        # showHeatmap(reg_feat, img_metas=img_metas)
         assert len(cls_scores) == len(bbox_preds)
         num_levels = len(cls_scores)
 
@@ -537,13 +542,12 @@ class RFCOSHead(AnchorFreeHead):
         # gt_poly_offset = gt_poly - gt_ctr.repeat(1, 4)
         gt_poly_offset = gt_poly[None].repeat(num_points, 1, 1) - points[:, None, :].repeat(1, num_gts, 4)
         Cos, Sin = torch.cos(gt_thetas), torch.sin(gt_thetas)
-        # if self.version == 'v1':
-        Matrix = torch.cat([Cos, Sin, -Sin, Cos], dim=-1).reshape(-1, 2, 2)[None].repeat(num_points, 1, 1, 1)
-        # else:
-        #     Matrix = torch.cat([Cos, -Sin, Sin, Cos], dim=-1).reshape(-1, 2, 2)[None].repeat(num_points, 1, 1, 1)
+        if self.version != 'v3':
+            Matrix = torch.cat([Cos, Sin, -Sin, Cos], dim=-1).reshape(-1, 2, 2)[None].repeat(num_points, 1, 1, 1)
+        else:
+            Matrix = torch.cat([Cos, -Sin, Sin, Cos], dim=-1).reshape(-1, 2, 2)[None].repeat(num_points, 1, 1, 1)
         modified_poly = Matrix @ gt_poly_offset.reshape(-1, num_gts, 4, 2).transpose(-1, -2) \
                         + points[:, None, :].repeat(1, num_gts, 4).reshape(-1, num_gts, 4, 2).transpose(-1, -2)
-
 
         xmin = modified_poly[:, :, 0, :].min(dim=2, keepdim=True)[0]
         xmax = modified_poly[:, :, 0, :].max(dim=2, keepdim=True)[0]
