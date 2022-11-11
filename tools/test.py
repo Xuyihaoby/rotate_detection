@@ -175,7 +175,7 @@ def main():
     if fp16_cfg is not None:
         wrap_fp16_model(model)
     checkpoint = load_checkpoint(model, args.checkpoint, map_location='cpu')
-    if cfg.model.backbone.type == 'RepVGG':
+    if cfg.model.backbone.type in ['RepVGG', 'RepLKNet']:
         for module in model.backbone.modules():
             if hasattr(module, 'switch_to_deploy'):
                 module.switch_to_deploy()

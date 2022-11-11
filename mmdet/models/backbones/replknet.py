@@ -321,7 +321,7 @@ class RepLKNet(nn.Module):
             x = self.head(x)
             return x
 
-    def structural_reparam(self):
+    def switch_to_deploy(self):
         for m in self.modules():
             if hasattr(m, 'merge_kernel'):
                 m.merge_kernel()
