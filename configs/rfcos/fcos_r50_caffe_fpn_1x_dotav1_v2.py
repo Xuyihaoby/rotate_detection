@@ -1,3 +1,4 @@
+angle_version = 'v2'
 # model settings
 model = dict(
     type='RFCOS',
@@ -29,13 +30,14 @@ model = dict(
         strides=[8, 16, 32, 64, 128],
         center_sampling=False,
         norm_cfg=None,
+        version=angle_version,
         loss_cls=dict(
             type='FocalLoss',
             use_sigmoid=True,
             gamma=2.0,
             alpha=0.25,
             loss_weight=1.0),
-        loss_bbox=dict(type='RotatedIoULoss', loss_weight=1.0),
+        loss_bbox=dict(type='RotatedIoULoss', loss_weight=1.0, version=angle_version),
         loss_centerness=dict(
             type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0)),
     # training and testing settings
@@ -45,7 +47,8 @@ model = dict(
             pos_iou_thr=0.5,
             neg_iou_thr=0.4,
             min_pos_iou=0,
-            ignore_iof_thr=-1),
+            ignore_iof_thr=-1,
+            iou_calculator=dict(type='RBboxOverlaps2D', version=angle_version)), # 其实可以为None
         allowed_border=-1,
         pos_weight=-1,
         debug=False),
@@ -53,7 +56,7 @@ model = dict(
         nms_pre=2000,
         min_bbox_size=0,
         score_thr=0.05,
-        nms=dict(type='rnms', iou_threshold=0.1),
+        nms=dict(type='rnms', iou_threshold=0.1, version=angle_version),
         max_per_img=2000)
 )
 
@@ -63,7 +66,7 @@ train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='RLoadAnnotations', with_bbox=True, with_mask=False),
     dict(type='RResize', img_scale=(1024, 1024)),
-    dict(type='RRandomFlip', flip_ratio=0.5),
+    dict(type='RRandomFlip', flip_ratio=0.5, version=angle_version),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
     dict(type='DefaultFormatBundle'),
@@ -86,7 +89,7 @@ test_pipeline = [
 ]
 
 dataset_type = 'DOTADatasetV1'
-data_root = '/data1/public_dataset/DOTA1_0/simple/'
+data_root = '/data/Aerial/DOTA1_0/simple/'
 trainsplit_ann_folder = 'train/labelTxt'
 trainsplit_img_folder = 'train/images'
 valsplit_ann_folder = 'train/labelTxt'
@@ -104,20 +107,23 @@ data = dict(
         type=dataset_type,
         ann_file=data_root + trainsplit_ann_folder,
         img_prefix=data_root + trainsplit_img_folder,
-        pipeline=train_pipeline),
+        pipeline=train_pipeline,
+        version=angle_version),
     val=dict(
         type=dataset_type,
         ann_file=data_root + valsplit_ann_folder,
         img_prefix=data_root + valsplit_img_folder,
-        pipeline=test_pipeline),
+        pipeline=test_pipeline,
+        version=angle_version),
     test=dict(
         type=dataset_type,
         ann_file=data_root + test_img_folder,
         img_prefix=data_root + test_img_folder,
         pipeline=test_pipeline,
-        test_mode=True))
+        test_mode=True,
+        version=angle_version))
 # optimizer
-optimizer = dict(type='SGD', lr=0.005, momentum=0.9, weight_decay=0.0001, paramwise_cfg=dict(bias_lr_mult=2., bias_decay_mult=0.))
+optimizer = dict(type='SGD', lr=0.0025, momentum=0.9, weight_decay=0.0001, paramwise_cfg=dict(bias_lr_mult=2., bias_decay_mult=0.))
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
@@ -142,11 +148,11 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/data1/xyh/checkpoints/rfcos/vanilla'
-
-# mAP: 0.7037598332473946
-# ap of each class: plane:0.8836660791330977, baseball-diamond:0.7115805862183952, bridge:0.4727626408184197,
-# ground-track-field:0.6003731197052304, small-vehicle:0.7932464761163764, large-vehicle:0.7550189535876478,
-# ship:0.8690903803849582, tennis-court:0.9088195386702851, basketball-court:0.7802745044579893,
-# storage-tank:0.8189334092453426, soccer-ball-field:0.6027077565593421, roundabout:0.5894269408166934,
-# harbor:0.661395122284845, swimming-pool:0.6891252430652247, helicopter:0.41997674764707
+work_dir = '/data/Aerial/checkpoints/rfcos_v2'
+# mAP: 0.6980123545687352
+# ap of each class: plane:0.8843754814887081, baseball-diamond:0.7272473088482252, bridge:0.43908605459811184, ground-track-field:0.6083124188458974, small-vehicle:0.788209721799577, large-vehicle:0.7455742892447262, ship:0.8696081209447626, tennis-court:0.9086075588918807, basketball-court:0.7857238758015256, storage-tank:0.8124755940235249, soccer-ball-field:0.5702872826215676, roundabout:0.6068039719258279, harbor:0.6488266294178834, swimming-pool:0.6074135785912853, helicopter:0.4676334314875253
+# COCO style result:
+#
+# AP50: 0.6980123545687352
+# AP75: 0.4050761719317961
+# mAP: 0.40580667288503525

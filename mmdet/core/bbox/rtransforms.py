@@ -1040,12 +1040,12 @@ def distance2rbbox(points, distance, version='v1'):
         theta = torch.where(theta < torch.tensor(-np.pi/2), theta+torch.tensor(np.pi/2), theta)
         Cos, Sin = torch.cos(theta), torch.sin(theta)
         Matrix = torch.cat([Cos, -Sin, Sin, Cos], dim=1).reshape(-1, 2, 2)
-    elif version == 'v2':
+    elif version == 'v2' or version == 'v3':
         Cos, Sin = torch.cos(theta), torch.sin(theta)
         Matrix = torch.cat([Cos, -Sin, Sin, Cos], dim=1).reshape(-1, 2, 2)
-    else:
-        Cos, Sin = torch.cos(theta), torch.sin(theta)
-        Matrix = torch.cat([Cos, Sin, -Sin, Cos], dim=1).reshape(-1, 2, 2)
+    # else:
+    #     Cos, Sin = torch.cos(theta), torch.sin(theta)
+    #     Matrix = torch.cat([Cos, Sin, -Sin, Cos], dim=1).reshape(-1, 2, 2)
     offset_t = (distance[:, 2:] - distance[:, :2]) / 2
     offset_t = offset_t.unsqueeze(2)
 

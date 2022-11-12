@@ -8,8 +8,8 @@ In this paper we revisit large kernel design in modern convolutional neural netw
 
 ## Results and Models
 
-| Method | Backbone       | Angle  | Loss  | Lr schd | Dataset         | preprocess    | $AP_{0.5}$ | $AP_{0.75}$ | $mAP$ |
-| ------ | -------------- | ------ | ----- | ------- | --------------- | ------------- | ---------- | ----------- | ----- |
-| retina | ReplLKNet_base | v1(oc) | R_IoU | 1x      | DOTA-v1.0,train | 1024x1024,512 | 73.81      | 43.33       | 43.28 |
+| Method | Backbone      | Angle  | Loss  | Lr schd | Dataset         | preprocess    | $AP_{0.5}$ | $AP_{0.75}$ | $mAP$ |
+| ------ | ------------- | ------ | ----- | ------- | --------------- | ------------- | ---------- | ----------- | ----- |
+| retina | RepLKNet_base | v1(oc) | R_IoU | 1x      | DOTA-v1.0,train | 1024x1024,512 | 73.81      | 43.33       | 43.28 |
 
 **note**: the speed of training and inference is very slow under nn.Conv2d or DepthWiseConv2dImplicitGEMM, when the batch size is small
