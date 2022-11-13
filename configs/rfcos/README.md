@@ -12,4 +12,4 @@ We propose a fully convolutional one-stage object detector (FCOS) to solve objec
 | ------ | -------- | --------- | ----- | ------- | --------------- | ------------- | ---------- | ----------- | ----- |
 | rfcos  | ResNet50 | v1(oc)    | R_IoU | 1x      | DOTA-v1.0,train | 1024x1024,512 | 70.38      | 41.69       | 41.15 |
 | rfcos  | ResNet50 | v2(le135) | R_IoU | 1x      | DOTA-v1.0,train | 1024x1024,512 | 69.80      | 40.51       | 40.58 |
-| rfcos  | ResNet50 | v3(le90)  | R_IoU | 1x      | DOTA-v1.0,train | 1024x1024,512 | \          | \           | \     |
+| rfcos  | ResNet50 | v3(le90)  | R_IoU | 1x      | DOTA-v1.0,train | 1024x1024,512 | 67.32      | 37.37       | 38.12 |
