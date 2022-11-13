@@ -223,3 +223,10 @@ load_from = None
 resume_from = None
 workflow = [('train', 1)]
 work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/DOTA1_0/swin_pafpn_rotate'
+
+# mAP: 0.793830556819683
+# ap of each class: plane:0.890850921852911, baseball-diamond:0.8517905102132116, bridge:0.5880196854323883,
+# ground-track-field:0.8264679643815664, small-vehicle:0.8058084502242878, large-vehicle:0.7958532559607273,
+# ship:0.8703137667196764, tennis-court:0.908888888888889, basketball-court:0.8785089958163708,
+# storage-tank:0.8793729332830569, soccer-ball-field:0.6875556919939495, roundabout:0.7180504368181242,
+# harbor:0.775718843155637, swimming-pool:0.74934175767745, helicopter:0.6809162498769946

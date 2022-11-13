@@ -1,45 +1,28 @@
-merge_nms_iou_thr_dict = {
-    'roundabout': 0.1, 'tennis-court': 0.3, 'swimming-pool': 0.1, 'storage-tank': 0.1,
-    'soccer-ball-field': 0.3, 'small-vehicle': 0.05, 'ship': 0.05, 'plane': 0.3,
-    'large-vehicle': 0.05, 'helicopter': 0.2, 'harbor': 0.0001, 'ground-track-field': 0.3,
-    'bridge': 0.0001, 'basketball-court': 0.3, 'baseball-diamond': 0.3, 'container-crane': 0.3,
-    'airport': 0.3, 'helipad': 0.3
-}
-merge_nms_iou_thr_dict_h = {'roundabout': 0.35, 'tennis-court': 0.35, 'swimming-pool': 0.4, 'storage-tank': 0.3,
-                            'soccer-ball-field': 0.3, 'small-vehicle': 0.4, 'ship': 0.35, 'plane': 0.35,
-                            'large-vehicle': 0.4, 'helicopter': 0.4, 'harbor': 0.3, 'ground-track-field': 0.4,
-                            'bridge': 0.3, 'basketball-court': 0.4, 'baseball-diamond': 0.3, 'container-crane': 0.3,
-                            'airport': 0.3, 'helipad': 0.3}
-
-diff_r_max_num = {'roundabout': 100, 'tennis-court': 100, 'swimming-pool': 200, 'storage-tank': 200,
-                  'soccer-ball-field': 100, 'small-vehicle': 500, 'ship': 500, 'plane': 300,
-                  'large-vehicle': 500, 'helicopter': 100, 'harbor': 200, 'ground-track-field': 100,
-                  'bridge': 100, 'basketball-court': 100, 'baseball-diamond': 100, 'container-crane': 100,
-                  'airport': 100, 'helipad': 100}
-
-diff_h_max_num = {'roundabout': 100, 'tennis-court': 100, 'swimming-pool': 200, 'storage-tank': 200,
-                  'soccer-ball-field': 100, 'small-vehicle': 500, 'ship': 500, 'plane': 300,
-                  'large-vehicle': 500, 'helicopter': 100, 'harbor': 200, 'ground-track-field': 100,
-                  'bridge': 100, 'basketball-court': 100, 'baseball-diamond': 100, 'container-crane': 100,
-                  'airport': 100, 'helipad': 100}
-
+num=15
 model = dict(
     type='RFasterRCNN',
     obb=True,
     submission=True,
-    pretrained='torchvision://resnet50',
+    pretrained='https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_tiny_patch4_window7_224.pth',
     backbone=dict(
-        type='ResNet',
-        depth=50,
-        num_stages=4,
+        type='SwinTransformer',
+        embed_dim=96,
+        depths=[2, 2, 6, 2],
+        num_heads=[3, 6, 12, 24],
+        window_size=7,
+        mlp_ratio=4.,
+        qkv_bias=True,
+        qk_scale=None,
+        drop_rate=0.,
+        attn_drop_rate=0.,
+        drop_path_rate=0.2,
+        ape=False,
+        patch_norm=True,
         out_indices=(0, 1, 2, 3),
-        frozen_stages=1,
-        norm_cfg=dict(type='BN', requires_grad=True),
-        norm_eval=True,
-        style='pytorch'),
+        use_checkpoint=False),
     neck=dict(
         type='FPN',
-        in_channels=[256, 512, 1024, 2048],
+        in_channels=[96, 192, 384, 768],
         out_channels=256,
         num_outs=5),
     rpn_head=dict(
@@ -70,7 +53,7 @@ model = dict(
             in_channels=256,
             fc_out_channels=1024,
             roi_feat_size=7,
-            num_classes=18,
+            num_classes=num,
             bbox_coder=dict(
                 type='DeltaXYWHBBoxCoder',
                 target_means=[0., 0., 0., 0.],
@@ -146,9 +129,13 @@ model = dict(
     ))
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.0025, momentum=0.9, weight_decay=0.0001)
-optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
-# learning policy
+optimizer = dict(type='AdamW', lr=0.0001, betas=(0.9, 0.999), weight_decay=0.05,
+                 paramwise_cfg=dict(custom_keys={'absolute_pos_embed': dict(decay_mult=0.),
+                                                 'relative_position_bias_table': dict(decay_mult=0.),
+                                                 'norm': dict(decay_mult=0.)}))
+
+optimizer_config = dict(grad_clip=None)
+
 lr_config = dict(
     policy='step',
     warmup='linear',
@@ -157,23 +144,23 @@ lr_config = dict(
     step=[8, 11])
 total_epochs = 12
 
-dataset_type = 'DOTADatasetV2'
-data_root = '/data/xuyihao/mmdetection/dataset/DOTA-v2.0/'
-trainsplit_ann_folder = 'trainallsplit/labelTxt'
-trainsplit_img_folder = 'trainallsplit/images'
-valsplit_ann_folder = 'trainallsplit/labelTxt'
-valsplit_img_folder = 'trainallsplit/images'
-val_ann_folder = 'val/labelTxt'
-val_img_folder = 'val/images'
-test_img_folder = 'testallsplit/images'
-example_ann_folder = 'examplesplit/labelTxt'
-example_img_folder = 'examplesplit/images'
+dataset_type = 'DOTADatasetV1'
+data_root = '/data1/public_dataset/DOTA/DOTA1_0/split/'
+trainsplit_ann_folder = 'trainall/labelTxt'
+trainsplit_img_folder = 'trainall/images'
+valsplit_ann_folder = 'trainall/labelTxt'
+valsplit_img_folder = 'trainall/images'
+val_ann_folder = 'trainall/labelTxt'
+val_img_folder = 'trainall/images'
+test_img_folder = 'testms/images'
+example_ann_folder = 'trainall/labelTxt'
+example_img_folder = 'trainall/images'
 
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='RLoadAnnotations', with_bbox=True, with_mask=True),
+    dict(type='RLoadAnnotations', with_bbox=True),
     dict(type='RResize', img_scale=(1024, 1024)),
     dict(type='RRandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
@@ -198,7 +185,7 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=4,
+    samples_per_gpu=2,
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
@@ -217,7 +204,7 @@ data = dict(
         pipeline=test_pipeline,
         test_mode=True))
 evaluation = dict(interval=24, metric='bbox')
-
+runner = dict(type='EpochBasedRunner', max_epochs=12)
 checkpoint_config = dict(interval=4)
 
 log_config = dict(
@@ -232,4 +219,10 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/data/xuyihao/mmdetection/configs/DOTA2_0/work_dir/faster_rcnn_r50_fpn_1x_dotav2'
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/DOTA1_0/swin_T'
+# mAP: 0.7958009158130764
+# ap of each class: plane:0.8914519679840509, baseball-diamond:0.8511515571134695, bridge:0.5934128340160879,
+# ground-track-field:0.8321164946164946, small-vehicle:0.8039296080118059, large-vehicle:0.7945998013985449,
+# ship:0.8699559330371764, tennis-court:0.9089574155653452, basketball-court:0.8798722788739838,
+# storage-tank:0.878271313869277, soccer-ball-field:0.6855385646250887, roundabout:0.7118823128565994,
+# harbor:0.7740354331987449, swimming-pool:0.7486629283920996, helicopter:0.7131752936373769
