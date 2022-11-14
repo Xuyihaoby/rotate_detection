@@ -14,7 +14,7 @@ This paper presents a new vision Transformer, called Swin Transformer, that capa
 |         retina          | swin_tiny        | v2(le135) | R_IoU     | 1x      | DOTA-v1.0,train | 1024x1024,512 |  \   |     \     | 5.89       | 0.89        | 1.81  |
 | rfaster_rcnn (hbb+obb)  | swin_tiny        | v1(oc)    | smooth_l1 | 1x      | DOTA-v1.0,train | 1024x1024,512 |  \   |     \     | 72.69      | 41.66       | 41.45 |
 | rfaster_rcnn (hbb+obb)  | swin_tiny        | v1(oc)    | smooth_l1 | 1x      | DOTA-v1.0,train | 1024x1024,512 |  \   |    RR     | 75.38      | 42.48       | 42.61 |
-| rfaster_rcnn (hbb+obb)  | swin_tiny        | v1(oc)    | smooth_l1 | 1x      | DOTA-v1.0,train | 1024x1024,512 | Yes  |    RR     | 79.58      | \           | \     |
+| rfaster_rcnn (hbb+obb)  | swin_tiny        | v1(oc)    | smooth_l1 | 1x      | DOTA-v1.0,train | 1024x1024,512 | Yes  |    RR     | 79.58      | 51.88       | 48.34 |
 | oriented_rcnn (hbb+obb) | swin_tiny(pafpn) | v1(oc)    | smooth_l1 | 1x      | DOTA-v1.0,train | 1024x1024,512 | Yes  |    RR     | 79.38      | \           | \     |
 
 **note**:If directly regress five parameters and use R_IoU loss, the model can not converge well!!
