@@ -149,12 +149,25 @@ log_config = dict(
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 load_from = None
-resume_from = '/data/Aerial/checkpoints/cfa/vanila/epoch_8.pth'
+resume_from = None
 workflow = [('train', 1)]
 work_dir = '/data/Aerial/checkpoints/cfa/vanila'
+# with out anti-Aliasing positive weight
 # mAP: 0.6029221399282415
 # ap of each class: plane:0.8819266680661432, baseball-diamond:0.7238464666311806, bridge:0.32893691657804663,
 # ground-track-field:0.365532134609223, small-vehicle:0.6909498204551833, large-vehicle:0.515259493409674,
 # ship:0.7247332020513517, tennis-court:0.8681391019906041, basketball-court:0.5720441878933643,
 # storage-tank:0.8258359480364655, soccer-ball-field:0.5281822729397356, roundabout:0.6103338533441663,
 # harbor:0.5102272201033338, swimming-pool:0.5697717987309132, helicopter:0.3281130140842371
+
+# with anti-aliasing positive weight
+# mAP: 0.6809795968486421
+# ap of each class: plane:0.8830916800050922, baseball-diamond:0.6848790087285794, bridge:0.4405399879888629,
+# ground-track-field:0.6778293587441953, small-vehicle:0.7420282249151648, large-vehicle:0.7390311669860727,
+# ship:0.8601089545688875, tennis-court:0.908743878843001, basketball-court:0.7636224134494405,
+# storage-tank:0.8268111020796128, soccer-ball-field:0.5208674676261925, roundabout:0.5854761342340916,
+# harbor:0.6422842155008283, swimming-pool:0.6142458757185784, helicopter:0.3251344833410289
+# COCO style result:
+# AP50: 0.6809795968486421
+# AP75: 0.4163386552639328
+# mAP: 0.40707325917107384

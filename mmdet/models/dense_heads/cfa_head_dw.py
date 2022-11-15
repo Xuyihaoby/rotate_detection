@@ -190,41 +190,41 @@ class CFAHeaddw(AnchorFreeHead):
         if self.transform_method == 'direct':
             pts_trans = pts.view(pts.shape[0], -1, *pts.shape[2:]).permute(0, 2, 3, 1)
 
-        elif self.transform_method == 'partial_minmax':
-            pts_reshape = pts.view(pts.shape[0], -1, 2, *pts.shape[2:])
-            pts_y = pts_reshape[:, :, 0, ...] if y_first else pts_reshape[:, :, 1,
-                                                              ...]
-            pts_x = pts_reshape[:, :, 1, ...] if y_first else pts_reshape[:, :, 0,
-                                                              ...]
-            pts_y = pts_y[:, :4, ...]
-            pts_x = pts_x[:, :4, ...]
-            bbox_left = pts_x.min(dim=1, keepdim=True)[0]
-            bbox_right = pts_x.max(dim=1, keepdim=True)[0]
-            bbox_up = pts_y.min(dim=1, keepdim=True)[0]
-            bbox_bottom = pts_y.max(dim=1, keepdim=True)[0]
-            bbox = torch.cat([bbox_left, bbox_up, bbox_right, bbox_bottom],
-                             dim=1)
-        elif self.transform_method == 'moment':
-            pts_reshape = pts.view(pts.shape[0], -1, 2, *pts.shape[2:])
-            pts_y = pts_reshape[:, :, 0, ...] if y_first else pts_reshape[:, :, 1,
-                                                              ...]
-            pts_x = pts_reshape[:, :, 1, ...] if y_first else pts_reshape[:, :, 0,
-                                                              ...]
-            pts_y_mean = pts_y.mean(dim=1, keepdim=True)
-            pts_x_mean = pts_x.mean(dim=1, keepdim=True)
-            pts_y_std = torch.std(pts_y - pts_y_mean, dim=1, keepdim=True)
-            pts_x_std = torch.std(pts_x - pts_x_mean, dim=1, keepdim=True)
-            moment_transfer = (self.moment_transfer * self.moment_mul) + (
-                    self.moment_transfer.detach() * (1 - self.moment_mul))
-            moment_width_transfer = moment_transfer[0]
-            moment_height_transfer = moment_transfer[1]
-            half_width = pts_x_std * torch.exp(moment_width_transfer)
-            half_height = pts_y_std * torch.exp(moment_height_transfer)
-            bbox = torch.cat([
-                pts_x_mean - half_width, pts_y_mean - half_height,
-                pts_x_mean + half_width, pts_y_mean + half_height
-            ],
-                dim=1)
+        # elif self.transform_method == 'partial_minmax':
+        #     pts_reshape = pts.view(pts.shape[0], -1, 2, *pts.shape[2:])
+        #     pts_y = pts_reshape[:, :, 0, ...] if y_first else pts_reshape[:, :, 1,
+        #                                                       ...]
+        #     pts_x = pts_reshape[:, :, 1, ...] if y_first else pts_reshape[:, :, 0,
+        #                                                       ...]
+        #     pts_y = pts_y[:, :4, ...]
+        #     pts_x = pts_x[:, :4, ...]
+        #     bbox_left = pts_x.min(dim=1, keepdim=True)[0]
+        #     bbox_right = pts_x.max(dim=1, keepdim=True)[0]
+        #     bbox_up = pts_y.min(dim=1, keepdim=True)[0]
+        #     bbox_bottom = pts_y.max(dim=1, keepdim=True)[0]
+        #     bbox = torch.cat([bbox_left, bbox_up, bbox_right, bbox_bottom],
+        #                      dim=1)
+        # elif self.transform_method == 'moment':
+        #     pts_reshape = pts.view(pts.shape[0], -1, 2, *pts.shape[2:])
+        #     pts_y = pts_reshape[:, :, 0, ...] if y_first else pts_reshape[:, :, 1,
+        #                                                       ...]
+        #     pts_x = pts_reshape[:, :, 1, ...] if y_first else pts_reshape[:, :, 0,
+        #                                                       ...]
+        #     pts_y_mean = pts_y.mean(dim=1, keepdim=True)
+        #     pts_x_mean = pts_x.mean(dim=1, keepdim=True)
+        #     pts_y_std = torch.std(pts_y - pts_y_mean, dim=1, keepdim=True)
+        #     pts_x_std = torch.std(pts_x - pts_x_mean, dim=1, keepdim=True)
+        #     moment_transfer = (self.moment_transfer * self.moment_mul) + (
+        #             self.moment_transfer.detach() * (1 - self.moment_mul))
+        #     moment_width_transfer = moment_transfer[0]
+        #     moment_height_transfer = moment_transfer[1]
+        #     half_width = pts_x_std * torch.exp(moment_width_transfer)
+        #     half_height = pts_y_std * torch.exp(moment_height_transfer)
+        #     bbox = torch.cat([
+        #         pts_x_mean - half_width, pts_y_mean - half_height,
+        #         pts_x_mean + half_width, pts_y_mean + half_height
+        #     ],
+        #         dim=1)
         else:
             raise NotImplementedError
         return pts_trans

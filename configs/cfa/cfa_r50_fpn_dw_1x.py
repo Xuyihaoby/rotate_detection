@@ -149,7 +149,7 @@ log_config = dict(
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 load_from = None
-resume_from = '/data/Aerial/checkpoints/cfa/vanila/epoch_8.pth'
+resume_from = None
 workflow = [('train', 1)]
 work_dir = '/data/Aerial/checkpoints/cfa/dw'
 # mAP: 0.6996250257577106
@@ -158,3 +158,7 @@ work_dir = '/data/Aerial/checkpoints/cfa/dw'
 # ship:0.8606775433826928, tennis-court:0.9068096629767763, basketball-court:0.7888018436192895,
 # storage-tank:0.8180775596649549, soccer-ball-field:0.5497634460482758, roundabout:0.5965381961093512,
 # harbor:0.6405237425407136, swimming-pool:0.6204213016326211, helicopter:0.44931908740807097
+# COCO style result:
+# AP50: 0.6996250257577106
+# AP75: 0.3988187990526281
+# mAP: 0.40151860446309007
