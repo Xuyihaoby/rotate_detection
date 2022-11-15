@@ -15,7 +15,8 @@ Detecting oriented and densely packed objects remains challenging for spatial fe
 | cfa    | ResNet50 | v1(loc) | ConvexIoU | 1x      | DOTA-v1.0,train | 1024x1024,512 | dynamic_weight | 69.96      | 39.88       | 40.15 |
 
 dw:
-$$
-cls_{weight}=(1 + (-cls_{loss}[:thr + 1]).exp()-bbox_{loss}[:thr + 1])^2\\
-bbox_{weight}=(1 - (-cls_{loss}[:thr + 1]).exp()+bbox_{loss}[:thr + 1])^2
-$$
+
+$cls_{weight}=(1 + (-cls_{loss}[:thr + 1]).exp()-bbox_{loss}[:thr + 1])^2 $
+
+$bbox_{weight}=(1 - (-cls_{loss}[:thr + 1]).exp()+bbox_{loss}[:thr + 1])^2$
+
