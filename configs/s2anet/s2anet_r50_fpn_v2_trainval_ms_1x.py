@@ -98,7 +98,7 @@ lr_config = dict(
 total_epochs = 12
 
 dataset_type = 'DOTADatasetV1'
-data_root = '/data1/public_dataset/DOTA/DOTA1_0/simple/'
+data_root = '/data1/public_dataset/DOTA1_0/split/'
 trainsplit_ann_folder = 'train/labelTxt'
 trainsplit_img_folder = 'train/images'
 valsplit_ann_folder = 'train/labelTxt'
@@ -114,6 +114,10 @@ img_norm_cfg = dict(
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='RLoadAnnotations', with_bbox=True, with_mask=False),
+    dict(type='Randomrotate', border_value=0, rotate_mode='value', rotate_ratio=1.0,
+         rotate_values=[30, 60, 90, 120, 150],
+         auto_bound=False,
+         version=angle_version),
     dict(type='RResize', img_scale=(1024, 1024)),
     dict(type='RRandomFlip', flip_ratio=0.5, version=angle_version),
     dict(type='Normalize', **img_norm_cfg),
@@ -138,7 +142,7 @@ test_pipeline = [
 ]
 data = dict(
     samples_per_gpu=2,
-    workers_per_gpu=2,
+    workers_per_gpu=0,
     train=dict(
         type=dataset_type,
         ann_file=data_root + trainsplit_ann_folder,
@@ -173,4 +177,4 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/s2anet_v2'
+work_dir = '/data1/xyh/checkpoints/DOTA1_0/s2anet_trainval200_v2'
