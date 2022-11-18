@@ -12,5 +12,7 @@ The past decade has witnessed significant progress on detecting objects in aeria
 | ------ | -------- | --------- | -------- | ------- | ------------------ | ------------- | ---- | ---- | ---------- | ----------- | ----- |
 | S2ANet | ResNet50 | v2(le135) | smoothl1 | 1x      | DOTA-v1.0,train    | 1024x1024,512 | \    | \    | 71.47      | 37.36       | 39.62 |
 | S2ANet | ResNet50 | v2(le135) | smoothl1 | 1x      | DOTA-v1.0,trainval | 1024x1024,824 | \    | \    | 73.83      | 38.17       | 40.56 |
-| S2ANet | ResNet50 | v2(le135) | smoothl1 | 1x      | DOTA-v1.0,trainval | 1024x1024,824 | \    | RR   | \          | \           | \     |
+| S2ANet | ResNet50 | v3(le90)  | smoothl1 | 1x      | DOTA-v1.0,trainval | 1024x1024,824 | \    | \    | 72.54      | 39.18       | 39.97 |
+| S2ANet | ResNet50 | v2(le135) | smoothl1 | 1x      | DOTA-v1.0,trainval | 1024x1024,824 | \    | RR   | 74.62      | 38.73       | 41.26 |
+| S2ANet | ResNet50 | v1(oc)    | smoothl1 | 2x      | DOTA-v1.0,trainval | 1024x1024,824 | \    | \    | 71.21      | 38.16       | 39.16 |
 | S2ANet | ResNet50 | v2(le135) | smoothl1 | 1x      | DOTA-v1.0,trainval | 1024x1024,512 | Yes  | RR   | \          | \           | \     |
