@@ -20,6 +20,7 @@ from .slak import SLaK
 from .hornet import HorNet
 from .focalnet import FocalNet
 from .pvt import PyramidVisionTransformer
+from .pvt_v2 import PyramidVisionTransformerV2
 
 __all__ = [
     'RegNet', 'ResNet', 'ResNetV1d', 'ResNeXt', 'SSDVGG', 'HRNet', 'Res2Net',
@@ -28,5 +29,6 @@ __all__ = [
     'SwinTransformer',
     'ReResNet', 'MobileNetV2',
     'RepVGG','RepLKNet', 'ConvNeXt',
-    'SLaK', 'HorNet', 'FocalNet', 'PyramidVisionTransformer'
+    'SLaK', 'HorNet', 'FocalNet', 'PyramidVisionTransformer',
+    'PyramidVisionTransformerV2'
 ]
