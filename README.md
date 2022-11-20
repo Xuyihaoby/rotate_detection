@@ -28,6 +28,7 @@ Supported backbones:
 - [x] SLaK
 - [x] HorNet
 - [x] FocalNet
+- [x] PVT(v1\v2)
 
 Supported methods（rotate）:
 
