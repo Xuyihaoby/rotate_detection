@@ -26,11 +26,13 @@ class RATSSAssigner(BaseAssigner):
                  topk,
                  iou_calculator=dict(type='BboxOverlaps2D'),
                  ignore_iof_thr=-1,
-                 gpu_assign_thr=-1):
+                 gpu_assign_thr=-1,
+                 version='v1'):
         self.topk = topk
         self.iou_calculator = build_iou_calculator(iou_calculator)
         self.ignore_iof_thr = ignore_iof_thr
         self.gpu_assign_thr = gpu_assign_thr
+        self.angle_version = version
 
     # https://github.com/sfzhang15/ATSS/blob/master/atss_core/modeling/rpn/atss/loss.py
 
@@ -115,7 +117,7 @@ class RATSSAssigner(BaseAssigner):
         from mmdet.core.bbox.rtransforms import poly2obb
 
         if gt_bboxes.shape[-1] != 5:
-            rbbox = poly2obb(gt_bboxes)
+            rbbox = poly2obb(gt_bboxes, self.angle_version)
         else:
             rbbox = gt_bboxes
 
@@ -187,10 +189,13 @@ class RATSSAssigner(BaseAssigner):
         # bbox center and gt side
         gt_ctr, gt_wh, gt_thetas = torch.split(rbbox, [2, 2, 1], dim=1)
         Cos, Sin = torch.cos(gt_thetas), torch.sin(gt_thetas)
+        # if self.angle_version == 'v1':
         Matrix = torch.cat([Cos, Sin, -Sin, Cos], dim=-1).reshape(-1, 2, 2)
+        # else:
+        #     Matrix = torch.cat([Cos, -Sin, Sin, Cos], dim=-1).reshape(-1, 2, 2)
 
         if gt_bboxes.shape[-1] == 5:
-            gt_poly = obb2poly(gt_bboxes)
+            gt_poly = obb2poly(gt_bboxes, self.angle_version)
             gt_poly = gt_poly[None]
         else:
             gt_poly = gt_bboxes
@@ -200,6 +205,7 @@ class RATSSAssigner(BaseAssigner):
         gt_bboxes_offset = (gt_poly - candidate_pts).reshape(candidate_pts.shape[0],
                                                                candidate_pts.shape[1],
                                                                4, 2).transpose(-1, -2)
+
         corr_gt_bboxes = Matrix @ gt_bboxes_offset + candidate_pts.reshape(-1, num_gt, 4, 2).transpose(-1, -2)
 
         xmin = corr_gt_bboxes[:, :, 0, :].min(dim=2, keepdim=True)[0]

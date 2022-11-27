@@ -21,6 +21,7 @@ from .hornet import HorNet
 from .focalnet import FocalNet
 from .pvt import PyramidVisionTransformer
 from .pvt_v2 import PyramidVisionTransformerV2
+from .poolformer import PoolFormer
 
 __all__ = [
     'RegNet', 'ResNet', 'ResNetV1d', 'ResNeXt', 'SSDVGG', 'HRNet', 'Res2Net',
@@ -30,5 +31,5 @@ __all__ = [
     'ReResNet', 'MobileNetV2',
     'RepVGG','RepLKNet', 'ConvNeXt',
     'SLaK', 'HorNet', 'FocalNet', 'PyramidVisionTransformer',
-    'PyramidVisionTransformerV2'
+    'PyramidVisionTransformerV2', 'PoolFormer'
 ]
