@@ -360,7 +360,8 @@ class RATSSAssigner(BaseAssigner):
         candidate_idxs = candidate_idxs.view(-1)
 
         # calculate the left, top, right, bottom distance between positive
-        # bbox center and gt side
+        # bbox center and gt s
+        #      ide
         l_ = ep_bboxes_cx[candidate_idxs].view(-1, num_gt) - gt_bboxes[:, 0]
         t_ = ep_bboxes_cy[candidate_idxs].view(-1, num_gt) - gt_bboxes[:, 1]
         r_ = gt_bboxes[:, 2] - ep_bboxes_cx[candidate_idxs].view(-1, num_gt)
