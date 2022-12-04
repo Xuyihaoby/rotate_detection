@@ -23,6 +23,7 @@ from .pvt import PyramidVisionTransformer
 from .pvt_v2 import PyramidVisionTransformerV2
 from .poolformer import PoolFormer
 from .metaformer import MetaFormer
+from .metaformer_v2 import MetaFormerv2
 
 __all__ = [
     'RegNet', 'ResNet', 'ResNetV1d', 'ResNeXt', 'SSDVGG', 'HRNet', 'Res2Net',
