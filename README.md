@@ -29,6 +29,7 @@ Supported backbones:
 - [x] HorNet
 - [x] FocalNet
 - [x] PVT(v1\v2)
+- [x] metaformer
 
 Supported methods（rotate）:
 
