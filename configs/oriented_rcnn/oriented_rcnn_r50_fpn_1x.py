@@ -1,7 +1,7 @@
 model = dict(
     type='OrientedRCNN',
     obb=True,
-    submission=True,
+    submission=False,
     pretrained='torchvision://resnet50',
     backbone=dict(
         type='ResNet',
@@ -45,7 +45,7 @@ model = dict(
             in_channels=256,
             fc_out_channels=1024,
             roi_feat_size=7,
-            num_classes=11,
+            num_classes=15,
             bbox_coder=dict(
                 type='DeltaXYWHBBoxCoder',
                 target_means=[0., 0., 0., 0.],
@@ -122,7 +122,7 @@ model = dict(
     ))
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.0025, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
@@ -134,24 +134,23 @@ lr_config = dict(
 total_epochs = 12
 
 dataset_type = 'DOTADatasetV1'
-data_root = '/data1/public_dataset/rsai/'
-trainsplit_ann_folder = 'example/labelTxt'
-# trainsplit_ann_folder = 'split/train/labelTxt'
-trainsplit_img_folder = 'example/images'
-# trainsplit_img_folder = 'split/train/images'
-valsplit_ann_folder = 'example/labelTxt'
-# valsplit_ann_folder = 'split/val/labelTxt'
-valsplit_img_folder = 'example/images'
-# valsplit_img_folder = 'split/val/images'
-val_ann_folder = 'origin/val/labelTxt'  # change the path to validate
-val_img_folder = 'origin/val/images'
-test_img_folder = 'split/val/images'  # # change the path to validate
+data_root = '/data1/public_dataset/DOTA/DOTA1_0/simple/'
+trainsplit_ann_folder = 'train/labelTxt'
+trainsplit_img_folder = 'train/images'
+valsplit_ann_folder = 'train/labelTxt'
+valsplit_img_folder = 'train/images'
+val_ann_folder = 'train/labelTxt'
+val_img_folder = 'train/images'
+test_img_folder = 'test/images'
+example_ann_folder = 'train/labelTxt'
+example_img_folder = 'train/images'
+
 
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='RLoadAnnotations', with_bbox=True),
+    dict(type='RLoadAnnotations', with_bbox=True, with_mask=True),
     dict(type='RResize', img_scale=(1024, 1024)),
     dict(type='RRandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
@@ -176,7 +175,7 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=1,
+    samples_per_gpu=4,
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
@@ -210,4 +209,4 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/rsai/oriented_rcnn'
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/oriented_rcnn_new'

@@ -61,7 +61,7 @@ model = dict(
         max_per_img=100))
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.005, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
@@ -74,15 +74,15 @@ total_epochs = 12
 
 dataset_type = 'DOTADatasetV1'
 data_root = '/data1/public_dataset/DOTA/DOTA1_0/split/'
-trainsplit_ann_folder = 'trainall/labelTxt'
-trainsplit_img_folder = 'trainall/images'
-valsplit_ann_folder = 'trainall/labelTxt'
-valsplit_img_folder = 'trainall/images'
-val_ann_folder = 'trainall/labelTxt'
-val_img_folder = 'trainall/images'
-test_img_folder = 'testms/images'
-example_ann_folder = 'trainall/labelTxt'
-example_img_folder = 'trainall/images'
+# trainsplit_ann_folder = 'example/labelTxt'
+trainsplit_ann_folder = 'split/all/labelTxt'
+# trainsplit_img_folder = 'example/images'
+trainsplit_img_folder = 'split/all/images'
+valsplit_ann_folder = 'split/val/labelTxt'
+valsplit_img_folder = 'split/val/images'
+val_ann_folder = 'origin/val/labelTxt'  # change the path to validate
+val_img_folder = 'origin/val/images'
+test_img_folder = 'split/test/images'  # # change the path to validate
 
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
@@ -112,8 +112,8 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=1,
-    workers_per_gpu=0,
+    samples_per_gpu=2,
+    workers_per_gpu=2,
     train=dict(
         type=dataset_type,
         ann_file=data_root + trainsplit_ann_folder,
@@ -132,7 +132,7 @@ data = dict(
         test_mode=True))
 evaluation = dict(interval=24, metric='bbox')
 
-checkpoint_config = dict(interval=2)
+checkpoint_config = dict(interval=4)
 
 log_config = dict(
     interval=10,
@@ -146,4 +146,11 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/rretinanet/retinanet_r50_fpn_1x'
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/DOTA1_0/retinanet_r50_fpn_rotate_1x'
+
+# mAP: 0.709055529572117
+# ap of each class: plane:0.8885521425169385, baseball-diamond:0.8261762036398831, bridge:0.395277014592006,
+# ground-track-field:0.7646727677540914, small-vehicle:0.7121476129934059, large-vehicle:0.683387608911888,
+# ship:0.7728502001892228, tennis-court:0.9085254052592213, basketball-court:0.8475111724594586,
+# storage-tank:0.7888281360728067, soccer-ball-field:0.5620572764314572, roundabout:0.6655962797013967,
+# harbor:0.5417986122327694, swimming-pool:0.6983194651754767, helicopter:0.5801330456517326
