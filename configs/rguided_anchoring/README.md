@@ -8,6 +8,7 @@ Region anchors are the cornerstone of modern object detection techniques. State-
 
 ## Results and Models
 
-| Method      | Backbone | Lr schd | Dataset         | preprocess    | $AP_{0.5}$ | $AP_{0.75}$ | $mAP$ |
-| ----------- | -------- | ------- | --------------- | ------------- | ---------- | ----------- | ----- |
-| faster_rcnn | ResNet50 | 1x      | DOTA-v1.0,train | 1024x1024,512 | 71.34      | 40.32       | 40.14 |
+| Method      | Backbone | Lr schd | Dataset         | preprocess    |  MS  | $AP_{0.5}$ | $AP_{0.75}$ | $mAP$ |
+| ----------- | -------- | ------- | --------------- | ------------- | :--: | ---------- | ----------- | ----- |
+| faster_rcnn | ResNet50 | 1x      | DOTA-v1.0,train | 1024x1024,512 |  \   | 71.34      | 40.32       | 40.14 |
+| faster_rcnn | ResNet50 | 1x      | DOTA-v1.0,train | 1024x1024,512 |  Y   | 76.94      | 47.65       | 45.64 |
