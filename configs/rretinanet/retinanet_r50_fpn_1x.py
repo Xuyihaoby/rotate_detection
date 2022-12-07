@@ -57,11 +57,11 @@ model = dict(
         nms_pre=1000,
         min_bbox_size=0,
         score_thr=0.05,
-        nms=dict(type='rnms', iou_threshold=0.5),
-        max_per_img=100))
+        nms=dict(type='rnms', iou_threshold=0.1),
+        max_per_img=2000))
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.005, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
@@ -73,16 +73,16 @@ lr_config = dict(
 total_epochs = 12
 
 dataset_type = 'DOTADatasetV1'
-data_root = '/data1/public_dataset/DOTA/DOTA1_0/split/'
-trainsplit_ann_folder = 'trainall/labelTxt'
-trainsplit_img_folder = 'trainall/images'
-valsplit_ann_folder = 'trainall/labelTxt'
-valsplit_img_folder = 'trainall/images'
-val_ann_folder = 'trainall/labelTxt'
-val_img_folder = 'trainall/images'
-test_img_folder = 'testms/images'
-example_ann_folder = 'trainall/labelTxt'
-example_img_folder = 'trainall/images'
+data_root = '/data1/public_dataset/DOTA/DOTA1_0/simple/'
+trainsplit_ann_folder = 'train/labelTxt'
+trainsplit_img_folder = 'train/images'
+valsplit_ann_folder = 'train/labelTxt'
+valsplit_img_folder = 'train/images'
+val_ann_folder = 'train/labelTxt'
+val_img_folder = 'train/images'
+test_img_folder = 'test/images'
+example_ann_folder = 'train/labelTxt'
+example_img_folder = 'train/images'
 
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
@@ -112,8 +112,8 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=1,
-    workers_per_gpu=0,
+    samples_per_gpu=2,
+    workers_per_gpu=2,
     train=dict(
         type=dataset_type,
         ann_file=data_root + trainsplit_ann_folder,
@@ -146,4 +146,4 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/rretinanet/retinanet_r50_fpn_1x'
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/retinanet_r50_fpn_1x'
