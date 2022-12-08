@@ -8,3 +8,4 @@ timm
 e2cnn
 einops
 sklearn
+yacs
