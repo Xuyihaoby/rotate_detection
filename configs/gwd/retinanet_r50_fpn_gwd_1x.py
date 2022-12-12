@@ -147,7 +147,7 @@ log_config = dict(
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 load_from = None
-resume_from = '/data1/xyh/checkpoints/simDOTA1_0/retinanet_gwd/epoch_8.pth'
+resume_from = None
 workflow = [('train', 1)]
 work_dir = '/data1/xyh/checkpoints/simDOTA1_0/retinanet_gwd'
 

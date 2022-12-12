@@ -1,0 +1,13 @@
+# Learning High-Precision Bounding Box for Rotated Object Detection via Kullback-Leibler Divergence
+
+ [Learning High-Precision Bounding Box for Rotated Object Detection via Kullback-Leibler Divergence](https://arxiv.org/pdf/2106.01883.pdf)
+
+## Abstract
+
+Existing rotated object detectors are mostly inherited from the horizontal detection paradigm, as the latter has evolved into a well-developed area. However, these detectors are difﬁcult to perform prominently in high-precision detection due to the limitation of current regression loss design, especially for objects with large aspect ratios. Taking the perspective that horizontal detection is a special case for rotated object detection, in this paper, we are motivated to change the design of rotation regression loss from induction paradigm to deduction methodology, in terms of the relation between rotation and horizontal detection. We show that one essential challenge is how to modulate the coupled parameters in the rotation regression loss, as such the estimated parameters can inﬂuence to each other during the dynamic joint optimization, in an adaptive and synergetic way. Speciﬁcally, we ﬁrst convert the rotated bounding box into a 2-D Gaussian distribution, and then calculate the Kullback-Leibler Divergence (KLD) between the Gaussian distributions as the regression loss. By analyzing the gradient of each parameter, we show that KLD (and its derivatives) can dynamically adjust the parameter gradients according to the characteristics of the object. It will adjust the importance (gradient weight) of the angle parameter according to the aspect ratio. This mechanism can be vital for high-precision detection as a slight angle error would cause a serious accuracy drop for large aspect ratios objects. More importantly, we have proved that KLD is scale invariant. We further show that the KLD loss can be degenerated into the popular ln-norm loss for horizontal detection. Experimental results on seven datasets using different detectors show its consistent superiority, and codes are available at https://github.com/yangxue0827/RotationDetection.
+
+## Results and Models
+
+| Method    | angle  | Backbone | Lr schd | Dataset         | preprocess    |  BS  | loss | $AP_{0.5}$ | $AP_{0.75}$ | $mAP$ |
+| --------- | ------ | -------- | ------- | --------------- | ------------- | :--: | ---- | ---------- | ----------- | ----- |
+| RetinaNet | v1(oc) | ResNet50 | 1x      | DOTA-v1.0,train | 1024x1024,512 |  4   | KLD  | 68.24      | 40.29       | 40.01 |
