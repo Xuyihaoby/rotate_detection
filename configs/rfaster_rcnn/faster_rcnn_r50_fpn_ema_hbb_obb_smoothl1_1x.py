@@ -210,3 +210,10 @@ resume_from = None
 custom_hooks = [dict(type='ExpMomentumEMAHook', resume_from=resume_from, priority=49)]
 workflow = [('train', 1)]
 work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/faster_rcnn_r50_fpn_ema_1x'
+# mAP: 0.708701151688159
+# ap of each class: plane:0.8884432994223372, baseball-diamond:0.7610956646244641, bridge:0.4752400399327455, ground-track-field:0.6974655884342521, small-vehicle:0.7347062979969274, large-vehicle:0.7544825877872872, ship:0.8521304252396137, tennis-court:0.9085428512708092, basketball-court:0.7987449302117591, storage-tank:0.8431460331199491, soccer-ball-field:0.5756173999701395, roundabout:0.6334986265054134, harbor:0.6605478261928902, swimming-pool:0.6199182266338126, helicopter:0.42693747797998405
+# COCO style result:
+#
+# AP50: 0.708701151688159
+# AP75: 0.38722896135712453
+# mAP: 0.39212898341851415

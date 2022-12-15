@@ -212,3 +212,10 @@ load_from = None
 resume_from = None
 workflow = [('train', 1)]
 work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/DOTA1_0/faster_rcnn_r50_fpn_rotate_1x'
+# mAP: 0.7926714128250231
+# ap of each class: plane:0.8942322527724372, baseball-diamond:0.848070689307847, bridge:0.5875857938413397, ground-track-field:0.8007893865426596, small-vehicle:0.8084909555774079, large-vehicle:0.7466308190798231, ship:0.872468351469285, tennis-court:0.9088152475481515, basketball-court:0.8767089607176385, storage-tank:0.8685120134440233, soccer-ball-field:0.6986248720749383, roundabout:0.7111967518486847, harbor:0.7720986885997992, swimming-pool:0.7902624375330762, helicopter:0.705583972018235
+# COCO style result:
+#
+# AP50: 0.7926714128250231
+# AP75: 0.49549596767799453
+# mAP: 0.47563361169347285
