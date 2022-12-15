@@ -22,6 +22,7 @@ Object detection has been dominated by anchor-based detectors for several years.
 | retina | ResNet50 | v3(le90)  | R_IoU | 1x      | DOTA-v1.0,trainval | 1024x1024,824 | \ | \ | 73.12      | 42.03       | 42.39 |
 | retina | ResNet50 | v3(le90)  | R_IoU | 2x      | DOTA-v1.0,trainval | 1024x1024,824 | \ | \ | 73.28      | 44.95       | 43.67 |
 | retina | ResNet50 | v3(le90) | R_IoU | 1x | DOTA-v1.0,trainval | 1024x1024,824 | Yes | \ | 77.56 | 50.75 | 47.95 |
+| faster_rcnn | ResNet50 | v1(oc) | l1 | 1x | DOTA-v1.0,train | 1024x1024,512 | \ | \ | 69.72 | 38.09 | 38.48 |
 
 ### HRSC2016
 

@@ -1,7 +1,8 @@
+num = 15
 model = dict(
     type='RFasterRCNN',
     obb=True,
-    submission=False,
+    submission=True,
     pretrained='torchvision://resnet50',
     backbone=dict(
         type='ResNet',
@@ -18,7 +19,7 @@ model = dict(
         out_channels=256,
         num_outs=5),
     rpn_head=dict(
-        type='RRPNHead',
+        type='RRPNHeadATSS',
         in_channels=256,
         feat_channels=256,
         anchor_generator=dict(
@@ -45,7 +46,7 @@ model = dict(
             in_channels=256,
             fc_out_channels=1024,
             roi_feat_size=7,
-            num_classes=15,
+            num_classes=num,
             bbox_coder=dict(
                 type='DeltaXYWHBBoxCoder',
                 target_means=[0., 0., 0., 0.],
@@ -61,14 +62,7 @@ model = dict(
     # model training and testing settings
     train_cfg=dict(
         rpn=dict(
-            assigner=dict(
-                type='MaxIoUAssigner',
-                pos_iou_thr=0.7,
-                neg_iou_thr=0.3,
-                min_pos_iou=0.3,
-                match_low_quality=True,
-                ignore_iof_thr=-1,
-                gpu_assign_thr=180),
+            assigner=dict(type='RATSSAssigner', topk=9, gpu_assign_thr=5),
             sampler=dict(
                 type='RandomSampler',
                 num=256,
@@ -148,7 +142,7 @@ img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='RLoadAnnotations', with_bbox=True, with_mask=True),
+    dict(type='RLoadAnnotations', with_bbox=True),
     dict(type='RResize', img_scale=(1024, 1024)),
     dict(type='RRandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
@@ -173,7 +167,7 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=2,
+    samples_per_gpu=4,
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
@@ -193,7 +187,7 @@ data = dict(
         test_mode=True))
 evaluation = dict(interval=24, metric='bbox')
 
-checkpoint_config = dict(interval=2)
+checkpoint_config = dict(interval=4)
 
 log_config = dict(
     interval=10,
@@ -207,4 +201,10 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/faster_rcnn_r50_fpn_2x2_1x'
+work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/faster_rcnn_r50_fpn_atss_1x'
+# mAP: 0.6971858575828939
+# ap of each class: plane:0.812853253063886, baseball-diamond:0.7589707328463124, bridge:0.4599304168130316,
+# ground-track-field:0.6871268893062519, small-vehicle:0.7325242116068432, large-vehicle:0.7514292990609561,
+# ship:0.8539033595720031, tennis-court:0.9083370545895115, basketball-court:0.7944911230968155,
+# storage-tank:0.7813867063794495, soccer-ball-field:0.561761632034396, roundabout:0.6211560031747319,
+# harbor:0.6591127943634467, swimming-pool:0.6211399780933433, helicopter:0.45366440974242767
