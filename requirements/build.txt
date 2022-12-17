@@ -9,3 +9,4 @@ e2cnn
 einops
 sklearn
 yacs
+omegaconf
