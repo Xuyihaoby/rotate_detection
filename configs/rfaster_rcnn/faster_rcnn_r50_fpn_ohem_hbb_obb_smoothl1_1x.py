@@ -69,3 +69,10 @@ data = dict(
         pipeline=test_pipeline,
         test_mode=True))
 work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/faster_rcnn_r50_fpn_ohem_1x'
+# mAP: 0.6842872197679469
+# ap of each class: plane:0.8120735439519112, baseball-diamond:0.7674378371475775, bridge:0.46665686742017304, ground-track-field:0.6985183825170451, small-vehicle:0.7169216139681184, large-vehicle:0.7241423113454417, ship:0.7572016751403186, tennis-court:0.9086682222798376, basketball-court:0.7986998756749295, storage-tank:0.7863210920163202, soccer-ball-field:0.5359777766539439, roundabout:0.5864470000299897, harbor:0.6669786032793019, swimming-pool:0.6101581757354116, helicopter:0.4281053193588842
+# COCO style result:
+#
+# AP50: 0.6842872197679469
+# AP75: 0.3745879432675384
+# mAP: 0.3820845355995245

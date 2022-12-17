@@ -12,14 +12,15 @@ State-of-the-art object detection networks depend on region proposal algorithms 
 | -------------------- | :------------------: | -------- | ------ | --------- | :-----: | --------------- | ------------- | :--: | ---------- | :---------: | :---: |
 | rfaster_rcnn         |          \           | ResNet50 | v1(oc) | smooth_l1 |   1x    | DOTA-v1.0,train | 1024x1024,512 |  \   | 70.48      |      \      |   \   |
 | rfaster_rcnn         |          \           | ResNet50 | v1(oc) | smooth_l1 |   1x    | DOTA-v1.0,train | 1024x1024,512 |  Y   | 76.8       |      \      |   \   |
-| rfaster_rcnn         |         ohem         | ResNet50 | v1(oc) | smooth_l1 |   1x    | DOTA-v1.0,train | 1024x1024,512 |  \   | 68.43      |      \      |   \   |
+| rfaster_rcnn         |         ohem         | ResNet50 | v1(oc) | smooth_l1 |   1x    | DOTA-v1.0,train | 1024x1024,512 |  \   | 68.43      |    37.46    | 38.21 |
 | rfaster_rcnn         |         ema          | ResNet50 | v1(oc) | smooth_l1 |   1x    | DOTA-v1.0,train | 1024x1024,512 |  \   | 70.87      |    38.72    | 39.21 |
 | rfaster_rcnn         |          RR          | ResNet50 | v1(oc) | smooth_l1 |   1x    | DOTA-v1.0,train | 1024x1024,512 |  \   | 72.50      |    40.14    | 40.73 |
 | rfaster_rcnn         |          RR          | ResNet50 | v1(oc) | smooth_l1 |   1x    | DOTA-v1.0,train | 1024x1024,512 |  Y   | 79.27      |    49.55    | 47.56 |
 | faster_rcnn          |        hsv+RR        | ResNet50 | v1(oc) | smooth_l1 |   1x    | DOTA-v1.0,train | 1024x1024,512 |  \   | 72.53      |    40.50    | 40.63 |
 | rfaster_rcnn         |      grid_mask       | ResNet50 | v1(oc) | smooth_l1 |   1x    | DOTA-v1.0,train | 1024x1024,512 |  \   | 71.09      |      \      |   \   |
-| rfaster_rcnn         |    hsv-mosaic-RR     | ResNet50 | v1(oc) | smooth_l1 |   1x    | DOTA-v1.0,train | 1024x1024,512 |  \   | 73.10      |      \      |   \   |
-| rfaster_rcnn         |    hsv- mixup-RR     | ResNet50 | v1(oc) | smooth_l1 |   1x    | DOTA-v1.0,train | 1024x1024,512 |  \   | 72.5       |      \      |   \   |
+| rfaster_rcnn         |      grid_mask       | ResNet50 | v1(oc) | smooth_l1 |   2x    | DOTA-v1.0,train | 1024x1024,512 |  \   | 70.37      |    42.03    | 40.72 |
+| rfaster_rcnn         |    hsv-mosaic-RR     | ResNet50 | v1(oc) | smooth_l1 |   1x    | DOTA-v1.0,train | 1024x1024,512 |  \   | 73.10      |    40.95    | 41.24 |
+| rfaster_rcnn         |    hsv- mixup-RR     | ResNet50 | v1(oc) | smooth_l1 |   1x    | DOTA-v1.0,train | 1024x1024,512 |  \   | 73.10      |    41.14    | 41.19 |
 | rfaster_rcnn         |   hsv-mosaic-mixup   | ResNet50 | v1(oc) | smooth_l1 |   1x    | DOTA-v1.0,train | 1024x1024,512 |  \   | 74.21      |      \      |   \   |
 | rfaster_rcnn         |   hsv-mosaic-mixup   | ResNet50 | v1(oc) | smooth_l1 |   1x    | DOTA-v1.0,train | 1024x1024,512 |  Y   | 79.01      |      \      |   \   |
 | rfaster_rcnn         | hsv-mosaic-mixup_swa | ResNet50 | v1(oc) | smooth_l1 |   1x    | DOTA-v1.0,train | 1024x1024,512 |  \   | 74.93      |      \      |   \   |
