@@ -21,7 +21,7 @@ State-of-the-art object detection networks depend on region proposal algorithms 
 | rfaster_rcnn         |      grid_mask       | ResNet50 | v1(oc) | smooth_l1 |   2x    | DOTA-v1.0,train | 1024x1024,512 |  \   | 70.37      |    42.03    | 40.72 |
 | rfaster_rcnn         |    hsv-mosaic-RR     | ResNet50 | v1(oc) | smooth_l1 |   1x    | DOTA-v1.0,train | 1024x1024,512 |  \   | 73.10      |    40.95    | 41.24 |
 | rfaster_rcnn         |    hsv- mixup-RR     | ResNet50 | v1(oc) | smooth_l1 |   1x    | DOTA-v1.0,train | 1024x1024,512 |  \   | 73.10      |    41.14    | 41.19 |
-| rfaster_rcnn         |   hsv-mosaic-mixup   | ResNet50 | v1(oc) | smooth_l1 |   1x    | DOTA-v1.0,train | 1024x1024,512 |  \   | 74.21      |      \      |   \   |
+| rfaster_rcnn         | hsv-mosaic-mixup-RR  | ResNet50 | v1(oc) | smooth_l1 |   1x    | DOTA-v1.0,train | 1024x1024,512 |  \   | 74.21      |    41.51    | 41.92 |
 | rfaster_rcnn         |   hsv-mosaic-mixup   | ResNet50 | v1(oc) | smooth_l1 |   1x    | DOTA-v1.0,train | 1024x1024,512 |  Y   | 79.01      |      \      |   \   |
 | rfaster_rcnn         | hsv-mosaic-mixup_swa | ResNet50 | v1(oc) | smooth_l1 |   1x    | DOTA-v1.0,train | 1024x1024,512 |  \   | 74.93      |      \      |   \   |
 | rfaster_rcnn-(pafpn) |          \           | ResNet50 | v1(oc) | smooth_l1 |   1x    | DOTA-v1.0,train | 1024x1024,512 |  \   | 70.85      |    39.16    | 39.29 |
