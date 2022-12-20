@@ -255,3 +255,11 @@ load_from = None
 resume_from = None
 workflow = [('train', 1)]
 work_dir = '/data1/xyh/checkpoints/DOTA1_0/RoItrans'
+
+# mAP: 0.805079449937802
+# ap of each class: plane:0.8934990919280169, baseball-diamond:0.8487640577467717, bridge:0.6030627405649496, ground-track-field:0.8098544355227718, small-vehicle:0.809778278896812, large-vehicle:0.8520095610360511, ship:0.8868088775589791, tennis-court:0.9090224018633968, basketball-court:0.8802197054639038, storage-tank:0.8779114022132071, soccer-ball-field:0.7012851663468835, roundabout:0.6741880690495224, harbor:0.792768580234275, swimming-pool:0.8215790612415599, helicopter:0.7154403193999298
+# COCO style result:
+#
+# AP50: 0.805079449937802
+# AP75: 0.5772580331548051
+# mAP: 0.5251789538931477
