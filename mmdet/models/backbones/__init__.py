@@ -24,6 +24,7 @@ from .pvt_v2 import PyramidVisionTransformerV2
 from .poolformer import PoolFormer
 from .metaformer import MetaFormer
 from .metaformer_v2 import MetaFormerv2
+from .efficientformer import EfficientFormer
 
 __all__ = [
     'RegNet', 'ResNet', 'ResNetV1d', 'ResNeXt', 'SSDVGG', 'HRNet', 'Res2Net',
@@ -33,5 +34,6 @@ __all__ = [
     'ReResNet', 'MobileNetV2',
     'RepVGG','RepLKNet', 'ConvNeXt',
     'SLaK', 'HorNet', 'FocalNet', 'PyramidVisionTransformer',
-    'PyramidVisionTransformerV2', 'PoolFormer', 'MetaFormer'
+    'PyramidVisionTransformerV2', 'PoolFormer', 'MetaFormer',
+    'EfficientFormer'
 ]
