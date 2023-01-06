@@ -16,6 +16,7 @@ from .mobilenet_v2 import MobileNetV2
 from .repvgg import RepVGG
 from .replknet import RepLKNet
 from .convnext import ConvNeXt
+from .convnextv2 import ConvNeXtV2
 from .slak import SLaK
 from .hornet import HorNet
 from .focalnet import FocalNet
@@ -32,7 +33,7 @@ __all__ = [
     'ResNeSt', 'TridentResNet',
     'SwinTransformer',
     'ReResNet', 'MobileNetV2',
-    'RepVGG','RepLKNet', 'ConvNeXt',
+    'RepVGG','RepLKNet', 'ConvNeXt', 'ConvNeXtV2',
     'SLaK', 'HorNet', 'FocalNet', 'PyramidVisionTransformer',
     'PyramidVisionTransformerV2', 'PoolFormer', 'MetaFormer',
     'EfficientFormer'
