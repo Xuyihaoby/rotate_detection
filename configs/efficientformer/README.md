@@ -11,3 +11,5 @@ Vision Transformers (ViT) have shown rapid progress in computer vision tasks, ac
 | Method     | Backbone             | Angle     | Loss  | Lr schd | Dataset         | preprocess    | $AP_{0.5}$ | $AP_{0.75}$ | $mAP$ |
 | ---------- | -------------------- | --------- | ----- | ------- | --------------- | ------------- | ---------- | ----------- | ----- |
 | gfl_retina | efficientformerv1-l1 | v2(le135) | R_IoU | 1x      | DOTA-v1.0,train | 1024x1024,512 | 71.12      | 41.37       | 40.72 |
+
+**note**：efficientformer is sensitive to the parameters of optimizer and v2 may not converge well in some downstream tasks 
