@@ -8,10 +8,21 @@ The "Roaring 20s" of visual recognition began with the introduction of Vision Tr
 
 ## Results and Models
 
+### v1
+
 | Method     | Backbone      | Angle     | Loss  | Lr schd | Dataset         | preprocess    | $AP_{0.5}$ | $AP_{0.75}$ | $mAP$ |
 | ---------- | ------------- | --------- | ----- | ------- | --------------- | ------------- | ---------- | ----------- | ----- |
 | gfl_retina | convnext_tiny | v2(le135) | R_IoU | 1x      | DOTA-v1.0,train | 1024x1024,512 | 75.03      | 46.58       | 45.04 |
 | retina     | convnext_tiny | v2(le135) | R_IoU | 1x      | DOTA-v1.0,train | 1024x1024,512 | 5.07       | 0.34        | 1.31  |
 
 **note**:If directly regress five parameters and use R_IoU loss, the model can not converge well!!
+
+### v2
+
+| Method     | Backbone        | pretrained | Angle     | Loss  | Lr schd | Dataset         | preprocess    | $AP_{0.5}$ | $AP_{0.75}$ | $mAP$ |
+| ---------- | --------------- | :--------: | --------- | ----- | ------- | --------------- | ------------- | ---------- | ----------- | ----- |
+| gfl_retina | convnextv2_tiny |   fcmae    | v2(le135) | R_IoU | 1x      | DOTA-v1.0,train | 1024x1024,512 | 67.22      | 40.41       | 39.26 |
+| gfl_retina | convnextv2_tiny |    IN1K    | v2(le135) | R_IoU | 1x      | DOTA-v1.0,train | 1024x1024,512 | 72.19      | 45.20       | 43.25 |
+| gfl_retina | convnextv2_tiny |   IN22K    | v2(le135) | R_IoU | 1x      | DOTA-v1.0,train | 1024x1024,512 | 73.21      | 46.94       | 44.55 |
+| gfl_retina | convnextv2_tiny | IN22K(384) | v2(le135) | R_IoU | 1x      | DOTA-v1.0,train | 1024x1024,512 | 73.97      | 46.70       | 44.54 |
 
