@@ -23,7 +23,7 @@ Supported backbones:
 - [x] ReResNet
 - [x] MobileNet_v2
 - [x] RepVGG
-- [x] ConvNeXt
+- [x] ConvNeXt(v1\v2)
 - [x] RepLK
 - [x] SLaK
 - [x] HorNet
