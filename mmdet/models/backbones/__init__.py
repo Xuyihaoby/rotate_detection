@@ -26,6 +26,7 @@ from .poolformer import PoolFormer
 from .metaformer import MetaFormer
 from .metaformer_v2 import MetaFormerv2
 from .efficientformer import EfficientFormer
+from .context_cluster import ContextCluster
 
 __all__ = [
     'RegNet', 'ResNet', 'ResNetV1d', 'ResNeXt', 'SSDVGG', 'HRNet', 'Res2Net',
@@ -36,5 +37,5 @@ __all__ = [
     'RepVGG','RepLKNet', 'ConvNeXt', 'ConvNeXtV2',
     'SLaK', 'HorNet', 'FocalNet', 'PyramidVisionTransformer',
     'PyramidVisionTransformerV2', 'PoolFormer', 'MetaFormer',
-    'EfficientFormer'
+    'EfficientFormer', 'ContextCluster'
 ]
