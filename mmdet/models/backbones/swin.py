@@ -15,6 +15,8 @@ from timm.models.layers import DropPath, to_2tuple, trunc_normal_
 from mmdet.core.custom import load_checkpoint
 from mmdet.utils import get_root_logger
 from ..builder import BACKBONES
+from einops import rearrange
+import math
 
 
 class Mlp(nn.Module):
@@ -149,6 +151,118 @@ class WindowAttention(nn.Module):
         return x
 
 
+class ContentAttention(nn.Module):
+    r""" Window based multi-head self attention (W-MSA) module with relative position bias.
+    It supports both of shifted and non-shifted window.
+    Args:
+        dim (int): Number of input channels.
+        window_size (tuple[int]): The height and width of the window.
+        num_heads (int): Number of attention heads.
+        qkv_bias (bool, optional):  If True, add a learnable bias to query, key, value. Default: True
+        qk_scale (float | None, optional): Override default qk scale of head_dim ** -0.5 if set
+        attn_drop (float, optional): Dropout ratio of attention weight. Default: 0.0
+        proj_drop (float, optional): Dropout ratio of output. Default: 0.0
+    """
+
+    def __init__(self, dim, window_size, num_heads, qkv_bias=True, qk_scale=None, attn_drop=0., proj_drop=0.,
+                 kmeans=False):
+
+        super().__init__()
+        self.dim = dim
+        self.window_size = window_size  # Wh, Ww
+        self.ws = window_size
+        self.num_heads = num_heads
+        head_dim = dim // num_heads
+        self.scale = qk_scale or head_dim ** -0.5
+        self.kmeans = kmeans
+
+        self.qkv = nn.Linear(dim, dim * 3, bias=qkv_bias)
+        self.attn_drop = nn.Dropout(attn_drop)
+        self.proj = nn.Linear(dim, dim)
+        self.proj_drop = nn.Dropout(proj_drop)
+
+        self.softmax = nn.Softmax(dim=-1)
+        self.get_v = nn.Conv2d(dim, dim, kernel_size=3, stride=1, padding=1, groups=dim)
+
+    def forward(self, x, mask=None):
+        """
+        Args:
+            x: input features with shape of (num_windows*B, N, C)
+            mask: (0/-inf) mask with shape of (num_windows, Wh*Ww, Wh*Ww) or None
+        """
+        B_, N, C = x.shape
+        qkv = self.qkv(x).reshape(B_, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1,
+                                                                                         4)  # 3, B_, self.num_heads,N,D
+
+        if True:
+            q_pre = qkv[0].reshape(B_ * self.num_heads, N, C // self.num_heads).permute(0, 2,
+                                                                                        1)  # qkv_pre[:,0].reshape(b*self.num_heads,qkvhd//3//self.num_heads,hh*ww)
+            ntimes = int(math.log(N // 49, 2))
+            q_idx_last = torch.arange(N).cuda().unsqueeze(0).expand(B_ * self.num_heads, N)
+            for i in range(ntimes):
+                bh, d, n = q_pre.shape
+                q_pre_new = q_pre.reshape(bh, d, 2, n // 2)
+                q_avg = q_pre_new.mean(dim=-1)  # .reshape(b*self.num_heads,qkvhd//3//self.num_heads,)
+                q_avg = torch.nn.functional.normalize(q_avg, dim=-2)
+                iters = 2
+                for i in range(iters):
+                    q_scores = torch.nn.functional.normalize(q_pre.permute(0, 2, 1), dim=-1).bmm(q_avg)
+                    soft_assign = torch.nn.functional.softmax(q_scores * 100, dim=-1).detach()
+                    q_avg = q_pre.bmm(soft_assign)
+                    q_avg = torch.nn.functional.normalize(q_avg, dim=-2)
+                q_scores = torch.nn.functional.normalize(q_pre.permute(0, 2, 1), dim=-1).bmm(q_avg).reshape(bh, n,
+                                                                                                            2)  # .unsqueeze(2)
+                q_idx = (q_scores[:, :, 0] + 1) / (q_scores[:, :, 1] + 1)
+                _, q_idx = torch.sort(q_idx, dim=-1)
+                q_idx_last = q_idx_last.gather(dim=-1, index=q_idx).reshape(bh * 2, n // 2)
+                q_idx = q_idx.unsqueeze(1).expand(q_pre.size())
+                q_pre = q_pre.gather(dim=-1, index=q_idx).reshape(bh, d, 2, n // 2).permute(0, 2, 1, 3).reshape(bh * 2,
+                                                                                                                d,
+                                                                                                                n // 2)
+
+            q_idx = q_idx_last.view(B_, self.num_heads, N)
+            _, q_idx_rev = torch.sort(q_idx, dim=-1)
+            q_idx = q_idx.unsqueeze(0).unsqueeze(4).expand(qkv.size())
+            qkv_pre = qkv.gather(dim=-2, index=q_idx)
+
+            q, k, v = rearrange(qkv_pre, 'qkv b h (nw ws) c -> qkv (b nw) h ws c', ws=49)
+
+            k = k.view(B_ * ((N // 49)) // 2, 2, self.num_heads, 49, -1)
+            k_over1 = k[:, 1, :, :20].unsqueeze(1)  # .expand(-1,2,-1,-1,-1)
+            k_over2 = k[:, 0, :, 29:].unsqueeze(1)  # .expand(-1,2,-1,-1,-1)
+            k_over = torch.cat([k_over1, k_over2], 1)
+            k = torch.cat([k, k_over], 3).contiguous().view(B_ * ((N // 49)), self.num_heads, 49 + 20, -1)
+
+            v = v.view(B_ * ((N // 49)) // 2, 2, self.num_heads, 49, -1)
+            v_over1 = v[:, 1, :, :20].unsqueeze(1)  # .expand(-1,2,-1,-1,-1)
+            v_over2 = v[:, 0, :, 29:].unsqueeze(1)  # .expand(-1,2,-1,-1,-1)
+            v_over = torch.cat([v_over1, v_over2], 1)
+            v = torch.cat([v, v_over], 3).contiguous().view(B_ * ((N // 49)), self.num_heads, 49 + 20, -1)
+
+        attn = (q @ k.transpose(-2, -1)) * self.scale
+        attn = self.softmax(attn)
+
+        attn = self.attn_drop(attn)
+        out = attn @ v
+
+        if True:
+            out = rearrange(out, '(b nw) h ws d -> b (h d) nw ws', h=self.num_heads, b=B_)
+            v = rearrange(v[:, :, :49, :], '(b nw) h ws d -> b h d (nw ws)', h=self.num_heads, b=B_)
+            W = int(math.sqrt(N))
+
+            out = out.reshape(B_, self.num_heads, C // self.num_heads, -1)
+            q_idx_rev = q_idx_rev.unsqueeze(2).expand(out.size())
+            x = out.gather(dim=-1, index=q_idx_rev).reshape(B_, C, N).permute(0, 2, 1)
+            v = v.gather(dim=-1, index=q_idx_rev).reshape(B_, C, W, W)
+            v = self.get_v(v)
+            v = v.reshape(B_, C, N).permute(0, 2, 1)
+            x = x + v
+
+        x = self.proj(x)
+        x = self.proj_drop(x)
+        return x
+
+
 class SwinTransformerBlock(nn.Module):
     """ Swin Transformer Block.
     Args:
@@ -168,19 +282,26 @@ class SwinTransformerBlock(nn.Module):
 
     def __init__(self, dim, num_heads, window_size=7, shift_size=0,
                  mlp_ratio=4., qkv_bias=True, qk_scale=None, drop=0., attn_drop=0., drop_path=0.,
-                 act_layer=nn.GELU, norm_layer=nn.LayerNorm):
+                 act_layer=nn.GELU, norm_layer=nn.LayerNorm, boat=False):
         super().__init__()
         self.dim = dim
         self.num_heads = num_heads
         self.window_size = window_size
         self.shift_size = shift_size
         self.mlp_ratio = mlp_ratio
+        self.boat = boat
         assert 0 <= self.shift_size < self.window_size, "shift_size must in 0-window_size"
 
         self.norm1 = norm_layer(dim)
         self.attn = WindowAttention(
             dim, window_size=to_2tuple(self.window_size), num_heads=num_heads,
             qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop)
+
+        if self.shift_size > 0 and self.boat:
+            self.attnC = ContentAttention(
+                dim, window_size=to_2tuple(self.window_size), num_heads=num_heads,
+                qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop, kmeans=shift_size)
+            self.norm4 = norm_layer(dim)
 
         self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
         self.norm2 = norm_layer(dim)
@@ -244,6 +365,10 @@ class SwinTransformerBlock(nn.Module):
 
         # FFN
         x = shortcut + self.drop_path(x)
+
+        if self.shift_size > 0 and self.boat:
+            x = x + self.attnC(self.norm4(x))
+
         x = x + self.drop_path(self.mlp(self.norm2(x)))
 
         return x
@@ -321,7 +446,8 @@ class BasicLayer(nn.Module):
                  drop_path=0.,
                  norm_layer=nn.LayerNorm,
                  downsample=None,
-                 use_checkpoint=False):
+                 use_checkpoint=False,
+                 boat=False):
         super().__init__()
         self.window_size = window_size
         self.shift_size = window_size // 2
@@ -341,7 +467,8 @@ class BasicLayer(nn.Module):
                 drop=drop,
                 attn_drop=attn_drop,
                 drop_path=drop_path[i] if isinstance(drop_path, list) else drop_path,
-                norm_layer=norm_layer)
+                norm_layer=norm_layer,
+                boat=False)
             for i in range(depth)])
 
         # patch merging layer
@@ -482,7 +609,8 @@ class SwinTransformer(nn.Module):
                  patch_norm=True,
                  out_indices=(0, 1, 2, 3),
                  frozen_stages=-1,
-                 use_checkpoint=False):
+                 use_checkpoint=False,
+                 boat=False):
         super().__init__()
 
         self.pretrain_img_size = pretrain_img_size
@@ -528,7 +656,8 @@ class SwinTransformer(nn.Module):
                 drop_path=dpr[sum(depths[:i_layer]):sum(depths[:i_layer + 1])],
                 norm_layer=norm_layer,
                 downsample=PatchMerging if (i_layer < self.num_layers - 1) else None,
-                use_checkpoint=use_checkpoint)
+                use_checkpoint=use_checkpoint,
+                boat=boat)
             self.layers.append(layer)
 
         num_features = [int(embed_dim * 2 ** i) for i in range(self.num_layers)]
