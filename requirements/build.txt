@@ -10,3 +10,4 @@ einops
 sklearn
 yacs
 omegaconf
+cupy-cuda101 # note: depend on cuda version
