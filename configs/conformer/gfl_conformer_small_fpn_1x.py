@@ -1,22 +1,22 @@
 angle_version = 'v2'
 model = dict(
     type='RGFL',
-    pretrained='/home/oneco/xyh/rotate_detection/checkpoints/ssa_tiny.pth',
+    pretrained='/home/oneco/xyh/rotate_detection/checkpoints/Conformer_small_patch16.pth',
     backbone=dict(
-        type='ShuntedTransformer',
-        patch_size=4,
-        embed_dims=[64, 128, 256, 512],
-        num_heads=[2, 4, 8, 16],
-        mlp_ratios=[8, 8, 4, 4],
+        type='Conformer',
+        embed_dim=384,
+        depth=12,
+        patch_size=32,
+        channel_ratio=4,
+        num_heads=6,
+        mlp_ratio=4,
         qkv_bias=True,
-        depths=[1, 2, 4, 1],
-        sr_ratios=[8, 4, 2, 1],
-        num_conv=0,
-        use_chk=False
+        norm_eval=True,
+        frozen_stages=1
     ),
     neck=dict(
         type='FPN',
-        in_channels=[64, 128, 256, 512],
+        in_channels=[256, 512, 1024, 1024],
         out_channels=256,
         start_level=1,
         add_extra_convs='on_output',
@@ -64,8 +64,11 @@ model = dict(
         max_per_img=2000))
 
 # optimizer
-optimizer = dict(type='AdamW', lr=0.0001, weight_decay=0.0001)
-optimizer_config = dict(grad_clip=None)
+optimizer = dict(type='AdamW', lr=0.0001, betas=(0.9, 0.999), weight_decay=0.05,
+                 paramwise_cfg=dict(custom_keys={'absolute_pos_embed': dict(decay_mult=0.),
+                                                 'relative_position_bias_table': dict(decay_mult=0.),
+                                                 'norm': dict(decay_mult=0.)}))
+optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = dict(
     policy='step',
@@ -115,7 +118,7 @@ test_pipeline = [
         ])
 ]
 data = dict(
-    samples_per_gpu=1,
+    samples_per_gpu=2,
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
@@ -151,11 +154,11 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/data/Aerial/checkpoints/shunted/gfl_tiny'
-# mAP: 0.6850190400647987
-# ap of each class: plane:0.8817314109932717, baseball-diamond:0.6435423274663576, bridge:0.4647273711576522, ground-track-field:0.5540308253873888, small-vehicle:0.7722740565427227, large-vehicle:0.7741440229322561, ship:0.8613927241652983, tennis-court:0.9085243957047026, basketball-court:0.764382078056649, storage-tank:0.746389363126519, soccer-ball-field:0.42447469821276995, roundabout:0.596169803566084, harbor:0.6428458472900921, swimming-pool:0.7015241863834466, helicopter:0.5391324899867719
+work_dir = '/data/Aerial/checkpoints/conformer/gfl_small'
+# mAP: 0.724235828037496
+# ap of each class: plane:0.8927523456941053, baseball-diamond:0.6934295925623211, bridge:0.5122131807696674, ground-track-field:0.6998751746001298, small-vehicle:0.7986734108102242, large-vehicle:0.8254277725009495, ship:0.8824326176271804, tennis-court:0.9086829400965528, basketball-court:0.7661993845376945, storage-tank:0.8587418382520692, soccer-ball-field:0.5297826071225402, roundabout:0.664215085974551, harbor:0.7292352894719847, swimming-pool:0.7294865626785612, helicopter:0.3723896178639076
 # COCO style result:
 #
-# AP50: 0.6850190400647987
-# AP75: 0.3974571787742565
-# mAP: 0.3969476016667092
+# AP50: 0.724235828037496
+# AP75: 0.4678461560001892
+# mAP: 0.4402136397621229
