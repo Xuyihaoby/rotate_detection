@@ -16,6 +16,7 @@ from .utils import reduce_loss, weight_reduce_loss, weighted_loss
 from .varifocal_loss import VarifocalLoss
 from .gaussian_distance_loss import GDLoss
 from .rotated_iou_loss import RotatedIoULoss, RotatedGIoULoss, RotatedDIoULoss
+from .alpha_rotated_iou_loss import AlphaRotatedIoULoss
 from .convex_iou_loss import ConvexGIoULoss
 from .spatial_border_loss import SpatialBorderLoss
 from .kld_reppoints_loss import KLDRepPointsLoss

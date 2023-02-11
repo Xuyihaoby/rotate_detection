@@ -19,7 +19,8 @@ Supported backbones:
 - [x] RegNet
 - [x] Res2Net
 - [x] ResNeSt
-- [x] Swin
+- [x] [boat_]Swin
+- [x] CSwin
 - [x] ReResNet
 - [x] MobileNet_v2
 - [x] RepVGG
@@ -31,6 +32,9 @@ Supported backbones:
 - [x] PVT(v1\v2)
 - [x] metaformer(v1\v2)
 - [x] efficientformer
+- [x] COC
+- [x] SSA
+- [x] rednet
 
 Supported methods（rotate）:
 
