@@ -16,6 +16,7 @@ The highest accuracy object detectors to date are based on a two-stage approach 
 | RetinaNet          | v1(oc)    | MobileNetv2 | 1x      | DOTA-v1.0,trainval | 1024x1024,200 |  1   |  2   | RIoU     | 63.54      | 33.00       | 34.21 |
 | RetinaNet          | v1(oc)    | ResNet50    | 1x      | DOTA-v1.0,trainval | 1024x1024,200 |  1   |  2   | RIoU     | 69.02      | 37.58       | 38.48 |
 | RetinaNet          | v1(oc)    | ResNet50    | 1x      | DOTA-v1.0,trainval | 1024x1024,200 |  9   |  2   | RIoU     | 68.82      | 38.94       | 39.49 |
+| RetinaNet          | v1(oc)    | ResNet50    | 1x      | DOTA-v1.0,trainval | 1024x1024,200 |  9   |  2   | RDIoU    | 70.41      | 39.98       | 40.20 |
 | RetinaNet          | v1(oc)    | ResNet50    | 1x      | DOTA-v1.0,train    | 1024x1024,512 |  9   |  2   | RIoU     | 67.16      | 36.69       | 37.95 |
 | RetinaNet          | v1(oc)    | ResNet50    | 1x      | DOTA-v1.0,train    | 1024x1024,512 |  9   |  2   | RGIoU    | 65.66      | 38.79       | 38.16 |
 | RetinaNet          | v1(oc)    | ResNet50    | 1x      | DOTA-v1.0,train    | 1024x1024,512 |  9   |  2   | smoothL1 | 64.11      | /           | /     |

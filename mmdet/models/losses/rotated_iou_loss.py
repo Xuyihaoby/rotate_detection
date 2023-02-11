@@ -154,3 +154,80 @@ class RotatedGIoULoss(nn.Module):
             avg_factor=avg_factor,
             **kwargs)
         return loss
+
+    
+@weighted_loss
+def diou_loss(pred, target, linear=True, eps=1e-6, version='v1', enclosing='smallest'):
+    """IoU loss.
+
+    Computing the IoU loss between a set of predicted bboxes and target bboxes.
+    The loss is calculated as negative log of IoU.
+
+    Args:
+        pred (Tensor): Predicted bboxes of format (x, y, w, h, a),
+            shape (n, 5).
+        target (Tensor): Corresponding gt bboxes, shape (n, 5).
+        linear (bool):  If True, use linear scale of loss instead of
+            log scale. Default: False.
+        eps (float): Eps to avoid log(0).
+
+    Return:
+        Tensor: Loss tensor.
+    """
+    ious, corners1, corners2, u = box_iou_rotated_differentiable(pred, target, version=version, iou_only=False)
+    ious = ious.clamp(min=eps)
+    u.clamp(min=eps)
+    w, h = enclosing_box(corners1, corners2, enclosing)
+    c2 = w * w + h * h  # (B, N)
+    x_offset = pred[..., 0] - target[..., 0]
+    y_offset = pred[..., 1] - target[..., 1]
+    d2 = x_offset * x_offset + y_offset * y_offset
+    diou_loss = 1. - ious + d2 / c2
+    return diou_loss
+
+
+@LOSSES.register_module()
+class RotatedDIoULoss(nn.Module):
+
+    def __init__(self, linear=True, eps=1e-6, reduction='mean', loss_weight=1.0, version='v1', enclosing='smallest'):
+        super(RotatedDIoULoss, self).__init__()
+        self.linear = linear
+        self.eps = eps
+        self.reduction = reduction
+        self.loss_weight = loss_weight
+        self.version = version
+        self.enclosing = enclosing
+
+    def forward(self,
+                pred,
+                target,
+                weight=None,
+                avg_factor=None,
+                reduction_override=None,
+                **kwargs):
+        if weight is not None and not torch.any(weight > 0):
+            return (pred * weight).sum()  # 0
+        assert reduction_override in (None, 'none', 'mean', 'sum')
+        reduction = (
+            reduction_override if reduction_override else self.reduction)
+        if (weight is not None) and (not torch.any(weight > 0)) and (
+                reduction != 'none'):
+            return (pred * weight).sum()  # 0
+        if weight is not None and weight.dim() > 1:
+            # TODO: remove this in the future
+            # reduce the weight of shape (n, 4) to (n,) to match the
+            # iou_loss of shape (n,)
+            assert weight.shape == pred.shape
+            weight = weight.mean(-1)
+        loss = self.loss_weight * diou_loss(
+            pred,
+            target,
+            weight,
+            linear=self.linear,
+            version=self.version,
+            eps=self.eps,
+            enclosing=self.enclosing,
+            reduction=reduction,
+            avg_factor=avg_factor,
+            **kwargs)
+        return loss

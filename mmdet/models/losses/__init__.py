@@ -15,7 +15,7 @@ from .smooth_l1_loss import L1Loss, SmoothL1Loss, l1_loss, smooth_l1_loss
 from .utils import reduce_loss, weight_reduce_loss, weighted_loss
 from .varifocal_loss import VarifocalLoss
 from .gaussian_distance_loss import GDLoss
-from .rotated_iou_loss import RotatedIoULoss, RotatedGIoULoss
+from .rotated_iou_loss import RotatedIoULoss, RotatedGIoULoss, RotatedDIoULoss
 from .convex_iou_loss import ConvexGIoULoss
 from .spatial_border_loss import SpatialBorderLoss
 from .kld_reppoints_loss import KLDRepPointsLoss
@@ -35,6 +35,7 @@ __all__ = [
     'GDLoss',
     'RotatedIoULoss',
     'RotatedGIoULoss',
+    'RotatedDIoULoss',
     'ConvexGIoULoss',
     'SpatialBorderLoss',
     'KLDRepPointsLoss',
