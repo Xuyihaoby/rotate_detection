@@ -22,6 +22,7 @@ from .spatial_border_loss import SpatialBorderLoss
 from .kld_reppoints_loss import KLDRepPointsLoss
 from .kf_iou_loss import KFLoss
 from .prob_iou_loss import ProbiouLoss
+from .poly_loss import PolyFocalLoss
 
 __all__ = [
     'accuracy', 'Accuracy', 'cross_entropy', 'binary_cross_entropy',
@@ -40,5 +41,5 @@ __all__ = [
     'ConvexGIoULoss',
     'SpatialBorderLoss',
     'KLDRepPointsLoss',
-    'KFLoss'
+    'KFLoss', 'PolyFocalLoss'
 ]
