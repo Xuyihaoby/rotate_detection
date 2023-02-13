@@ -75,9 +75,8 @@ def poly_focal_loss(pred,
     num_class = target.max()
     one_hot_target = F.one_hot(target, num_classes=num_class + 1)[:, :-1]
     pt = one_hot_target * pred_sigmoid + (1 - one_hot_target) * (1 - pred_sigmoid)
-    # import pdb
-    # pdb.set_trace()
-    loss += epsilon * torch.pow(1 - pt, gamma + 1)
+    alpha_weight = one_hot_target * alpha + (1-one_hot_target) * alpha
+    loss += alpha_weight * epsilon * torch.pow(1 - pt, gamma + 1)
     if weight is not None:
         if weight.shape != loss.shape:
             if weight.size(0) == loss.size(0):
