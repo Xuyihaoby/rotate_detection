@@ -125,4 +125,7 @@ python tools/parse_results.py {configs} {pkl} {nms}
 
 [open-mmlab/mmrotate](https://github.com/open-mmlab/mmrotate)
 
+[open-mmlab/mmclassification](https://github.com/open-mmlab/mmclassification)
+
 [jbwang1997/OBBDetection](https://github.com/jbwang1997/OBBDetection)
+
