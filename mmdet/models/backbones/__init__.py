@@ -30,6 +30,7 @@ from .context_cluster import ContextCluster
 from .cswin import CSWin
 from .conformer import Conformer
 from .involution import RedNet
+from .swin_v2 import SwinTransformerV2
 
 __all__ = [
     'RegNet', 'ResNet', 'ResNetV1d', 'ResNeXt', 'SSDVGG', 'HRNet', 'Res2Net',
@@ -40,5 +41,6 @@ __all__ = [
     'RepVGG','RepLKNet', 'ConvNeXt', 'ConvNeXtV2',
     'SLaK', 'HorNet', 'FocalNet', 'PyramidVisionTransformer',
     'PyramidVisionTransformerV2', 'PoolFormer', 'MetaFormer',
-    'EfficientFormer', 'ContextCluster', 'CSWin', 'Conformer', 'RedNet'
+    'EfficientFormer', 'ContextCluster', 'CSWin', 'Conformer', 'RedNet',
+    'SwinTransformerV2'
 ]

@@ -11,6 +11,7 @@ This paper presents a new vision Transformer, called Swin Transformer, that capa
 |         Method          | Backbone         | Angle     | Loss      | Lr Sch. | Dataset         | preprocess    |  MS  | extra aug | $AP_{0.5}$ | $AP_{0.75}$ | $mAP$ |
 | :---------------------: | ---------------- | --------- | :-------- | ------- | :-------------- | ------------- | :--: | :-------: | ---------- | ----------- | ----- |
 |       gfl_retina        | swin_tiny        | v2(le135) | R_IoU     | 1x      | DOTA-v1.0,train | 1024x1024,512 |  \   |     \     | 73.58      | 44.24       | 43.16 |
+|       gfl_retina        | swin_tiny_v2     | v2(le135) | R_IoU     | 1x      | DOTA-v1.0,train | 1024x1024,512 |  \   |     \     | 73.01      | 43.49       | 43.06 |
 |         retina          | swin_tiny        | v2(le135) | R_IoU     | 1x      | DOTA-v1.0,train | 1024x1024,512 |  \   |     \     | 5.89       | 0.89        | 1.81  |
 | rfaster_rcnn (hbb+obb)  | swin_tiny        | v1(oc)    | smooth_l1 | 1x      | DOTA-v1.0,train | 1024x1024,512 |  \   |     \     | 72.69      | 41.66       | 41.45 |
 | rfaster_rcnn (hbb+obb)  | swin_tiny        | v1(oc)    | smooth_l1 | 1x      | DOTA-v1.0,train | 1024x1024,512 |  \   |    RR     | 75.38      | 42.48       | 42.61 |

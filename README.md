@@ -19,7 +19,7 @@ Supported backbones:
 - [x] RegNet
 - [x] Res2Net
 - [x] ResNeSt
-- [x] [boat_]Swin
+- [x] [boat_]Swin(v1\v2)
 - [x] CSwin
 - [x] ReResNet
 - [x] MobileNet_v2
