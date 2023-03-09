@@ -184,29 +184,33 @@ class ContentAttention(nn.Module):
         self.softmax = nn.Softmax(dim=-1)
         self.get_v = nn.Conv2d(dim, dim, kernel_size=3, stride=1, padding=1, groups=dim)
 
-    def forward(self, x, mask=None):
+    def forward(self, x, H, W, mask=None):
         """
         Args:
             x: input features with shape of (num_windows*B, N, C)
             mask: (0/-inf) mask with shape of (num_windows, Wh*Ww, Wh*Ww) or None
         """
         B_, N, C = x.shape
+        B_old = False
+        if B_ == 1:
+            x = x.repeat(2, 1, 1)
+            B_old = True
+            B_=2
         qkv = self.qkv(x).reshape(B_, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1,
                                                                                          4)  # 3, B_, self.num_heads,N,D
-
         if True:
-            q_pre = qkv[0].reshape(B_ * self.num_heads, N, C // self.num_heads).permute(0, 2,
-                                                                                        1)  # qkv_pre[:,0].reshape(b*self.num_heads,qkvhd//3//self.num_heads,hh*ww)
+            # 复现的作者这样处理是否妥当、、、
+            q_pre = qkv[0].reshape(B_ * self.num_heads, N, C // self.num_heads).permute(0, 2, 1)  # qkv_pre[:,0].reshape(b*self.num_heads,qkvhd//3//self.num_heads,hh*ww)
             ntimes = int(math.log(N // 49, 2))
-            q_idx_last = torch.arange(N).cuda().unsqueeze(0).expand(B_ * self.num_heads, N)
+            q_idx_last = torch.arange(N).cuda().unsqueeze(0).expand(B_ * self.num_heads, N) # (bs * num_heads, N)
             for i in range(ntimes):
-                bh, d, n = q_pre.shape
+                bh, d, n = q_pre.shape # (bs * num_heads, dim // num_head, N)
                 q_pre_new = q_pre.reshape(bh, d, 2, n // 2)
                 q_avg = q_pre_new.mean(dim=-1)  # .reshape(b*self.num_heads,qkvhd//3//self.num_heads,)
                 q_avg = torch.nn.functional.normalize(q_avg, dim=-2)
                 iters = 2
                 for i in range(iters):
-                    q_scores = torch.nn.functional.normalize(q_pre.permute(0, 2, 1), dim=-1).bmm(q_avg)
+                    q_scores = torch.nn.functional.normalize(q_pre.permute(0, 2, 1), dim=-1).bmm(q_avg) # (bs * num_heads, n, 2)
                     soft_assign = torch.nn.functional.softmax(q_scores * 100, dim=-1).detach()
                     q_avg = q_pre.bmm(soft_assign)
                     q_avg = torch.nn.functional.normalize(q_avg, dim=-2)
@@ -225,7 +229,23 @@ class ContentAttention(nn.Module):
             q_idx = q_idx.unsqueeze(0).unsqueeze(4).expand(qkv.size())
             qkv_pre = qkv.gather(dim=-2, index=q_idx)
 
-            q, k, v = rearrange(qkv_pre, 'qkv b h (nw ws) c -> qkv (b nw) h ws c', ws=49)
+            # zero pad
+            pad_l = pad_t = 0
+            pad_r = (self.window_size[0] - W % self.window_size[0]) % self.window_size[0]
+            pad_b = (self.window_size[0] - H % self.window_size[0]) % self.window_size[0]
+
+            _qkv, _b, _nhead,_, _ = qkv_pre.shape
+            qkv_pre = rearrange(qkv_pre, 'qkv b nhead (h w) c -> (qkv b nhead) h w c', h=H, w=W)
+            inds = F.pad(torch.ones(1, *(qkv_pre.shape[1:-1]),1 ), (0, 0, pad_l, pad_r, pad_t, pad_b)).reshape(-1)
+            qkv_pre = F.pad(qkv_pre, (0, 0, pad_l, pad_r, pad_t, pad_b))
+
+
+            qkv_pre = rearrange(qkv_pre, '(qkv b nhead) h w c -> qkv b nhead (h w) c', qkv=_qkv, b=_b, nhead=_nhead)
+            N_pre = N
+            N = qkv_pre.shape[-2]
+            if qkv_pre.shape[1] ==1:
+                qkv_pre = torch.cat((qkv_pre, qkv_pre), dim=1)
+            q, k, v = rearrange(qkv_pre, 'qkv b nhead (nw ws) c -> qkv (b nw) nhead ws c', ws=49)
 
             k = k.view(B_ * ((N // 49)) // 2, 2, self.num_heads, 49, -1)
             k_over1 = k[:, 1, :, :20].unsqueeze(1)  # .expand(-1,2,-1,-1,-1)
@@ -248,16 +268,18 @@ class ContentAttention(nn.Module):
         if True:
             out = rearrange(out, '(b nw) h ws d -> b (h d) nw ws', h=self.num_heads, b=B_)
             v = rearrange(v[:, :, :49, :], '(b nw) h ws d -> b h d (nw ws)', h=self.num_heads, b=B_)
-            W = int(math.sqrt(N))
-
+            W = int(math.sqrt(N_pre))
             out = out.reshape(B_, self.num_heads, C // self.num_heads, -1)
+            out = out[..., inds.bool()]
             q_idx_rev = q_idx_rev.unsqueeze(2).expand(out.size())
-            x = out.gather(dim=-1, index=q_idx_rev).reshape(B_, C, N).permute(0, 2, 1)
+            x = out.gather(dim=-1, index=q_idx_rev).reshape(B_, C, N_pre).permute(0, 2, 1)
+            v = v[...,inds.bool()]
             v = v.gather(dim=-1, index=q_idx_rev).reshape(B_, C, W, W)
             v = self.get_v(v)
-            v = v.reshape(B_, C, N).permute(0, 2, 1)
+            v = v.reshape(B_, C, N_pre).permute(0, 2, 1)
             x = x + v
-
+        if B_old:
+            x = x[[1]]
         x = self.proj(x)
         x = self.proj_drop(x)
         return x
@@ -367,7 +389,27 @@ class SwinTransformerBlock(nn.Module):
         x = shortcut + self.drop_path(x)
 
         if self.shift_size > 0 and self.boat:
-            x = x + self.attnC(self.norm4(x))
+            shortcut2 = x
+            # # pad feature maps to multiples of window size
+            # x = x.view(B, H, W, C)
+            # pad_l = pad_t = 0
+            # pad_r = (self.window_size - W % self.window_size) % self.window_size
+            # pad_b = (self.window_size - H % self.window_size) % self.window_size
+            # x = F.pad(x, (0, 0, pad_l, pad_r, pad_t, pad_b))
+            #
+            # shifted_x = x
+            # x_windows = shifted_x.view(B, -1, C)  # nW*B, window_size*window_size, C
+
+            attn_x = self.attnC(x, H=H, W=W)
+            #
+            # # merge windows
+            # attn_windows = attn_windows.view(-1, self.window_size, self.window_size, C)
+            # x = window_reverse(attn_windows, self.window_size, Hp, Wp)  # B H' W' C
+            #
+            # if pad_r > 0 or pad_b > 0:
+            #     x = x[:, :H, :W, :].contiguous()
+            # x = x.view(B, H * W, C)
+            x = self.drop_path(attn_x) + shortcut2
 
         x = x + self.drop_path(self.mlp(self.norm2(x)))
 
@@ -468,7 +510,7 @@ class BasicLayer(nn.Module):
                 attn_drop=attn_drop,
                 drop_path=drop_path[i] if isinstance(drop_path, list) else drop_path,
                 norm_layer=norm_layer,
-                boat=False)
+                boat=boat)
             for i in range(depth)])
 
         # patch merging layer
