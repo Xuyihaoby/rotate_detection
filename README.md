@@ -35,6 +35,7 @@ Supported backbones:
 - [x] COC
 - [x] SSA
 - [x] rednet
+- [x] edgenext
 
 Supported methods（rotate）:
 
