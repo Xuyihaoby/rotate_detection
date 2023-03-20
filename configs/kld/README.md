@@ -8,6 +8,7 @@ Existing rotated object detectors are mostly inherited from the horizontal detec
 
 ## Results and Models
 
-| Method    | angle  | Backbone | Lr schd | Dataset         | preprocess    |  BS  | loss | $AP_{0.5}$ | $AP_{0.75}$ | $mAP$ |
-| --------- | ------ | -------- | ------- | --------------- | ------------- | :--: | ---- | ---------- | ----------- | ----- |
-| RetinaNet | v1(oc) | ResNet50 | 1x      | DOTA-v1.0,train | 1024x1024,512 |  4   | KLD  | 68.24      | 40.29       | 40.01 |
+| Method    | angle  | Backbone | Lr schd | Dataset            | preprocess    |  BS  | NA   | loss | $AP_{0.5}$ | $AP_{0.75}$ | $mAP$ |
+| --------- | ------ | -------- | ------- | ------------------ | ------------- | :--: | ---- | ---- | ---------- | ----------- | ----- |
+| RetinaNet | v1(oc) | ResNet50 | 1x      | DOTA-v1.0,train    | 1024x1024,512 |  4   | 9    | KLD  | 68.24      | 40.29       | 40.01 |
+| RetinaNet | v1(oc) | ResNet50 | 1x      | DOTA-v1.0,trainval | 1024x1024,824 |  2   | 1    | KLD  | 69.7       | 36.13       | 38.52 |
