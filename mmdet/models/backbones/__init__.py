@@ -32,6 +32,7 @@ from .conformer import Conformer
 from .involution import RedNet
 from .swin_v2 import SwinTransformerV2
 from .edgenext import EdgeNeXt
+from .lsknet import LSKNet
 
 __all__ = [
     'RegNet', 'ResNet', 'ResNetV1d', 'ResNeXt', 'SSDVGG', 'HRNet', 'Res2Net',
@@ -43,5 +44,5 @@ __all__ = [
     'SLaK', 'HorNet', 'FocalNet', 'PyramidVisionTransformer',
     'PyramidVisionTransformerV2', 'PoolFormer', 'MetaFormer',
     'EfficientFormer', 'ContextCluster', 'CSWin', 'Conformer', 'RedNet',
-    'SwinTransformerV2', 'EdgeNeXt'
+    'SwinTransformerV2', 'EdgeNeXt', 'LSKNet'
 ]
