@@ -8,6 +8,7 @@ We identify and overcome two key obstacles in extending the success of BERT-styl
 
 ## Results and models
 
-| Method | Backbone        | Angle     | Loss  | Lr schd | Dataset         | preprocess    | $AP_{0.5}$ | $AP_{0.75}$ | $mAP$ |
-| ------ | --------------- | --------- | ----- | ------- | --------------- | ------------- | ---------- | ----------- | ----- |
-| rgfl   | ResNet50(SPARK) | v2(le135) | R_IoU | 1x      | DOTA-v1.0,train | 1024x1024,512 | 59.92      | 32.70       | 33.36 |
+| Method    | Backbone        | Angle     | Loss      | Lr schd | Dataset            | preprocess    | $AP_{0.5}$ | $AP_{0.75}$ | $mAP$ |
+| --------- | --------------- | --------- | --------- | ------- | ------------------ | ------------- | ---------- | ----------- | ----- |
+| rgfl      | ResNet50(SPARK) | v2(le135) | R_IoU     | 1x      | DOTA-v1.0,train    | 1024x1024,512 | 59.92      | 32.70       | 33.36 |
+| retinanet | ResNet50(SPARK) | v1(oc)    | smooth_l1 | 1x      | DOTA-v1.0,trainval | 1024x1024,824 | 50.26      | 17.35       | 23.22 |
