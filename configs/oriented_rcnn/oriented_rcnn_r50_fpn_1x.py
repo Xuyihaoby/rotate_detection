@@ -134,7 +134,7 @@ lr_config = dict(
 total_epochs = 12
 
 dataset_type = 'DOTADatasetV1'
-data_root = '/data1/public_dataset/DOTA/DOTA1_0/simple/'
+data_root = '/data/Aerial/DOTA1_0/simple/'
 trainsplit_ann_folder = 'train/labelTxt'
 trainsplit_img_folder = 'train/images'
 valsplit_ann_folder = 'train/labelTxt'
@@ -209,4 +209,4 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1)]
-work_dir = '/home/lzy/xyh/Netmodel/rotate_detection/checkpoints/simDOTA1_0/oriented_rcnn_new'
+work_dir = '/data/Aerial/checkpoints/oriented_rcnn'
