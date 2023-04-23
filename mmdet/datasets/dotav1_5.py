@@ -16,7 +16,7 @@ from tqdm import trange
 from mmdet.core.bbox import poly2obb_np, obb2poly_np
 
 @DATASETS.register_module()
-class DOTADatasetV2(CustomDataset):
+class DOTADatasetV1_5(CustomDataset):
     """
         https://captain-whu.github.io/DOTA/dataset.html
     """
@@ -25,13 +25,13 @@ class DOTADatasetV2(CustomDataset):
                'tennis-court', 'basketball-court',
                'storage-tank', 'soccer-ball-field',
                'roundabout', 'harbor',
-               'swimming-pool', 'helicopter', 'container-crane', 'airport', 'helipad')
+               'swimming-pool', 'helicopter', 'container-crane')
 
     def __init__(self,  version='v1', *args, **kwargs):
         self.difficulty_thresh = kwargs.pop('difficulty_thresh', 100)
         # set the default threshold to a big value. we take all gts as not difficult by default
         self.version = version
-        super(DOTADatasetV2, self).__init__(*args, **kwargs)
+        super(DOTADatasetV1_5, self).__init__(*args, **kwargs)
 
 
     def load_annotations(self, ann_folder):
