@@ -352,9 +352,12 @@ class ORPNHead(RPNTestMixin, AnchorHead):
         _, keep = batched_nms(hpropsals, scores, ids, nms_cfg)
         dets = torch.cat([proposals, scores[:, None]], dim=1)
         dets = dets[keep]
+        scores = dets[:, -1]
+        sort_idx = scores.sort(descending=True)[1]
+        select_inx = sort_idx[:cfg.nms_post]
         # dets[n, 5(x, y, w, h, theta, scores)]
         # keep index
-        return dets[:cfg.nms_post]
+        return dets[select_inx]
 
     def forward_train(self,
                       x,
