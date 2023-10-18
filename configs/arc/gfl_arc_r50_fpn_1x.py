@@ -162,3 +162,10 @@ load_from = None
 resume_from = None
 workflow = [('train', 1)]
 work_dir = '/data/Aerial/checkpoints/arc/vanilla'
+# mAP: 0.7244129205473793
+# ap of each class: plane:0.8819439995520943, baseball-diamond:0.7123009487764927, bridge:0.5007095826294092, ground-track-field:0.6734065038519391, small-vehicle:0.7857272707135559, large-vehicle:0.7820397973337582, ship:0.8736555660575223, tennis-court:0.9089552238805971, basketball-court:0.7763353787745213, storage-tank:0.8315456245439921, soccer-ball-field:0.5814452390101953, roundabout:0.6351057668556895, harbor:0.6597527672866663, swimming-pool:0.6701280685421084, helicopter:0.5931420704021453
+# COCO style result:
+#
+# AP50: 0.7244129205473793
+# AP75: 0.4387633086775408
+# mAP: 0.42600784264367225
