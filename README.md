@@ -37,6 +37,7 @@ Supported backbones:
 - [x] rednet
 - [x] edgenext
 - [x] LSK
+- [x] ARC
 
 Supported methods（rotate）:
 
