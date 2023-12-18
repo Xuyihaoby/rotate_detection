@@ -135,7 +135,7 @@ class RRandomFlip(object):
         self.flip_ratio = flip_ratio
         self.version = version
 
-        valid_directions = ['horizontal', 'vertical']
+        valid_directions = ['horizontal', 'vertical', 'diagonal']
         if isinstance(direction, str):
             assert direction in valid_directions
         elif isinstance(direction, list):
