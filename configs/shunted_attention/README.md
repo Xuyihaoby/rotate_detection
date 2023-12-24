@@ -8,7 +8,7 @@ Recent Vision Transformer (ViT) models have demonstrated encouraging results acr
 
 ## Results and models
 
-| Method     | Backbone                    | Angle     | Loss  | Lr schd | Dataset         | bs   | preprocess    | $AP_{0.5}$ | $AP_{0.75}$ | $mAP$ |
-| ---------- | --------------------------- | --------- | ----- | ------- | --------------- | ---- | ------------- | ---------- | ----------- | ----- |
-| gfl_retina | context_cluster_small_feat2 | v2(le135) | R_IoU | 1x      | DOTA-v1.0,train | 2    | 1024x1024,512 | 68.50      | 39.75       | 39.69 |
+| Method     | Backbone     | Angle     | Loss  | Lr schd | Dataset         | bs   | preprocess    | $AP_{0.5}$ | $AP_{0.75}$ | $mAP$ |
+| ---------- |--------------| --------- | ----- | ------- | --------------- | ---- | ------------- | ---------- | ----------- | ----- |
+| gfl_retina | shunted_tiny | v2(le135) | R_IoU | 1x      | DOTA-v1.0,train | 2    | 1024x1024,512 | 68.50      | 39.75       | 39.69 |
 
