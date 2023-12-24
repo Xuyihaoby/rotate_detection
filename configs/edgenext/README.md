@@ -9,6 +9,6 @@ In the pursuit of achieving ever-increasing accuracy, large and complex neural n
 ## Results and models
 
 | Method     | Backbone       | Angle     | Loss  | Lr schd | Dataset         | preprocess    | $AP_{0.5}$ | $AP_{0.75}$ | $mAP$ |
-| ---------- | -------------- | --------- | ----- | ------- | --------------- | ------------- | ---------- | ----------- | ----- |
-| gfl_retina | edgenect_small | v2(le135) | R_IoU | 1x      | DOTA-v1.0,train | 1024x1024,512 | 70.75      | 40.86       | 40.57 |
-| gfl_retina | edgenect_base  | v2(le135) | R_IoU | 1x      | DOTA-v1.0,train | 1024x1024,512 | 56.21      | 28.87       | 30.49 |
+| ---------- |----------------| --------- | ----- | ------- | --------------- | ------------- | ---------- | ----------- | ----- |
+| gfl_retina | edgenext_small | v2(le135) | R_IoU | 1x      | DOTA-v1.0,train | 1024x1024,512 | 70.75      | 40.86       | 40.57 |
+| gfl_retina | edgenext_base  | v2(le135) | R_IoU | 1x      | DOTA-v1.0,train | 1024x1024,512 | 56.21      | 28.87       | 30.49 |

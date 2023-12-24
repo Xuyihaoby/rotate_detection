@@ -9,7 +9,7 @@ Within Convolutional Neural Network (CNN), the convolution operations are good a
 ## Results and models
 
 | Method     | Backbone        | Angle     | Loss  | Lr schd | Dataset         | bs   | preprocess    | $AP_{0.5}$ | $AP_{0.75}$ | $mAP$ |
-| ---------- | --------------- | --------- | ----- | ------- | --------------- | ---- | ------------- | ---------- | ----------- | ----- |
-| gfl_retina | conformer_timy  | v2(le135) | R_IoU | 1x      | DOTA-v1.0,train | 2    | 1024x1024,512 | 67.93      | 40.12       | 39.33 |
+| ---------- |-----------------| --------- | ----- | ------- | --------------- | ---- | ------------- | ---------- | ----------- | ----- |
+| gfl_retina | conformer_tiny  | v2(le135) | R_IoU | 1x      | DOTA-v1.0,train | 2    | 1024x1024,512 | 67.93      | 40.12       | 39.33 |
 | gfl_retina | conformer_small | v2(le135) | R_IoU | 1x      | DOTA-v1.0,train | 2    | 1024x1024,512 | 72.42      | 46.78       | 44.02 |
 
