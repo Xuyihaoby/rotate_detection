@@ -75,7 +75,7 @@ def imshow_det_rbboxes(img,
             xc, yc, w, h, ag, p = bbox.tolist()
         elif len(bbox) == 5:
             xc, yc, w, h, ag = bbox.tolist()
-        if version == 'v1':
+        if version == 'v1' or version == 'v2':
             wx, wy = w / 2 * math.cos(ag), w / 2 * math.sin(ag)
             hx, hy = -h / 2 * math.sin(ag), h / 2 * math.cos(ag)
             p1 = (xc - wx - hx, yc - wy - hy)
@@ -84,18 +84,14 @@ def imshow_det_rbboxes(img,
             p4 = (xc - wx + hx, yc - wy + hy)
             ps = np.int0(np.array([p1, p2, p3, p4]))
         elif version == 'v3':
-            try:
-                vector1 = np.array([w / 2 * math.cos(ag), -w / 2 * math.sin(ag)])
-                vector2 = np.array([-h / 2 * math.sin(ag), -h / 2 * math.cos(ag)])
-                center = np.array((xc, yc))
-                p1 = center + vector1 + vector2
-                p2 = center + vector1 - vector2
-                p3 = center - vector1 - vector2
-                p4 = center - vector1 + vector2
-                ps = np.int0(np.array([p1, p2, p3, p4]))
-            except:
-                import pdb
-                pdb.set_trace()
+            vector1 = np.array([w / 2 * math.cos(ag), -w / 2 * math.sin(ag)])
+            vector2 = np.array([-h / 2 * math.sin(ag), -h / 2 * math.cos(ag)])
+            center = np.array((xc, yc))
+            p1 = center + vector1 + vector2
+            p2 = center + vector1 - vector2
+            p3 = center - vector1 - vector2
+            p4 = center - vector1 + vector2
+            ps = np.int0(np.array([p1, p2, p3, p4]))
         cv2.drawContours(img, [ps], -1, color_dict[str(len(class_names))][label], thickness=thickness)
         label_text = class_names[
             label] if class_names is not None else 'cls {}'.format(label)
