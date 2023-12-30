@@ -38,6 +38,7 @@ Supported backbones:
 - [x] edgenext
 - [x] LSK
 - [x] ARC
+- [x] VITAE
 
 Supported methods（rotate）:
 

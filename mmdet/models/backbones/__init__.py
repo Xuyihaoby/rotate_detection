@@ -34,6 +34,7 @@ from .swin_v2 import SwinTransformerV2
 from .edgenext import EdgeNeXt
 from .lsknet import LSKNet
 from .arc_resnet import ARCResNet
+from .vit_win_rvsa_wsz7 import ViT_Win_RVSA_V3_WSZ7
 
 __all__ = [
     'RegNet', 'ResNet', 'ResNetV1d', 'ResNeXt', 'SSDVGG', 'HRNet', 'Res2Net',
@@ -45,5 +46,5 @@ __all__ = [
     'SLaK', 'HorNet', 'FocalNet', 'PyramidVisionTransformer',
     'PyramidVisionTransformerV2', 'PoolFormer', 'MetaFormer',
     'EfficientFormer', 'ContextCluster', 'CSWin', 'Conformer', 'RedNet',
-    'SwinTransformerV2', 'EdgeNeXt', 'LSKNet', 'ARCResNet'
+    'SwinTransformerV2', 'EdgeNeXt', 'LSKNet', 'ARCResNet', 'ViT_Win_RVSA_V3_WSZ7'
 ]
