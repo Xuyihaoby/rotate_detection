@@ -26,7 +26,7 @@ def box_iou_rotated_differentiable(boxes1: torch.Tensor, boxes2: torch.Tensor, i
     polys1 = obb2poly(boxes1, version)
     polys1 = polys1.view(polys1.shape[0], 4, 2)
     polys2 = obb2poly(boxes2, version)
-    polys2 = polys2.view(polys1.shape[0], 4, 2)
+    polys2 = polys2.view(polys2.shape[0], 4, 2)
     # calculate insection areas
     inter_area, _ = oriented_box_intersection_2d(polys1, polys2)
     area1 = boxes1[..., 2] * boxes1[..., 3]
