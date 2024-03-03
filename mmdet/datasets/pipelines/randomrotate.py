@@ -186,8 +186,8 @@ class Randomrotate(object):
                 if wbox <= 0 or hbox <= 0 or xbox < 0 or ybox < 0 or xbox > results['img'].shape[1] or ybox > results['img'].shape[0]:
                     continue
 
-                if self.version == 'v1':
-                    abox, wbox, hbox = self._checkCVformat(abox, wbox, hbox)
+                # if self.version == 'v1':
+                #     abox, wbox, hbox = self._checkCVformat(abox, wbox, hbox)
 
                 gt_bboxes.append([xbox, ybox, wbox, hbox, abox])
                 val_inds.append(ind)
