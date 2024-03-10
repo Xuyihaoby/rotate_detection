@@ -324,11 +324,15 @@ def reval_map(det_results,
         # get gt and det bboxes of this class
         cls_dets, cls_gts, cls_gts_ignore = rget_cls_results(
             det_results, annotations, i)
-        tpfp = pool.starmap(
-            rtpfp_default,
-            zip(cls_dets, cls_gts, cls_gts_ignore,
-                [iou_thr for _ in range(num_imgs)],
-                [area_ranges for _ in range(num_imgs)]))
+        tpfp = []
+        # tpfp = pool.starmap(
+        #     rtpfp_default,
+        #     zip(cls_dets, cls_gts, cls_gts_ignore,
+        #         [iou_thr for _ in range(num_imgs)],
+        #         [area_ranges for _ in range(num_imgs)]))
+        for cls_det, cls_gt, cls_gt_ignore, iou_thr_, area_ranges_ in tqdm(zip(cls_dets, cls_gts, cls_gts_ignore, [iou_thr for _ in range(num_imgs)],
+                [area_ranges for _ in range(num_imgs)])):
+            tpfp.append(rtpfp_default(cls_det, cls_gt, cls_gt_ignore, iou_thr_, area_ranges_))
         tp, fp = tuple(zip(*tpfp))
 
         # calculate gt number of each scale
