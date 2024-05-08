@@ -113,7 +113,7 @@ python setup.py build_ext --inplace
 ```
 ## Parse result
 ```
-python tools/parse_results.py {configs} {pkl} {nms}
+python tools/rotate/parse_results.py {configs} {pkl} {nms}
                               --[type]
                               --[eval]
 ```
