@@ -35,6 +35,7 @@ from .edgenext import EdgeNeXt
 from .lsknet import LSKNet
 from .arc_resnet import ARCResNet
 from .vit_win_rvsa_wsz7 import ViT_Win_RVSA_V3_WSZ7
+from .swin_rope import RoPESwinTransformer
 
 __all__ = [
     'RegNet', 'ResNet', 'ResNetV1d', 'ResNeXt', 'SSDVGG', 'HRNet', 'Res2Net',
