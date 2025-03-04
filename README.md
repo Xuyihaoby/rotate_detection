@@ -39,6 +39,7 @@ Supported backbones:
 - [x] LSK
 - [x] ARC
 - [x] VITAE
+- [x] PKINet
 
 Supported methods（rotate）:
 
