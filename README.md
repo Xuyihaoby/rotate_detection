@@ -40,6 +40,7 @@ Supported backbones:
 - [x] ARC
 - [x] VITAE
 - [x] PKINet
+- [x] GRA
 
 Supported methods（rotate）:
 

@@ -1,0 +1,16 @@
+# GRA: Detecting Oriented Objects through Group-wise Rotating and Attention
+
+[GRA: Detecting Oriented Objects through Group-wise Rotating and Attention](http://arxiv.org/abs/2403.11127)
+
+## abstract
+
+Oriented object detection, an emerging task in recent years, aims to identify and locate objects across varied orientations. This requires the detector to accurately capture the orientation information, which varies significantly within and across images. Despite the existing substantial efforts, simultaneously ensuring model effectiveness and parameter efficiency remains challenging in this scenario. In this paper, we propose a lightweight yet effective Group-wise Rotating and Attention (GRA) module to replace the convolution operations in backbone networks for oriented object detection. GRA can adaptively capture fine-grained features of objects with diverse orientations, comprising two key components: Group-wise Rotating and Group-wise Attention. Group-wise Rotating first divides the convolution kernel into groups, where each group extracts different object features by rotating at a specific angle according to the object orientation. Subsequently, Group-wise Attention is employed to adaptively enhance the object-related regions in the feature. The collaborative effort of these components enables GRA to effectively capture the various orientation information while maintaining parameter efficiency. Extensive experimental results demonstrate the superiority of our method. For example, GRA achieves a new state-of-the-art (SOTA) on the DOTA-v2.0 benchmark, while saving the parameters by nearly 50% compared to the previous SOTA method. Code will be released.
+
+## Results and Models
+
+|   Method   | Backbone  | Angle     | Loss  | Lr Sch. | Dataset         | preprocess    |  MS  | extra aug | $AP_{0.5}$ | $AP_{0.75}$ | $mAP$ |
+| :--------: | --------- | --------- | :---- | ------- | :-------------- | ------------- | :--: | :-------: | ---------- | ----------- | ----- |
+| gfl_retina | gra-res50 | v2(le135) | R_IoU | 1x      | DOTA-v1.0,train | 1024x1024,512 |  \   |     \     | 72.24      | 43.91       | 42.74 |
+
+
+
